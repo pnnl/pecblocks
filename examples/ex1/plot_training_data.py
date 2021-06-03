@@ -104,7 +104,10 @@ def plot_training_set (row):
     ax[1,1].set_title ('y2: {:s}'.format (row['y2']['name']), fontsize=lsize)
     ax[1,1].plot (t_fit[n_skip:], y2_fit[n_skip:], 'b')
 
-    plt.savefig(row['PlotFile'])
+    plot_folder = './models/training/'
+    if not os.path.exists(plot_folder):
+        os.makedirs(plot_folder)
+    plt.savefig(plot_folder + row['PlotFile'])
     plt.show()
 
 if __name__ == '__main__':
