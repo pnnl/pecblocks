@@ -12,3 +12,7 @@ For customization, see ```test_hw.py```:
 
 1. Block fitting parameters are set in the ```training_sets``` dictionary, beginning around line 18.
 2. The model architecture is a series cascade of nonlinear, linear, nonlinear blocks (FGF). To change this, edit the ```def model``` function definition that begins around line 186. See the dynoNet examples and API documentation for more guidance.
+
+To save the learned attributes in ```models.json```:
+
+1. ```python export_models.py```
