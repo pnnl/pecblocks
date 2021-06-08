@@ -1,7 +1,8 @@
 import os
 import sys
 import torch
-import pecblocks.util
+#import pecblocks.util
+import json
 
 root_path = './models/'
 
@@ -16,53 +17,68 @@ model_sets = [
    {'name':'VdctoQac','blocks':'F1+G1+F2'}
 ]
 
-def format_tensor(t, dim):
-    shape = list(t.shape)
-    
-    return str(t)
-#    if t.shape[-1] > 1:
-#        return ','.join('{:.5f}'.format(v) for v in t[0].tolist())
-#    else:
-#        return '{:.5f}'.format(t[0,0])
-
-def slice_tensor(B, key, dim):
+def slice_tensor(B, key, idx=0):
     t = B[key]
     shape = list(t.shape)
-    print (key, shape, t)
+    ndim = len(shape)
+    if ndim == 1:
+        return t[:].numpy()
+    elif ndim == 2:
+        if idx == 0:
+            return t[:,0].numpy()
+        elif idx == 1:
+            return t[0,:].numpy()
+        else:
+            print (key, shape, 'unsupported index', idx)
+    elif ndim == 3:
+        if idx == 0:
+            return t[:,0,0].numpy()
+        elif idx == 1:
+            return t[0,:,0].numpy()
+        elif idx == 2:
+            return t[0,0,:].numpy()
+        else:
+            print (key, shape, 'unsupported index', idx)
+    else:
+        print (key, shape, 'too many dimensions')
+    return None
 
 def process_model_set (row):
     model_path = '{:s}{:s}/'.format(root_path, row['name'])
     model_type = row['blocks']
     blocks = model_type.split('+')
     print (model_path)
+    model = {'name':row['name'],'type':row['blocks']}
     for block in blocks:
         fname = '{:s}{:s}.pkl'.format (model_path, block)
         B = torch.load (fname)
         if 'G' in block:  # where is n_k?
-            a = B['a_coeff']
-            b = B['b_coeff']
-            print ('  {:s} na={:d} nb={:d}'.format (block, a.shape[-1], b.shape[-1]))
-            print ('       den=' + ','.join('{:.5f}'.format (v) for v in a[0,0].tolist()))
-            print ('       num=' + ','.join('{:.5f}'.format (v) for v in b[0,0].tolist()))
+            a = slice_tensor (B, 'a_coeff', 2)
+            b = slice_tensor (B, 'b_coeff', 2)
+            model[block] = {'numerator':b.tolist(), 'denominator':a.tolist()}
+#           print ('  {:s} na={:d} nb={:d}'.format (block, a.shape[-1], b.shape[-1]))
+#           print ('       den=' + ','.join('{:.4f}'.format (v) for v in a))
+#           print ('       num=' + ','.join('{:.4f}'.format (v) for v in b))
         elif 'F' in block:  # assume tanh, how do we know nh?
-            n0w = slice_tensor (B, 'net.0.weight', 0)
-            quit()
-            n0w = B['net.0.weight']
-            n0b = B['net.0.bias']
-            n2w = B['net.2.weight']
-            n2b = B['net.2.bias']
-            print ('  {:s} n0w{:s} n0b{:s} n2w{:s} n2b{:s}'.format (block, str(list(n0w.shape)), 
-                                                                    str(list(n0b.shape)), 
-                                                                    str(list(n2w.shape)), 
-                                                                    str(list(n2b.shape))))
-            print ('       n0w={:s}'.format (format_tensor(n0w,0)))
-            print ('       n0b={:s}'.format (format_tensor(n0b,0)))
-            print ('       n2w={:s}'.format (format_tensor(n2w,1)))
-            print ('       n2b={:s}'.format (format_tensor(n2b,0)))
+            n0w = slice_tensor (B, 'net.0.weight')
+            n0b = slice_tensor (B, 'net.0.bias')
+            n2w = slice_tensor (B, 'net.2.weight', 1)
+            n2b = slice_tensor (B, 'net.2.bias')
+            model[block] = {'n0w':n0w.tolist(), 'n0b':n0b.tolist(), 'n2w':n2w.tolist(), 'n2b':n2b.tolist()}
+#           print ('  {:s} {:d} {:d}'.format (block, len(n0w), len(n2b)))
+#           print ('       n0w=' + ','.join('{:.4f}'.format (v) for v in n0w))
+#           print ('       n0b=' + ','.join('{:.4f}'.format (v) for v in n0b))
+#           print ('       n2w=' + ','.join('{:.4f}'.format (v) for v in n0w))
+#           print ('       n2b=' + ','.join('{:.4f}'.format (v) for v in n2b))
         else:
             print ('unrecognized block type {:s} for {:s}'.format (B, fname))
+    return model
 
 if __name__ == '__main__':
+    models = {}
     for row in model_sets:
-        process_model_set (row)
+        models[row['name']] = process_model_set (row)
+    with open ('models.json', 'w') as write_file:
+        json.dump (models, write_file, indent=4, sort_keys=True)
+
 
