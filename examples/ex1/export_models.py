@@ -7,14 +7,14 @@ import json
 root_path = './models/'
 
 model_sets = [
-   {'name':'test','blocks':'F_nl+G2'},
-   {'name':'GtoVdc','blocks':'F1+G1+F2'},
-   {'name':'GtoIdc','blocks':'F1+G1+F2'},
-   {'name':'TtoVdc','blocks':'F1+G1+F2'},
-   {'name':'TtoIdc','blocks':'F1+G1+F2'},
-   {'name':'VdctoIdc','blocks':'F1+G1+F2'},
-   {'name':'VdctoPac','blocks':'F1+G1+F2'},
-   {'name':'VdctoQac','blocks':'F1+G1+F2'}
+   {'name':'test','blocks':'F_nl+G2','n_k':1},
+   {'name':'GtoVdc','blocks':'F1+G1+F2','n_k':1},
+   {'name':'GtoIdc','blocks':'F1+G1+F2','n_k':1},
+   {'name':'TtoVdc','blocks':'F1+G1+F2','n_k':1},
+   {'name':'TtoIdc','blocks':'F1+G1+F2','n_k':1},
+   {'name':'VdctoIdc','blocks':'F1+G1+F2','n_k':0},
+   {'name':'VdctoPac','blocks':'F1+G1+F2','n_k':0},
+   {'name':'VdctoQac','blocks':'F1+G1+F2','n_k':0}
 ]
 
 def slice_tensor(B, key, idx=0):
@@ -55,7 +55,8 @@ def process_model_set (row):
         if 'G' in block:  # where is n_k?
             a = slice_tensor (B, 'a_coeff', 2)
             b = slice_tensor (B, 'b_coeff', 2)
-            model[block] = {'numerator':b.tolist(), 'denominator':a.tolist()}
+            model[block] = {'numerator':b.tolist(), 'denominator':a.tolist(), 'n_k':row['n_k']}
+#           print (B.keys())
 #           print ('  {:s} na={:d} nb={:d}'.format (block, a.shape[-1], b.shape[-1]))
 #           print ('       den=' + ','.join('{:.4f}'.format (v) for v in a))
 #           print ('       num=' + ','.join('{:.4f}'.format (v) for v in b))
