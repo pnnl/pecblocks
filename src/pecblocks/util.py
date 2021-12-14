@@ -7,7 +7,7 @@ def read_csv_files(path, pattern=".csv"):
         zf = zipfile.ZipFile (path)
         pdata =[]
         for zn in zf.namelist():
-            pdata0 = pd.read_csv (zf.open(zn),sep=',',header=0,error_bad_lines=False)
+            pdata0 = pd.read_csv (zf.open(zn),sep=',',header=0,on_bad_lines='skip')
             if pdata0.shape[0] >0:
                 pdata += [pdata0.copy()]  
         return pd.concat(pdata)
@@ -17,7 +17,7 @@ def read_csv_files(path, pattern=".csv"):
         if len(files)>0:
             pdata =[]
             for i in range(len(files)):
-                pdata0 = pd.read_csv(os.path.join(path,files[i]),sep=',',header=0,error_bad_lines=False)
+                pdata0 = pd.read_csv(os.path.join(path,files[i]),sep=',',header=0,on_bad_lines='skip')
                 if pdata0.shape[0] >0:
                     pdata += [pdata0.copy()]  
             return pd.concat(pdata)
