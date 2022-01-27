@@ -60,7 +60,9 @@ if __name__ == '__main__':
 
     df_training = pecblocks.util.read_csv_files(data_path, pattern=".csv")
 
-    print(df_training.describe())
+#    print (df_training.describe())
+    print ('df_training columns', df_training.columns)
+    print ('df_training shape', df_training.shape)
 
     df1 = df_training[(df_training['time']>3.5) & (df_training['time']<5.0)]
 

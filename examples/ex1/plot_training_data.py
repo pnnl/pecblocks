@@ -47,24 +47,29 @@ def plot_training_set (row):
     df_training = pecblocks.util.read_csv_files(data_path, pattern=".csv")
 
     df1 = df_training[(df_training['time']>row['tmin']) & (df_training['time']<row['tmax'])]
-    print(df1.describe())
+#    print ('window df1', df1.describe())
+    print ('df1 columns', df1.columns)
+#    print ('df1 index', df1.index)
+    print ('df1 shape', df1.shape)
 
     df_u1 = df1.filter(like=row['u1']['tag'], axis=1)
     df_u2 = df1.filter(like=row['u2']['tag'], axis=1)
     df_y1 = df1.filter(like=row['y1']['tag'], axis=1)
     df_y2 = df1.filter(like=row['y2']['tag'], axis=1)
+    print ('df_y2 shape filtered', df_y2.shape)
 
     df_y1 = df_y1.sum(axis=1)
     df_u1 = df_u1.sum(axis=1)
     df_y2 = df_y2.sum(axis=1)
     df_u2 = df_u2.sum(axis=1)
+    print ('df_y2 shape summed', df_y2.shape)
 
     # Extract data
     y1 = np.transpose(df_y1.to_numpy(dtype=np.float32))# /1000.0  # batch, time, channel
     u1 = np.transpose(df_u1.to_numpy(dtype=np.float32))# /1000.0 # 1.0  # normalization of T or G
     y2 = np.transpose(df_y2.to_numpy(dtype=np.float32))# /1000.0  # batch, time, channel
     u2 = np.transpose(df_u2.to_numpy(dtype=np.float32))# /1000.0 # 1.0  # normalization of T or G
-    print (y2.shape)
+    print ('y2 shape', y2.shape)
     t = np.arange(0,  (y1.size)*t_step, t_step, dtype=np.float32)
 
     y1 = y1.reshape(y1.size,1)
@@ -113,4 +118,5 @@ def plot_training_set (row):
 if __name__ == '__main__':
     for row in training_sets:
         plot_training_set (row)
+        quit()
 
