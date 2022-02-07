@@ -6,7 +6,7 @@ import h5py
 import math
 
 '''adds each group to a list of Pandas dataframes'''
-def read_hdf5_file(filename, cols, n_skip=0, n_dec=1):
+def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0):
   pdata=[]
 #  print (cols)
   with h5py.File(filename, 'r') as f:
@@ -24,7 +24,8 @@ def read_hdf5_file(filename, cols, n_skip=0, n_dec=1):
         grp[col].read_direct (x)
         ary[:,j] = x[::n_dec]
         j += 1
-      df = pd.DataFrame (data=ary[n_skip:,:], columns=cols)
+#      print ('ary shapes {:d} {:d} {:d}'.format (n_dec, n_skip, n_trunc), ary.shape, ary[n_skip:-n_trunc or None,:].shape)
+      df = pd.DataFrame (data=ary[n_skip:-n_trunc or None,:], columns=cols)
       pdata.append(df)
   return pdata
 
