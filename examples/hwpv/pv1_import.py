@@ -35,6 +35,24 @@ aFC=np.array([[  0.0, 60.0],
 aUD=np.array([[  0.0, 1.0],
               [999.0, 1.0]])
 
+def make_bode_plots (H1):
+  # plot the model's transfer function
+  a_coeff = H1.a_coeff.detach().numpy()
+  b_coeff = H1.b_coeff.detach().numpy()
+  a_poly = np.empty_like(a_coeff, shape=(H1.out_channels, H1.in_channels, H1.n_a + 1))
+  a_poly[:, :, 0] = 1
+  a_poly[:, :, 1:] = a_coeff[:, :, :]
+  b_poly = np.array(b_coeff)
+  H1_sys = control.TransferFunction(b_poly, a_poly, dt)
+  for i in range (H1.in_channels):
+    for j in range (H1.out_channels):
+      plt.figure()
+      mag_H1, phase_H1, omega_H1 = control.bode(H1_sys[i, j])
+      plt.suptitle('Transfer Function from Input {:d} to Output {:d}'.format (i, j))
+      plt.show()
+      quit()
+#      plt.savefig ('H1_{:d}_{:d}.png'.format (i, j))
+
 if __name__ == '__main__':
   model = pv1_model.pv1 ()
   model.load_sim_config (os.path.join(model_folder,'pv1_fhf_poly.json'))
@@ -84,22 +102,7 @@ if __name__ == '__main__':
     # advance the simulation time
     t += dt
 
-
-  # plot the model's transfer function
-  a_coeff = model.H1.a_coeff.detach().numpy()
-  b_coeff = model.H1.b_coeff.detach().numpy()
-  a_poly = np.empty_like(a_coeff, shape=(model.H1.out_channels, model.H1.in_channels, model.H1.n_a + 1))
-  a_poly[:, :, 0] = 1
-  a_poly[:, :, 1:] = a_coeff[:, :, :]
-  b_poly = np.array(b_coeff)
-  H1_sys = control.TransferFunction(b_poly, a_poly, dt)
-  for i in range (model.H1.in_channels):
-    for j in range (model.H1.out_channels):
-      plt.figure()
-      mag_H1, phase_H1, omega_H1 = control.bode(H1_sys[i, j])
-      plt.suptitle('Transfer Function from Input {:d} to Output {:d}'.format (i, j))
-#      plt.show()
-      plt.savefig ('H1_{:d}_{:d}.png'.format (i, j))
+  make_bode_plots (model.H1)
 
   quit()
 
