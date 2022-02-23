@@ -20,7 +20,39 @@ idx_in = [0,1,2,3,4,5,6]
 idx_out = [7,8,9]
 
 class pv1():
-  def __init__(self, filename):
+  def __init__(self, training_config=None, sim_config=None):
+    self.init_to_none()
+    if training_config is not None:
+      self.load_training_config (training_config)
+    if sim_config is not None:
+      self.load_sim_config (sim_config)
+
+  def init_to_none(self):
+    self.lr = None
+    self.num_iter = None
+    self.print_freq = None
+    self.batch_size = None
+    self.n_skip = None
+    self.n_trunc = None
+    self.n_dec = None
+    self.na = None
+    self.nb = None
+    self.nk = None
+    self.activation = None
+    self.nh1 = None
+    self.nh2 = None
+    self.COL_T = None
+    self.COL_Y = None
+    self.COL_U = None
+    self.ctl_mode_t = None
+    self.ctl_mode_y = None
+    self.data_train = None
+    self.normfacs = None
+    self.t = None
+    self.n_cases = 0
+    self.t_step = 1.0e-3
+
+  def load_training_config(self, filename):
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
@@ -48,6 +80,35 @@ class pv1():
     self.t = None
     self.n_cases = 0
     self.t_step = 1.0e-3
+
+  def load_sim_config(self, filename):
+    fp = open (filename, 'r')
+    config = json.load (fp)
+    fp.close()
+
+    self.name = config['name']
+    self.blocks = config['type']
+    self.na = config['na']
+    self.nb = config['nb']
+    self.nk = config['nk']
+    self.activation = config['activation']
+    self.nh1 = config['nh1']
+    self.nh2 = config['nh2']
+    self.COL_T = config['COL_T']
+    self.COL_Y = config['COL_Y']
+    self.COL_U = config['COL_U']
+    self.normfacs = config['normfacs']
+    self.t_step = config['t_step']
+
+    self.H1 = self.read_lti(self, 'H1')
+    self.F1 = self.read_net(self, 'F1')
+    self.F2 = self.read_net(self, 'F2')
+
+    print ('COL_U', self.COL_U)
+    print ('COL_Y', self.COL_Y)
+    print ('t_step', self.t_step)
+    print ('block dimensions', self.activation, self.nh1, self.nh2, self.na, self.nb, self.nk)
+    print ('normfacs', self.normfacs)
 
   def append_net(self, model, label, F):
     block = F.state_dict()
