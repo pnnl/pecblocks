@@ -5,8 +5,8 @@ diagram models of power electronic systems. The process uses deep learning with 
 outputs are reduced-order models that meet specified accuracy requirements, while providing important advantages over
 the original EMT models:
 
-- ConverterBlock models have fewer nodes and can take longer time steps, resulting in shorter simulation times
-- ConverterBlock models are continuously differentiable, making them compatible with control design methods
+- Converter Block models have fewer nodes and can take longer time steps, resulting in shorter simulation times
+- Converter Block models are continuously differentiable, making them compatible with control design methods
 
 Models will run in both time domain and frequency domain. The scope includes not only the power electronic converter,
 but also the photovoltaic (PV) array, maximum power point tracking (MPPT), phase-lock loop (PLL) control, output filter
@@ -18,44 +18,26 @@ storage converters, motor drives, and other power electronics equipment.
 In the directory _examples/hwpv_, a multiple-input, multiple-output HW model has been
 fitted to the PV panels, MPPT, DC/DC, inverter PWM switching, LCL output filter, and RMS measurements.
 It was based on ATP simulations with five inputs, _G_, _T_, _Ud_, _Fc_, and _Vrms_. A sixth input is
-created as a polynomial feature, defined as _GVrms_. The outputs are _Idc_, _Vdc_, and _Irms_.
+created as a polynomial feature, defined as _GVrms_. The outputs are _Idc_, _Vdc_, and _Irms_. A
+seventh input is added to indicate the inverter control mode; 0=starting, 1=grid formed, 2=grid following.
 
-The Python files currently used are:
+To run this example:
 
-- _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture. Earlier architectures are in the _archive_ subdirectory.
-- _common.py_ implements a batch-oriented dataset loader for training.
-- _pv1_training.py_ trains the HW model, determines channel scaling, saves the model to PKL files and a JSON file of scaling factors
-- _pv1_export.py_ writes the model coefficients and scaling factors to a single JSON file
-- _pv1_test.py_ plots one or more training datasets, comparing true and estimated outputs
-- _pv1_metrics.py_ writes the RMS errors for each output channel, by case and also for the total
+    python pv1_import.py
 
-The input files are:
+### Example Results
 
-- _data/pv1.hdf5_ 72 training cases from ATP simulation, saved at 0.2-ms time steps. The _pecblocks_ module helps to read this file.
-- _models/pv1_config.json_ contains some adjustable parameters for the HW model and training:
-    - _COL_T_ is the column name for time in the _hdf5_ file. Unlikely to change.
-    - _COL_U_ are the column names for ATP inputs in the _hdf5_ file. Unlikely to change. Both _G_ and _Vrms_ should exist, because they are used to create a polynomial feature.
-    - _COL_Y_ are the column names for ATP outputs in the _hdf5_ file. Unlikely to change.
-    - _lr_ is the learning rate
-    - _num_iter_ is the number of training iterations
-    - _print_freq_ determines how often the iteration loss is written to console
-    - _batch_size_ for training should divide equally into the number of training cases
-    - _n_skip_ is the number of time steps to skip at the beginning of each training case. Should be at least 1.
-    - _n_trunc_ is the number of time steps to truncate from the end of each training case.
-    - _n_dec_ is the decimation number, i.e., a downsampling of the ATP data, which defines the HW model time step
-    - _na_ is the order of denominator polynomials in H1(z)
-    - _nb_ is the order of numerator polynomials in H1(z)
-    - _nk_ is the number of discrete step delays in H1(z)
-    - _activation_ is the activation function in F1 and F2. _relu_ converges faster, but _tanh_ (best) and _sigmoid_ are smoother.
-    - _nh1_ is the number of hidden-layer neurons in F1
-    - _nh2_ is the number of hidden-layer neurons in F2
+![Block Diagram](/examples/hwpv/BlockDiagram.png)
+**HW Block Diagram and Normalized RMS Error**
 
-The output files from training are:
-    - _models/normfacs.json_ contains a _scale_ and _offset_ for each _COL_U_ and _COL_Y_. Reading from _hdf5_, subtract _offset_ from the values and then divide by _scale_. The HW model is trained to these normalized values. Writing from normalized values to physical quantities, multiply by _scale_ and then add _offset_.
-    - _models/F1.pkl_, _models/H1.pkl_, and _models/F2.pkl_ contain the trained model coefficients in a binary format.
-    - _models/FHF_train_loss.pdf_ is a graph of the training loss by iteration
+### File Directory
 
-After training, run _python pv1_export.py_ to create _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
+The Python files currently used in this example are:
+
+- _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture.
+- _pv1_import.py_ reads the model for time-step simulation, and produces Bode plots
+
+A sample trained model is provided in _pv1_fhf_poly.json_, which contains the following in a readable text format.
 
 - There is only one top-level entry
     - second-level _name_ attribute is limited to 6 characters for ATP
@@ -99,6 +81,16 @@ After training, run _python pv1_export.py_ to create _models/pv1_fhf_poly.json_,
         - third_level _net.0.bias_ attribute is a 1D array of input layer bias coefficients, one for each hidden-layer neuron
         - third_level _net.2.weight_ attribute is a 2D array of output layer weight coefficients, one row for each output channel, one column for each hidden-layer neuron
         - third_level _net.2.bias_ attribute is a 1D array of output layer bias coefficients, one for each output channel
+
+### Other Code Files
+
+These Python files are used to train and validate HW models, but the sample data to use them is not located in this repository:
+
+- _common.py_ implements a batch-oriented dataset loader for training.
+- _pv1_training.py_ trains the HW model, determines channel scaling, saves the model to PKL files and a JSON file of scaling factors
+- _pv1_export.py_ writes the model coefficients and scaling factors to a single JSON file
+- _pv1_test.py_ plots one or more training datasets, comparing true and estimated outputs
+- _pv1_metrics.py_ writes the RMS errors for each output channel, by case and also for the total
 
 ## License
 

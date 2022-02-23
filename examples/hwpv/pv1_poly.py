@@ -81,6 +81,38 @@ class pv1():
     self.n_cases = 0
     self.t_step = 1.0e-3
 
+  def read_lti(self, config):
+    n_in = config['n_in']
+    n_out = config['n_out']
+    n_a = config['n_a']
+    n_b = config['n_b']
+    n_k = config['n_k']
+    block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
+    dict = block.state_dict()
+    for i in range(n_in):
+      for j in range(n_out):
+        a = config['a_{:d}_{:d}'.format(i, j)]
+        b = config['b_{:d}_{:d}'.format(i, j)]
+        dict['a_coeff'][i,j,:] = torch.Tensor(a)
+        dict['b_coeff'][i,j,:] = torch.Tensor(b)
+
+    block.load_state_dict (dict)
+#    print ('state dict', block.state_dict())
+    return block
+
+  def read_net(self, config):
+    n_in = config['n_in']
+    n_out = config['n_out']
+    n_hid = config['n_hid']
+    actfun = config['activation']
+    block = MimoStaticNonLinearity(in_channels=n_in, out_channels=n_out, n_hidden=n_hid, activation=actfun)
+    dict = block.state_dict()
+    for key in ['net.0.bias', 'net.0.weight', 'net.2.bias', 'net.2.weight']:
+      dict[key] = torch.Tensor(np.array(config[key]))
+    block.load_state_dict (dict)
+#    print ('state dict', block.state_dict())
+    return block
+
   def load_sim_config(self, filename):
     fp = open (filename, 'r')
     config = json.load (fp)
@@ -88,27 +120,25 @@ class pv1():
 
     self.name = config['name']
     self.blocks = config['type']
-    self.na = config['na']
-    self.nb = config['nb']
-    self.nk = config['nk']
-    self.activation = config['activation']
-    self.nh1 = config['nh1']
-    self.nh2 = config['nh2']
     self.COL_T = config['COL_T']
     self.COL_Y = config['COL_Y']
     self.COL_U = config['COL_U']
     self.normfacs = config['normfacs']
     self.t_step = config['t_step']
 
-    self.H1 = self.read_lti(self, 'H1')
-    self.F1 = self.read_net(self, 'F1')
-    self.F2 = self.read_net(self, 'F2')
+    self.H1 = self.read_lti(config['H1'])
+    self.F1 = self.read_net(config['F1'])
+    self.F2 = self.read_net(config['F2'])
 
-    print ('COL_U', self.COL_U)
-    print ('COL_Y', self.COL_Y)
-    print ('t_step', self.t_step)
-    print ('block dimensions', self.activation, self.nh1, self.nh2, self.na, self.nb, self.nk)
-    print ('normfacs', self.normfacs)
+#-------------------------------------
+#    print ('COL_U', self.COL_U)      
+#    print ('COL_Y', self.COL_Y)      
+#    print ('t_step', self.t_step)    
+#    print ('F1', self.F1)            
+#    print ('H1', self.H1)            
+#    print ('F2', self.F2)            
+#    print ('normfacs', self.normfacs)
+#-------------------------------------
 
   def append_net(self, model, label, F):
     block = F.state_dict()
