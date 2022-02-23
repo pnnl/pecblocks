@@ -28,6 +28,7 @@ To run this example:
 ### Example Results
 
 ![Block Diagram](/examples/hwpv/BlockDiagram.png)
+
 **HW Block Diagram and Normalized RMS Error**
 
 ![H1_0_0](/examples/hwpv/H1_0_0.png)
@@ -39,6 +40,7 @@ To run this example:
 ![H1_2_0](/examples/hwpv/H1_2_0.png)
 ![H1_2_1](/examples/hwpv/H1_2_1.png)
 ![H1_2_2](/examples/hwpv/H1_2_2.png)
+
 **Bode Plots of the MIMO H1 Transfer Function**
 
 ### File Directory
