@@ -432,3 +432,45 @@ class pv1():
       total_rmse[col] = RMSE
       icol += 1
     return total_rmse, total_mae, case_rmse
+
+  def start_simulation(self):
+    self.y0 = torch.zeros((1, self.H1.n_a), dtype=torch.float)
+    self.u0 = torch.zeros((1, self.H1.n_b), dtype=torch.float)
+    self.H1.eval()
+    self.F1.eval()
+    self.F2.eval()
+
+  def normalize (self, val, fac):
+    return (val - fac['offset']) / fac['scale']
+
+  def de_normalize (self, val, fac):
+    return val * fac['scale'] + fac['offset']
+
+  def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms):
+    G = self.normalize (G, self.normfacs['G'])
+    T = self.normalize (T, self.normfacs['T'])
+    Ud = self.normalize (Ud, self.normfacs['Ud'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
+    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
+    Mode = self.normalize (Mode, self.normfacs['Mode'])
+    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
+
+    ub = torch.tensor ([T, G, Fc, Ud, Vrms, GVrms, Mode], dtype=torch.float)
+    with torch.no_grad():
+      y_non = self.F1 (ub)
+#      print ('ub', ub)
+#      print ('y_non', y_non)
+#      print ('y0', self.y0)
+#      print ('u0', self.u0)
+#      y_lin = self.H1 (y_non, self.y0, self.u0)
+      y_hat = self.F2 (y_non)
+
+    Vdc = y_hat[0]
+    Idc = y_hat[1]
+    Irms = y_hat[2]
+
+    Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
+    Idc = self.de_normalize (Idc, self.normfacs['Idc'])
+    Irms = self.de_normalize (Irms, self.normfacs['Irms'])
+    return Vdc, Idc, Irms
+

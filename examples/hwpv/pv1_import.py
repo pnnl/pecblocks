@@ -50,7 +50,6 @@ def make_bode_plots (H1):
       mag_H1, phase_H1, omega_H1 = control.bode(H1_sys[i, j])
       plt.suptitle('Transfer Function from Input {:d} to Output {:d}'.format (i, j))
       plt.show()
-      quit()
 #      plt.savefig ('H1_{:d}_{:d}.png'.format (i, j))
 
 if __name__ == '__main__':
@@ -72,6 +71,7 @@ if __name__ == '__main__':
   # simulation loop
   t = 0.0
   irms = 0.0 # need this to generate the first vrms from rg*irms
+  model.start_simulation ()
   for i in range(npts):
     # construct the inputs
     g = np.interp(t, aG[:,0], aG[:,1])
@@ -84,9 +84,8 @@ if __name__ == '__main__':
     gvrms = g * vrms
 
     # evaluate the HW model for outputs
-    idc = 0.0
-    vdc = 0.0
-    irms = 0.0
+    vdc, idc, irms = model.step_simulation (G=g, T=T, Ud=ud, Fc=fc, Vrms=vrms, 
+                                            Mode=ctl, GVrms=gvrms)
 
     # save data for plotting (not necessary during simulation)
     plt_t[i] = t
@@ -102,9 +101,8 @@ if __name__ == '__main__':
     # advance the simulation time
     t += dt
 
-  make_bode_plots (model.H1)
-
-  quit()
+  # make_bode_plots (model.H1)
+#  quit()
 
   fig, ax = plt.subplots (2, 4, sharex = 'col', figsize=(12,8), constrained_layout=True)
   fig.suptitle ('Simulating HWPV Model')
