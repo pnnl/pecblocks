@@ -12,6 +12,7 @@ import json
 import torch
 import torch.nn as nn
 import math
+import control
 
 data_path = r'./data/pv1.hdf5'
 model_folder = r'./models'
@@ -434,9 +435,57 @@ class pv1():
     return total_rmse, total_mae, case_rmse
 
   def start_simulation(self):
-    self.y0 = torch.zeros((1, self.H1.n_a), dtype=torch.float)
-    self.u0 = torch.zeros((1, self.H1.n_b), dtype=torch.float)
-    self.H1.eval()
+#-------------------------------------------------------------------------------------------------------
+## control MIMO TransferFunction, needs 'slycot' package for forced_response
+#    a_coeff = self.H1.a_coeff.detach().numpy()                                                         
+#    b_coeff = self.H1.b_coeff.detach().numpy()                                                         
+#    a_poly = np.empty_like(a_coeff, shape=(self.H1.out_channels, self.H1.in_channels, self.H1.n_a + 1))
+#    a_poly[:, :, 0] = 1                                                                                
+#    a_poly[:, :, 1:] = a_coeff[:, :, :]                                                                
+#    b_poly = np.array(b_coeff)                                                                         
+#    self.H1_sys = control.TransferFunction(b_poly, a_poly, self.t_step)                                
+#    self.H1_t = [self.t_step]                                                                          
+#    self.H1_x0 = [0.0, 0.0, 0.0]                                                                       
+#-------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------- 
+## dynoNet implementation, wrong dimensionality for loop
+#    self.y0 = torch.zeros((1, self.H1.n_a), dtype=torch.float)
+#    self.u0 = torch.zeros((1, self.H1.n_b), dtype=torch.float)
+#    self.H1.eval()                                            
+#--------------------------------------------------------------
+# implement a matrix of SISO transfer functions; y0 = u0*h00 + u1*h10 + u2*h20, etc.
+#---------------------------------------------------------------------------------------
+#    a_coeff = self.H1.a_coeff.detach().numpy()                                         
+#    b_coeff = self.H1.b_coeff.detach().numpy()                                         
+#    self.HTF = {}                                                                      
+#    self.HTF_X0 = {}                                                                   
+#    self.HTF_Y = np.zeros (self.H1.out_channels)                                       
+#    for i in range(self.H1.in_channels):                                               
+#      self.HTF[i] = {}                                                                 
+#      self.HTF_X0[i] = {}                                                              
+#      for j in range(self.H1.out_channels):                                            
+#        self.HTF_X0[i][j] = 0.0                                                        
+#        self.HTF[i][j] = control.TransferFunction (b_coeff[i, j, :],                   
+#                                                   np.hstack(([1.0],a_coeff[i, j, :])),
+#                                                   self.t_step)                        
+#    for i in range(self.H1.in_channels):                                               
+#      for j in range(self.H1.out_channels):                                            
+#        print (self.HTF[i][j])                                                         
+#---------------------------------------------------------------------------------------
+# set up IIR filters for time step simulation
+    self.a_coeff = self.H1.a_coeff.detach().numpy()                                         
+    self.b_coeff = self.H1.b_coeff.detach().numpy()
+    self.uhist = {}
+    self.yhist = {}
+    self.ysum = np.zeros(self.H1.out_channels)
+    for i in range(self.H1.in_channels):
+      self.uhist[i] = {}
+      self.yhist[i] = {}
+      for j in range(self.H1.out_channels):
+        self.uhist[i][j] = np.zeros(self.H1.n_b)
+        self.yhist[i][j] = np.zeros(self.H1.n_a)
+                                             
+# set up the static nonlinearity blocks for time step simulation                       
     self.F1.eval()
     self.F2.eval()
 
@@ -458,12 +507,19 @@ class pv1():
     ub = torch.tensor ([T, G, Fc, Ud, Vrms, GVrms, Mode], dtype=torch.float)
     with torch.no_grad():
       y_non = self.F1 (ub)
-#      print ('ub', ub)
-#      print ('y_non', y_non)
-#      print ('y0', self.y0)
-#      print ('u0', self.u0)
-#      y_lin = self.H1 (y_non, self.y0, self.u0)
-      y_hat = self.F2 (y_non)
+      self.ysum[:] = 0.0
+      for i in range(self.H1.in_channels):
+        for j in range(self.H1.out_channels):
+          uh = self.uhist[i][j]
+          yh = self.yhist[i][j]
+          uh[1:] = uh[:-1]
+          uh[0] = y_non[i]
+          ynew = np.sum(np.multiply(self.b_coeff[i,j,:], uh)) - np.sum(np.multiply(self.a_coeff[i,j,:], yh))
+          yh[1:] = yh[:-1]
+          yh[0] = ynew
+          self.ysum[j] += ynew
+      y_lin = torch.tensor (self.ysum, dtype=torch.float)
+      y_hat = self.F2 (y_lin)
 
     Vdc = y_hat[0]
     Idc = y_hat[1]

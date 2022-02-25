@@ -4,10 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import control
 import pv1_poly as pv1_model
+import time
 
 model_folder = r'./'
 
-Tmax = 4.0
+Tmax = 8.000
 dt = 0.001
 
 # testing data
@@ -23,17 +24,25 @@ aG=np.array([[  0.0,   0.0],
              [  2.5, 825.0],
              [999.0, 825.0]])
 
-aT=np.array([[  0.0, 30.0],
-             [999.0, 30.0]])
-
-aRG=np.array([[  0.0, 4.25],
-              [999.0, 4.25]])
+aT=np.array([[  0.0,  5.0],
+             [  3.4,  5.0],
+             [  3.5, 35.0],
+             [999.0, 35.0]])
 
 aFC=np.array([[  0.0, 60.0],
-              [999.0, 60.0]])
+              [  4.4, 60.0],
+              [  4.5, 63.0],
+              [999.0, 63.0]])
 
-aUD=np.array([[  0.0, 1.0],
-              [999.0, 1.0]])
+aUD=np.array([[  0.0, 1.00],
+              [  5.4, 1.00],
+              [  5.5, 0.92],
+              [999.0, 0.92]])
+
+aRG=np.array([[  0.0, 4.25],
+              [  6.4, 4.25],
+              [  6.5, 6.25],
+              [999.0, 6.25]])
 
 def make_bode_plots (H1):
   # plot the model's transfer function
@@ -67,8 +76,12 @@ if __name__ == '__main__':
   plt_irms = np.zeros(npts)
   plt_gvrms = np.zeros(npts)
   plt_vrms = np.zeros(npts)
+  plt_T = np.zeros(npts)
+  plt_Fc = np.zeros(npts)
+  plt_Ud = np.zeros(npts)
 
   # simulation loop
+  t0 = time.process_time()
   t = 0.0
   irms = 0.0 # need this to generate the first vrms from rg*irms
   model.start_simulation ()
@@ -81,7 +94,7 @@ if __name__ == '__main__':
     ud = np.interp(t, aUD[:,0], aUD[:,1])
     fc = np.interp(t, aFC[:,0], aFC[:,1])
     vrms = rg * irms # lags by one time step
-    gvrms = g * vrms
+    gvrms = 0.001 * g * vrms
 
     # evaluate the HW model for outputs
     vdc, idc, irms = model.step_simulation (G=g, T=T, Ud=ud, Fc=fc, Vrms=vrms, 
@@ -97,30 +110,43 @@ if __name__ == '__main__':
     plt_irms[i] = irms
     plt_gvrms[i] = gvrms
     plt_vrms[i] = vrms
+    plt_T[i] = T
+    plt_Ud[i] = ud
+    plt_Fc[i] = fc / 60.0
 
     # advance the simulation time
     t += dt
 
   # make_bode_plots (model.H1)
 #  quit()
+  t1 = time.process_time()
+  print ('Simulation elapsed time = {:.4f} seconds.'.format (t1-t0))
 
   fig, ax = plt.subplots (2, 4, sharex = 'col', figsize=(12,8), constrained_layout=True)
-  fig.suptitle ('Simulating HWPV Model')
-  ax[0,0].set_title ('G')
-  ax[0,0].plot (plt_t, plt_g)
-  ax[0,1].set_title ('Mode')
-  ax[0,1].plot (plt_t, plt_ctl)
+  fig.suptitle ('Simulating HWPV Model with IIR Filters; Process Time = {:.4f} s for {:d} steps'.format(t1-t0, npts))
+  ax[0,0].set_title ('Weather')
+  ax[0,0].plot (plt_t, plt_g, label='G')
+  ax[0,0].plot (plt_t, 10.0*plt_T, label='10*T')
+  ax[0,0].legend(loc='best')
+  ax[0,1].set_title ('Control')
+  ax[0,1].plot (plt_t, plt_ctl, label='Mode')
+  ax[0,1].plot (plt_t, plt_Fc, label='F[pu]')
+  ax[0,1].plot (plt_t, plt_Ud, label='Ud[pu]')
+  ax[0,1].legend(loc='best')
   ax[0,2].set_title ('Rgrid')
   ax[0,2].plot (plt_t, plt_rg)
   ax[0,3].set_title ('Vrms')
   ax[0,3].plot (plt_t, plt_vrms)
-  ax[1,0].set_title ('G*Vrms')
+  ax[1,0].set_title ('G[pu]*Vrms')
   ax[1,0].plot (plt_t, plt_gvrms)
   ax[1,1].set_title ('Vdc')
-  ax[1,1].plot (plt_t, plt_vdc)
+  ax[1,1].plot (plt_t, plt_vdc, 'r')
   ax[1,2].set_title ('Idc')
-  ax[1,2].plot (plt_t, plt_idc)
+  ax[1,2].plot (plt_t, plt_idc, 'r')
   ax[1,3].set_title ('Irms')
-  ax[1,3].plot (plt_t, plt_irms)
+  ax[1,3].plot (plt_t, plt_irms, 'r')
+  for row in range(2):
+    for col in range(4):
+      ax[row,col].grid()
   plt.show()
 

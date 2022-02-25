@@ -43,6 +43,10 @@ To run this example:
 
 **Bode Plots of the MIMO H1 Transfer Function**
 
+![IIR_Sim](/examples/hwpv/IIR_Filter_Simulation.png)
+
+**System Simulation Using Infinite Impulse Response Filters in Discrete Time Steps**
+
 ### File Directory
 
 The Python files currently used in this example are:
