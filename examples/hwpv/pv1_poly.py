@@ -491,10 +491,10 @@ class pv1():
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.H1.out_channels)
-    for i in range(self.H1.in_channels):
+    for i in range(self.H1.out_channels):
       self.uhist[i] = {}
       self.yhist[i] = {}
-      for j in range(self.H1.out_channels):
+      for j in range(self.H1.in_channels):
         self.uhist[i][j] = np.zeros(self.H1.n_b)
         self.yhist[i][j] = np.zeros(self.H1.n_a)
                                              
@@ -521,16 +521,16 @@ class pv1():
     with torch.no_grad():
       y_non = self.F1 (ub)
       self.ysum[:] = 0.0
-      for i in range(self.H1.in_channels):
-        for j in range(self.H1.out_channels):
+      for i in range(self.H1.out_channels):
+        for j in range(self.H1.in_channels):
           uh = self.uhist[i][j]
           yh = self.yhist[i][j]
           uh[1:] = uh[:-1]
-          uh[0] = y_non[i]
+          uh[0] = y_non[j]
           ynew = np.sum(np.multiply(self.b_coeff[i,j,:], uh)) - np.sum(np.multiply(self.a_coeff[i,j,:], yh))
           yh[1:] = yh[:-1]
           yh[0] = ynew
-          self.ysum[j] += ynew
+          self.ysum[i] += ynew
       y_lin = torch.tensor (self.ysum, dtype=torch.float)
       y_hat = self.F2 (y_lin)
 

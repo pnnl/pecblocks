@@ -53,13 +53,13 @@ def make_bode_plots (H1):
   a_poly[:, :, 1:] = a_coeff[:, :, :]
   b_poly = np.array(b_coeff)
   H1_sys = control.TransferFunction(b_poly, a_poly, dt)
-  for i in range (H1.in_channels):
-    for j in range (H1.out_channels):
+  for i in range (H1.out_channels):
+    for j in range (H1.in_channels):
       plt.figure()
       mag_H1, phase_H1, omega_H1 = control.bode(H1_sys[i, j])
-      plt.suptitle('Transfer Function from Input {:d} to Output {:d}'.format (i, j))
-      plt.show()
-#      plt.savefig ('H1_{:d}_{:d}.png'.format (i, j))
+      plt.suptitle('Transfer Function from Input {:d} to Output {:d}'.format (j, i))
+#      plt.show()
+      plt.savefig ('H1_{:d}_{:d}.png'.format (i, j))
 
 if __name__ == '__main__':
   model = pv1_model.pv1 ()
@@ -117,8 +117,8 @@ if __name__ == '__main__':
     # advance the simulation time
     t += dt
 
-  # make_bode_plots (model.H1)
-#  quit()
+  make_bode_plots (model.H1)
+  quit()
   t1 = time.process_time()
   print ('Simulation elapsed time = {:.4f} seconds.'.format (t1-t0))
 
