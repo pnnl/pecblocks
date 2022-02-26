@@ -6,7 +6,7 @@ import control
 import pv1_poly as pv1_model
 import time
 
-model_folder = r'./'
+model_folder = r'./models'
 
 Tmax = 8.000
 dt = 0.001
@@ -63,7 +63,7 @@ def make_bode_plots (H1):
 
 if __name__ == '__main__':
   model = pv1_model.pv1 ()
-  model.load_sim_config (os.path.join(model_folder,'pv1_fhf_poly.json'))
+  model.load_sim_config (os.path.join(model_folder,'pv1_fhf_poly.json'), model_only=False)
 
   # make some arrays to hold plot data
   npts = int(Tmax/dt) + 1

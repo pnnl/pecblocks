@@ -84,11 +84,11 @@ A sample trained model is provided in _pv1_fhf_poly.json_, which contains the fo
         - third_level _n_a_ attribute is the number of denominator coefficients
         - third_level _n_b_ attribute is the number of numerator coefficients
         - third-level _a_i_j_ attributes are arrays of denominator coefficients, of length equal to polynomial order, beginning with z-1. The implied z0 coefficient is always one.
-            - in the attribute name, _i_ is the input channel number, ranging from 0 to _n_in_ - 1
-            - in the attribute name, _j_ is the output channel number, ranging from 0 to _n_out_ - 1
+            - in the attribute name, _i_ is the output channel number, ranging from 0 to _n_out_ - 1
+            - in the attribute name, _j_ is the input channel number, ranging from 0 to _n_in_ - 1
         - third-level _b_i_j_ attributes are arrays of numerator coefficients, of length equal to polynomial order, beginning with z-1. The implied z0 coefficient is always zero.
-            - in the attribute name, _i_ is the input channel number, ranging from 0 to _n_in_ - 1
-            - in the attribute name, _j_ is the output channel number, ranging from 0 to _n_out_ - 1
+            - in the attribute name, _i_ is the output channel number, ranging from 0 to _n_out_ - 1
+            - in the attribute name, _j_ is the input channel number, ranging from 0 to _n_in_ - 1
     - second-level _F*_ attribute indicates a nonlinear block; this key should match the block position in _type_. There are zero or more such blocks, but currently two.
         - third_level _activation_ attribute may be _tanh_, _sigmoid_ or _relu_
         - third_level _n_in_ attribute is the number of input channels

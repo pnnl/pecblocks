@@ -90,8 +90,8 @@ class pv1():
     n_k = config['n_k']
     block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
     dict = block.state_dict()
-    for i in range(n_in):
-      for j in range(n_out):
+    for i in range(n_out):
+      for j in range(n_in):
         a = config['a_{:d}_{:d}'.format(i, j)]
         b = config['b_{:d}_{:d}'.format(i, j)]
         dict['a_coeff'][i,j,:] = torch.Tensor(a)
@@ -114,22 +114,23 @@ class pv1():
 #    print ('state dict', block.state_dict())
     return block
 
-  def load_sim_config(self, filename):
+  def load_sim_config(self, filename, model_only=True):
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
 
     self.name = config['name']
     self.blocks = config['type']
-    self.COL_T = config['COL_T']
-    self.COL_Y = config['COL_Y']
-    self.COL_U = config['COL_U']
-    self.normfacs = config['normfacs']
-    self.t_step = config['t_step']
-
     self.H1 = self.read_lti(config['H1'])
     self.F1 = self.read_net(config['F1'])
     self.F2 = self.read_net(config['F2'])
+
+    if not model_only:
+      self.COL_T = config['COL_T']
+      self.COL_Y = config['COL_Y']
+      self.COL_U = config['COL_U']
+      self.normfacs = config['normfacs']
+      self.t_step = config['t_step']
 
 #-------------------------------------
 #    print ('COL_U', self.COL_U)      
@@ -165,14 +166,14 @@ class pv1():
     a = block['a_coeff']
     b = block['b_coeff']
   #  print ('a_coeff shape:', a.shape) # should be (n_out, n_in, n_a==n_b)
-    for i in range(n_in):
-      for j in range(n_out):
+    for i in range(n_out):
+      for j in range(n_in):
         key = 'a_{:d}_{:d}'.format(i, j)
-        ary = a[j,i,:].numpy()
+        ary = a[i,j,:].numpy()
         model[label][key] = ary.tolist()
 
         key = 'b_{:d}_{:d}'.format(i, j)
-        ary = b[j,i,:].numpy()
+        ary = b[i,j,:].numpy()
         model[label][key] = ary.tolist()
 
   def loadTrainingData(self, data_path):
@@ -249,8 +250,12 @@ class pv1():
 
   def loadNormalization(self, filename):
     fp = open (filename, 'r')
-    self.normfacs = json.load (fp)
+    cfg = json.load (fp)
     fp.close()
+    if 'normfacs' in cfg:
+      self.normfacs = cfg['normfacs']
+    else:
+      self.normfacs = cfg
 
   def loadAndApplyNormalization(self, filename):
     self.loadNormalization(filename)
@@ -358,6 +363,12 @@ class pv1():
     json.dump (config, fp, indent=2)
     fp.close()
 
+  def printStateDicts(self):
+#    print ('F1', self.F1.state_dict())
+#    print ('F2', self.F2.state_dict())
+    print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
+    print (self.H1.state_dict())
+
   def testOneCase(self, case_idx):
     case_data = self.data_train[[case_idx],:,:]
     ub = torch.tensor (case_data[:,:,idx_in])
@@ -365,6 +376,8 @@ class pv1():
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
     print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
+    self.printStateDicts()
+#    print (y_lin)
 
     y_hat = y_hat.detach().numpy()[[0], :, :]
     y_true = np.transpose(case_data[0,:,idx_out])

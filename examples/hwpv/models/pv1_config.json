@@ -1,0 +1,20 @@
+{
+  "COL_T": ["t"],
+  "COL_U": ["T", "G", "Fc", "Ud", "Vrms"],
+  "COL_Y": ["Vdc", "Idc", "Irms"],
+  "lr": 0.5e-3,
+  "num_iter": 5000,
+  "print_freq": 10,
+  "batch_size": 64,
+  "n_skip": 1,
+  "n_trunc": 0,
+  "n_dec": 5,
+  "na": 8,
+  "nb": 8,
+  "nk": 0,
+  "activation": "tanh",
+  "nh1": 80,
+  "nh2": 40,
+  "mode_t": [0.00, 2.00, 2.01, 4.00],
+  "mode_y": [0.00, 0.00, 1.00, 1.00]
+}
