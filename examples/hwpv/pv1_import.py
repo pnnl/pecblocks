@@ -117,8 +117,8 @@ if __name__ == '__main__':
     # advance the simulation time
     t += dt
 
-  make_bode_plots (model.H1)
-  quit()
+#  make_bode_plots (model.H1)
+#  quit()
   t1 = time.process_time()
   print ('Simulation elapsed time = {:.4f} seconds.'.format (t1-t0))
 

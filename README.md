@@ -54,7 +54,7 @@ The Python files currently used in this example are:
 - _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture.
 - _pv1_import.py_ reads the model for time-step simulation, and produces Bode plots
 
-A sample trained model is provided in _pv1_fhf_poly.json_, which contains the following in a readable text format.
+A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
 
 - There is only one top-level entry
     - second-level _name_ attribute is limited to 6 characters for ATP
@@ -104,10 +104,11 @@ A sample trained model is provided in _pv1_fhf_poly.json_, which contains the fo
 These Python files are used to train and validate HW models, but the sample data to use them is not located in this repository:
 
 - _common.py_ implements a batch-oriented dataset loader for training.
-- _pv1_training.py_ trains the HW model, determines channel scaling, saves the model to PKL files and a JSON file of scaling factors
 - _pv1_export.py_ writes the model coefficients and scaling factors to a single JSON file
-- _pv1_test.py_ plots one or more training datasets, comparing true and estimated outputs
 - _pv1_metrics.py_ writes the RMS errors for each output channel, by case and also for the total
+- _pv1_test.py_ plots one or more training datasets, comparing true and estimated outputs
+- _pv1_test_iir.py_ plots one or more training datasets, comparing true and estimated outputs, overlaying the IIR simulation
+- _pv1_training.py_ trains the HW model, determines channel scaling, saves the model to PKL files and a JSON file of scaling factors
 
 ## License
 

@@ -364,8 +364,8 @@ class pv1():
     fp.close()
 
   def printStateDicts(self):
-#    print ('F1', self.F1.state_dict())
-#    print ('F2', self.F2.state_dict())
+    print ('F1', self.F1.state_dict())
+    print ('F2', self.F2.state_dict())
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
@@ -376,7 +376,7 @@ class pv1():
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
     print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
-    self.printStateDicts()
+#    self.printStateDicts()
 #    print (y_lin)
 
     y_hat = y_hat.detach().numpy()[[0], :, :]
@@ -385,30 +385,30 @@ class pv1():
     return rmse, y_hat, y_true, np.transpose(case_data[0,:,idx_in])
 
   def stepOneCase(self, case_idx):
-    case_data = self.data_train[[case_idx],:,:]
+    case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(idx_out)))
     ub = torch.zeros((1, 1, len(idx_in)), dtype=torch.float)
     print ('case_data', case_data.shape, 'y_hat', y_hat.shape)
-    for i in range(n):
-      u_row = case_data[:,i,idx_in]
-#      print ('u_row', u_row.shape)
-      ub[0,0,:] = torch.from_numpy(u_row[0,:])
-#      print (i, 'u_row', u_row.shape, u_row)
-#      print (i, 'ub', ub.shape, ub)
-      y_non = self.F1 (ub)
-#      print ('  y_non', y_non.shape)
-      y_lin = self.H1 (y_non, self.y0, self.u0)
-#      print ('  y_lin', y_lin.shape)
-      y_row = self.F2 (y_lin)
-#      print ('  y_row', y_row.shape)
-      y_hat[i,:] = y_row.detach().numpy()
-
-#    y_hat = y_hat.detach().numpy()[[0], :, :]
-    y_true = np.transpose(case_data[0,:,idx_out])
-    print ('rmse y_true', y_true.shape, 'y_hat', y_hat.shape)
-    rmse = dynonet.metrics.error_rmse(y_true, y_hat)
-    return rmse, y_hat, y_true, np.transpose(case_data[0,:,idx_in])
+    self.start_simulation()
+    for k in range(n):
+      ub = torch.tensor (case_data[k,idx_in])
+      with torch.no_grad():
+        y_non = self.F1 (ub)
+        self.ysum[:] = 0.0
+        for i in range(self.H1.out_channels):
+          for j in range(self.H1.in_channels):
+            uh = self.uhist[i][j]
+            yh = self.yhist[i][j]
+            uh[1:] = uh[:-1]
+            uh[0] = y_non[j]
+            ynew = np.sum(np.multiply(self.b_coeff[i,j,:], uh)) - np.sum(np.multiply(self.a_coeff[i,j,:], yh))
+            yh[1:] = yh[:-1]
+            yh[0] = ynew
+            self.ysum[i] += ynew
+        y_lin = torch.tensor (self.ysum, dtype=torch.float)
+        y_hat[k,:] = self.F2(y_lin)
+    return y_hat # the caller de_normalizes
 
   def trainingErrors(self, bByCase=False):
     ub = torch.tensor (self.data_train[:,:,idx_in])

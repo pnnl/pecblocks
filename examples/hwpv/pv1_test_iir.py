@@ -10,7 +10,7 @@ model_folder = r'./models'
 
 def plot_case(model, idx):
   rmse, y_hat, y_true, u = model.testOneCase(idx)
-#  rmse, y_hat, y_true, u = model.stepOneCase(idx)
+  y_iir = model.stepOneCase(idx)
   print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
 #  print ('y_hat shape', y_hat.shape)
@@ -42,7 +42,8 @@ def plot_case(model, idx):
       offset = 0.0
     ax[1,j].set_title ('Output {:s}'.format (col))
     ax[1,j].plot (model.t, y_true[:,j]*scale + offset, label='y')
-    ax[1,j].plot (model.t, y_hat[0,:,j]*scale + offset, label='y_hat')
+    ax[1,j].plot (model.t, y_hat[0,:,j]*scale + offset, label='y_dyno')
+    ax[1,j].plot (model.t, y_iir[:,j]*scale + offset, label='y_iir')
 #    ax[1,j].plot (model.t, y_hat[:,j]*scale + offset, label='y_hat')
     ax[1,j].legend()
     j += 1
