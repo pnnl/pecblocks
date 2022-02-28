@@ -43,6 +43,28 @@ To run this example:
 
 **Bode Plots of the MIMO H1 Transfer Function**
 
+The figure below shows an 8-second simulation of inverter startup, followed
+by sequential disturbances in the weather, control variables, and grid resistance.
+Inputs appear on the top row. The AC RMS voltage, Vrms, comes from an electrical
+simulation in the Alternative Transients Program (ATP). In the infinite impulse
+response (IIR) simulation from the trained model, Vrms is not available directly,
+but assumed to be Rgrid*Irms, where Rgrid is pre-defined for the IIR simulation
+and Irms is an IIR output variable. Hence, there is a lag of one time step, 1 ms,
+in Vrms during the IIR simulation. Differences in the ATP and IIR Vrms are partly
+responsible for differences in the ATP and IIR output variables, Vdc, Idc, and Irms.
+
+| Variable | RMSE  |  Mean  |  Rel. Error |
+|:---      |   ---:|    ---:|         ---:|
+|Vdc  | 33.1230 | 365.5493 | 9.06%| 
+|Idc  | 0.4016  | 27.1984  | 1.48%| 
+|Irms | 6.3669  | 45.4824  | 14.00%|
+ 
+Notes to investigate:
+
+- The output variables do not start at zero output. Bias terms in F1 and F2 may cause this, regardless of any zeroed initial conditions on H1, or adjustments to the normalization factors. A back-initialization may fix the problem.
+- There is a change in control mode from "startup" to "grid formed" between 2.0 and 2.1 seconds. This disturbs the output before the first actual disturbance, in G, from 2.4 to 2.5 seconds.
+- The entire simulation could be repeated with control mode constant at 0, and again wiht control model constant at 1.
+
 ![IIR_Sim](/examples/hwpv/IIR_Filter_Simulation.png)
 
 **System Simulation Using Infinite Impulse Response Filters in Discrete Time Steps**
@@ -52,7 +74,7 @@ To run this example:
 The Python files currently used in this example are:
 
 - _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture.
-- _pv1_import.py_ reads the model for time-step simulation, and produces Bode plots
+- _pv1_import.py_ reads the model for time-step simulation, produces Bode plots, and compares IIR simulation to ATP simulation
 
 A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
 
