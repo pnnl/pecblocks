@@ -54,7 +54,7 @@ class pv1():
     self.t_step = 1.0e-3
     self.Lf = None
     self.Lc = None
-    self.Cc = None
+    self.Cf = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
@@ -450,9 +450,9 @@ class pv1():
       icol += 1
     return total_rmse, total_mae, case_rmse
 
-  def set_LCL_filter(self, Lf, Cc, Lc):
+  def set_LCL_filter(self, Lf, Cf, Lc):
     self.Lf = Lf
-    self.Cc = Cc
+    self.Cf = Cf
     self.Lc = Lc
 
   def start_simulation(self):
@@ -522,7 +522,7 @@ class pv1():
       omega = 2.0*math.pi*Fc
       ZLf = np.complex(0.0+omega*self.Lf*1j)
       ZLc = np.complex(0.0+omega*self.Lc*1j)
-      ZCc = np.complex(0.0-1j/omega/self.Cc)
+      ZCf = np.complex(0.0-1j/omega/self.Cf)
     G = self.normalize (G, self.normfacs['G'])
     T = self.normalize (T, self.normfacs['T'])
     Ud = self.normalize (Ud, self.normfacs['Ud'])
@@ -559,7 +559,7 @@ class pv1():
     if self.Lf is not None:
       Ic = np.complex (Irms+0.0j)
       Vf = Vc + ZLc * Ic
-      If = Vf / ZCc
+      If = Vf / ZCf
       Is = Ic + If
       Vs = Vf + ZLf * Is
     else:

@@ -69,9 +69,9 @@ if __name__ == '__main__':
   t = 0.0
   irms = 0.0 # need this to generate the first vrms from rg*irms
   Lf = 2.0   # mH
-  Cc = 20.0  # uH
+  Cf = 20.0  # uH
   Lc = 0.4   # mH
-  model.set_LCL_filter (Lf=Lf*1.0e-3, Cc=Cc*1.0e-6, Lc=Lc*1.0e-3)
+  model.set_LCL_filter (Lf=Lf*1.0e-3, Cf=Cf*1.0e-6, Lc=Lc*1.0e-3)
   model.start_simulation ()
   for i in range(npts):
     # construct the inputs
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         grp['Vrms'].read_direct (atp_vrms)
 
   fig, ax = plt.subplots (2, 3, sharex = 'col', figsize=(12,8), constrained_layout=True)
-  fig.suptitle ('Simulating HWPV Model with LCL Filters; Lf = {:.2f} mH, Lc = {:.2f} mH, Cc = {:.2f} uF'.format(Lf, Lc, Cc))
+  fig.suptitle ('Simulating HWPV Model with LCL Filters; Lf = {:.2f} mH, Lc = {:.2f} mH, Cf = {:.2f} uF'.format(Lf, Lc, Cf))
 
   ax[0,0].set_title ('Voltage Magnitudes')
   if do_atp:
