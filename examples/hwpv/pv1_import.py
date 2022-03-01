@@ -101,7 +101,7 @@ if __name__ == '__main__':
     gvrms = 0.001 * g * vrms
 
     # evaluate the HW model for outputs
-    vdc, idc, irms = model.step_simulation (G=g, T=T, Ud=ud, Fc=fc, Vrms=vrms, 
+    vdc, idc, irms, Vs, Is = model.step_simulation (G=g, T=T, Ud=ud, Fc=fc, Vrms=vrms, 
                                             Mode=ctl, GVrms=gvrms)
 
     # save data for plotting (not necessary during simulation)

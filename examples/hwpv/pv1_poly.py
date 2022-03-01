@@ -52,6 +52,9 @@ class pv1():
     self.t = None
     self.n_cases = 0
     self.t_step = 1.0e-3
+    self.Lf = None
+    self.Lc = None
+    self.Cc = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
@@ -447,6 +450,11 @@ class pv1():
       icol += 1
     return total_rmse, total_mae, case_rmse
 
+  def set_LCL_filter(self, Lf, Cc, Lc):
+    self.Lf = Lf
+    self.Cc = Cc
+    self.Lc = Lc
+
   def start_simulation(self):
 #-------------------------------------------------------------------------------------------------------
 ## control MIMO TransferFunction, needs 'slycot' package for forced_response
@@ -509,6 +517,12 @@ class pv1():
     return val * fac['scale'] + fac['offset']
 
   def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms):
+    Vc = np.complex (Vrms+0.0j)
+    if self.Lf is not None:
+      omega = 2.0*math.pi*Fc
+      ZLf = np.complex(0.0+omega*self.Lf*1j)
+      ZLc = np.complex(0.0+omega*self.Lc*1j)
+      ZCc = np.complex(0.0-1j/omega/self.Cc)
     G = self.normalize (G, self.normfacs['G'])
     T = self.normalize (T, self.normfacs['T'])
     Ud = self.normalize (Ud, self.normfacs['Ud'])
@@ -541,5 +555,16 @@ class pv1():
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])
     Irms = self.de_normalize (Irms, self.normfacs['Irms'])
-    return Vdc, Idc, Irms
+
+    if self.Lf is not None:
+      Ic = np.complex (Irms+0.0j)
+      Vf = Vc + ZLc * Ic
+      If = Vf / ZCc
+      Is = Ic + If
+      Vs = Vf + ZLf * Is
+    else:
+      Vs = Vc
+      Is = np.complex (Irms+0.0j)
+
+    return Vdc, Idc, Irms, Vs, Is
 

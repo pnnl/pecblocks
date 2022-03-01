@@ -21,9 +21,13 @@ It was based on ATP simulations with five inputs, _G_, _T_, _Ud_, _Fc_, and _Vrm
 created as a polynomial feature, defined as _GVrms_. The outputs are _Idc_, _Vdc_, and _Irms_. A
 seventh input is added to indicate the inverter control mode; 0=starting, 1=grid formed, 2=grid following.
 
-To run this example:
+To run this example, comparing ATP to model output:
 
     python pv1_import.py
+
+To run the example LCL filter:
+
+    python pv1_lcl.py
 
 ### Example Results
 
@@ -45,13 +49,13 @@ To run this example:
 
 The figure below shows an 8-second simulation of inverter startup, followed
 by sequential disturbances in the weather, control variables, and grid resistance.
-Inputs appear on the top row. The AC RMS voltage, Vrms, comes from an electrical
+Inputs appear on the top row. The AC RMS voltage, _Vrms_, comes from an electrical
 simulation in the Alternative Transients Program (ATP). In the infinite impulse
-response (IIR) simulation from the trained model, Vrms is not available directly,
-but assumed to be Rgrid*Irms, where Rgrid is pre-defined for the IIR simulation
-and Irms is an IIR output variable. Hence, there is a lag of one time step, 1 ms,
-in Vrms during the IIR simulation. Differences in the ATP and IIR Vrms are partly
-responsible for differences in the ATP and IIR output variables, Vdc, Idc, and Irms.
+response (IIR) simulation from the trained model, _Vrms_ is not available directly,
+but assumed to be _Rgrid_*_Irms_, where _Rgrid_ is pre-defined for the IIR simulation
+and _Irms_ is an IIR output variable. Hence, there is a lag of one time step, 1 ms,
+in _Vrms_ during the IIR simulation. Differences in the ATP and IIR Vrms are partly
+responsible for differences in the ATP and IIR output variables, _Vdc_, _Idc_, and _Irms_.
 
 | Variable | RMSE  |  Mean  |  Rel. Error |
 |:---      |   ---:|    ---:|         ---:|
@@ -63,11 +67,25 @@ Notes to investigate:
 
 - The output variables do not start at zero output. Bias terms in F1 and F2 may cause this, regardless of any zeroed initial conditions on H1, or adjustments to the normalization factors. A back-initialization may fix the problem.
 - There is a change in control mode from "startup" to "grid formed" between 2.0 and 2.1 seconds. This disturbs the output before the first actual disturbance, in G, from 2.4 to 2.5 seconds.
-- The entire simulation could be repeated with control mode constant at 0, and again wiht control model constant at 1.
+- The entire simulation could be repeated with control mode constant at 0, and again with control model constant at 1.
+- The discrete-time IIR filter should be replaced with a continuous-time transfer function.
 
 ![IIR_Sim](/examples/hwpv/IIR_Filter_Simulation.png)
 
 **System Simulation Using Infinite Impulse Response Filters in Discrete Time Steps**
+
+The figure below shows the AC output variables with an LCL output filter. Because the
+grid impedance is purely resistive, the angle reference at the LCL output is zero
+degrees for the voltage and current, _Vc_ and _Ic_, respectively. The phasor voltage
+and current behind the filter, _Vs_ and _Is_, respectively, are calculated by complex
+arithmetic because the LCL circuit is completely determined. The LCL complex impedances
+are updated with _Fc_ at each time step. In this example, _Fc_ changes from 60 Hz to 63 Hz
+at approximately 4.5 seconds. There is a voltage drop through the LCL filter, from _Vs_ to
+_Vc_, with a small corresponding increase in the output current, _Ic_.
+
+![LCL_Sim](/examples/hwpv/LCL_Simulation.png)
+
+**System Simulation with LCL Output Filter**
 
 ### File Directory
 
@@ -75,6 +93,7 @@ The Python files currently used in this example are:
 
 - _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture.
 - _pv1_import.py_ reads the model for time-step simulation, produces Bode plots, and compares IIR simulation to ATP simulation
+- _pv1_lcl.py_ runs the same case as _pv1_import.py_, with an LCL output filter and plotting the LCL input and output variables.
 
 A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
 
