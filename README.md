@@ -140,6 +140,13 @@ A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains
         - third_level _net.2.weight_ attribute is a 2D array of output layer weight coefficients, one row for each output channel, one column for each hidden-layer neuron
         - third_level _net.2.bias_ attribute is a 1D array of output layer bias coefficients, one for each output channel
 
+### HELICS Example
+
+To run:
+
+    python pv1_configure_helics.py
+    pv1_helics
+
 ### Other Code Files
 
 These Python files are used to train and validate HW models, but the sample data to use them is not located in this repository:
