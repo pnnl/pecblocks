@@ -32,7 +32,6 @@ if __name__ == '__main__':
   subs.append({'key':'player/Ud', 'type':'double', 'required':True})
   subs.append({'key':'player/Fc', 'type':'double', 'required':True})
   subs.append({'key':'pv1_client/Vrms', 'type':'complex', 'required':True})
-  subs.append({'key':'pv1_client/GVrms', 'type':'double', 'required':True})
   subs.append({'key':'player/ctl', 'type':'double', 'required':True})
   cfg_server['subscriptions'] = subs
   cfg_server['application'] = cfg_app
@@ -48,7 +47,6 @@ if __name__ == '__main__':
   pubs = []
   cfg_client['publications'] = pubs
   pubs.append({'global':False,'key':'Vrms', 'type':'complex'})
-  pubs.append({'global':False,'key':'GVrms', 'type':'double'})
   subs = []
   cfg_client['subscriptions'] = subs
   subs.append({'key':'pv1_server/Vs', 'type':'complex', 'required':True})
@@ -57,7 +55,6 @@ if __name__ == '__main__':
   subs.append({'key':'pv1_server/vdc', 'type':'double', 'required':True})
   subs.append({'key':'pv1_server/idc', 'type':'double', 'required':True})
   subs.append({'key':'player/Rg', 'type':'double', 'required':True})
-  subs.append({'key':'player/G', 'type':'double', 'required':True})
   cfg_client['application'] = {'Tmax':Tmax}
   fp = open (fname_out2, 'w')
   json.dump (cfg_client, fp, indent=2)

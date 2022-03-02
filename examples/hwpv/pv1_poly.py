@@ -117,23 +117,24 @@ class pv1():
 #    print ('state dict', block.state_dict())
     return block
 
-  def load_sim_config(self, filename, model_only=True):
-    fp = open (filename, 'r')
-    config = json.load (fp)
-    fp.close()
-
+  def set_sim_config(self, config, model_only=True):
     self.name = config['name']
     self.blocks = config['type']
     self.H1 = self.read_lti(config['H1'])
     self.F1 = self.read_net(config['F1'])
     self.F2 = self.read_net(config['F2'])
-
     if not model_only:
       self.COL_T = config['COL_T']
       self.COL_Y = config['COL_Y']
       self.COL_U = config['COL_U']
       self.normfacs = config['normfacs']
       self.t_step = config['t_step']
+
+  def load_sim_config(self, filename, model_only=True):
+    fp = open (filename, 'r')
+    config = json.load (fp)
+    fp.close()
+    self.set_sim_config (config, model_only)
 
 #-------------------------------------
 #    print ('COL_U', self.COL_U)      
@@ -548,9 +549,9 @@ class pv1():
       y_lin = torch.tensor (self.ysum, dtype=torch.float)
       y_hat = self.F2 (y_lin)
 
-    Vdc = y_hat[0]
-    Idc = y_hat[1]
-    Irms = y_hat[2]
+    Vdc = y_hat[0].item()
+    Idc = y_hat[1].item()
+    Irms = y_hat[2].item()
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])

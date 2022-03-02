@@ -2,15 +2,25 @@
 import json
 import os
 import sys
-# import numpy as np
+import pandas as pd
 import helics
 import time
+import pv1_poly as pv1_model
+#import h5py
 
-def helics_loop(cfg_filename):
+def helics_loop(cfg_filename, hdf5_filename):
   fp = open (cfg_filename, 'r')
   cfg = json.load (fp)
   tmax = cfg['application']['Tmax']
   fp.close()
+
+  model = pv1_model.pv1 ()
+  model.set_sim_config (cfg['application'], model_only=False)
+  Lf = 2.0   # mH
+  Cf = 20.0  # uH
+  Lc = 0.4   # mH
+  model.set_LCL_filter (Lf=Lf*1.0e-3, Cf=Cf*1.0e-6, Lc=Lc*1.0e-3)
+  model.start_simulation ()
 
   h_fed = helics.helicsCreateValueFederateFromConfig(cfg_filename)
   fed_name = helics.helicsFederateGetName(h_fed)
@@ -43,7 +53,6 @@ def helics_loop(cfg_filename):
 
   sub_Vrms = None
   sub_G = None
-  sub_GVrms = None
   sub_T = None
   sub_Ud = None
   sub_Fc = None
@@ -52,9 +61,7 @@ def helics_loop(cfg_filename):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
     key = helics.helicsSubscriptionGetTarget(sub)
     print ('sub', i, key)
-    if 'GVrms' in key:
-      sub_GVrms = sub
-    elif 'Vrms' in key:
+    if 'Vrms' in key:
       sub_Vrms = sub
     elif 'G' in key:
       sub_G = sub
@@ -69,14 +76,14 @@ def helics_loop(cfg_filename):
     else:
       print (' ** could not match', key)
 
-  Vrms = 0+0j
+  Vc = 0+0j
   T = 0.0
   G = 0.0
-  GVrms = 0.0
   Ud = 0.0
   Fc = 0.0
   ctl = 0.0
   ts = 0
+  rows = []
 
   helics.helicsFederateEnterExecutingMode(h_fed)
   # some notes on helicsInput timing
@@ -87,27 +94,47 @@ def helics_loop(cfg_filename):
   #  4) helicsInputLastUpdateTime is > 0 only after the other federate published its first value
   while ts < tmax:
     if (sub_ctl is not None) and (helics.helicsInputIsUpdated(sub_ctl)):
-      G = helics.helicsInputGetDouble(sub_G)
+      ctl = helics.helicsInputGetDouble(sub_ctl)
     if (sub_T is not None) and (helics.helicsInputIsUpdated(sub_T)):
       T = helics.helicsInputGetDouble(sub_T)
     if (sub_Ud is not None) and (helics.helicsInputIsUpdated(sub_Ud)):
       Ud = helics.helicsInputGetDouble(sub_Ud)
     if (sub_Fc is not None) and (helics.helicsInputIsUpdated(sub_Fc)):
       Fc = helics.helicsInputGetDouble(sub_Fc)
-    if (sub_GVrms is not None) and (helics.helicsInputIsUpdated(sub_GVrms)):
-      GVrms = helics.helicsInputGetDouble(sub_GVrms)
     if (sub_Vrms is not None) and (helics.helicsInputIsUpdated(sub_Vrms)):
-      Vrms = helics.helicsInputGetComplex(sub_Vrms)
+      re, im = helics.helicsInputGetComplex(sub_Vrms)
+      Vc = complex(re, im)
     if (sub_G is not None) and (helics.helicsInputIsUpdated(sub_G)):
       G = helics.helicsInputGetDouble(sub_G)
-    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Ud={:.3f}, Fc={:.3f}'.format(ts, abs(Vrms), G, GVrms, T, Ud, Fc))
+    Vrms = abs(Vc)
+    GVrms = 0.001 * G * Vrms
+    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Ud={:.3f}, Fc={:.3f}'.format(ts, Vrms, G, GVrms, T, Ud, Fc))
+    vdc, idc, irms, Vs, Is = model.step_simulation (G=G, T=T, Ud=Ud, Fc=Fc, Vrms=Vrms, Mode=ctl, GVrms=GVrms)
+    Ic = irms+0j
+    if pub_idc is not None:
+      helics.helicsPublicationPublishDouble(pub_idc, idc)
+    if pub_vdc is not None:
+      helics.helicsPublicationPublishDouble(pub_vdc, vdc)
+    if pub_Vs is not None:
+      helics.helicsPublicationPublishComplex(pub_Ic, Ic)
+    if pub_Is is not None:
+      helics.helicsPublicationPublishComplex(pub_Is, Is)
+    if pub_Vs is not None:
+      helics.helicsPublicationPublishComplex(pub_Vs, Vs)
+    dict = {'t':ts,'G':G,'T':T,'Ud':Ud,'Fc':Fc,'Ctl':ctl,'Vc':Vc,'Vs':Vs,'Ic':Ic,'Is':Is,'Vdc':vdc,'Idc':idc}
+    rows.append (dict)
     ts = helics.helicsFederateRequestTime(h_fed, tmax)
   helics.helicsFederateDestroy(h_fed)
+
+  print ('simulation done, writing output to', hdf5_filename)
+  df = pd.DataFrame (rows)
+  df.to_hdf (hdf5_filename, 'basecase', mode='w', complevel=9)
 
 if __name__ == '__main__':
   t0 = time.process_time()
   cfg_filename = 'pv1_server.json'
-  helics_loop(cfg_filename)
+  hdf5_filename = 'pv1_server.hdf5'
+  helics_loop(cfg_filename, hdf5_filename)
   t1 = time.process_time()
   print ('PV1 Server elapsed time = {:.4f} seconds.'.format (t1-t0))
 
