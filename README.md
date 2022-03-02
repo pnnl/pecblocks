@@ -171,6 +171,10 @@ The relevant files are:
 - _pv1_server.json_ contains HELICS publication, subscription, and other configurations for _pv1_server.py_
 - _pv1_server.py_ is a HELICS federate that subscribes to all weather and control inputs, runs the HW-PV model, and publishes the HW-PV model outputs. In this example, the input and output data are saved from this federate for convenience.
 
+![HELICS_Fed](/examples/hwpv/HELICS_Federation.png)
+
+**HELICS Federates and Message Topics**
+
 ![HELICS_Sim](/examples/hwpv/pv1_helics.png)
 
 **System Simulation using HELICS**
