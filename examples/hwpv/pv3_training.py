@@ -22,7 +22,7 @@ if __name__ == '__main__':
 #  print (nlookback, recent_loss)
   print ('COL_Y', model.COL_Y)
   valstr = ' '.join('{:.4f}'.format(rmse[col]) for col in model.COL_Y)
-  print ('Train time: {:.2f}, Recent loss: {:.2f}, RMS Errors: {:s}'.format (train_time, 
+  print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
     np.mean(recent_loss), valstr))
 
   plt.figure()

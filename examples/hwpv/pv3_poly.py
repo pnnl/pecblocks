@@ -30,6 +30,7 @@ class pv3():
     self.num_iter = None
     self.print_freq = None
     self.batch_size = None
+    self.n_loss_skip = None
     self.n_skip = None
     self.n_trunc = None
     self.n_dec = None
@@ -63,6 +64,7 @@ class pv3():
     self.batch_size = config['batch_size']
     self.n_skip = config['n_skip']
     self.n_trunc = config['n_trunc']
+    self.n_loss_skip = config['n_loss_skip']
     self.n_dec = config['n_dec']
     self.na = config['na']
     self.nb = config['nb']
@@ -300,13 +302,17 @@ class pv3():
         y_lin = self.H1 (y_non, self.y0, self.u0)
         y_hat = self.F2 (y_lin)
         # Compute fit loss
-        err_fit = yb - y_hat
-        loss_fit = torch.sum(torch.abs(err_fit))
+        if self.n_loss_skip > 0:
+          err_fit = yb[:,self.n_loss_skip:,:] - y_hat[:,self.n_loss_skip:,:]
+        else:
+          err_fit = yb - y_hat
+#        loss_fit = torch.sum(torch.abs(err_fit))
+        loss_fit = torch.mean(err_fit**2)
         loss = loss_fit
 
         LOSS.append(loss.item())
         if itr % self.print_freq == 0:
-          print('Iter {:4d} of {:4d} | Loss {:12.4f}'.format (itr, self.num_iter, loss_fit))
+          print('Iter {:4d} of {:4d} | Loss {:12.6f}'.format (itr, self.num_iter, loss_fit))
 
         # Optimize
         loss.backward()
@@ -339,6 +345,7 @@ class pv3():
     config['n_skip'] = self.n_skip
     config['n_trunc'] = self.n_trunc
     config['n_dec'] = self.n_dec
+    config['n_loss_skip'] = self.n_loss_skip
     config['na'] = self.na
     config['nb'] = self.nb
     config['nk'] = self.nk
