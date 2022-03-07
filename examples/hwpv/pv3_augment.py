@@ -35,7 +35,8 @@ plot_defs = [
     {'row':3, 'col':0, 'tag':'Vrms', 'title':'Vrms',  'ylabel':'V'},
     {'row':3, 'col':1, 'tag':'GVrms', 'title':'GVrms', 'ylabel':''},
     {'row':3, 'col':2, 'tag':'Ctl', 'title':'Ctl Mode',  'ylabel':''},
-    {'row':3, 'col':3, 'tag':'Pdc', 'title':'DC Power',  'ylabel':'kW', 'scale':0.001}
+    {'row':3, 'col':3, 'tag':'Pdc', 'title':'DC Power',  'ylabel':'kW', 'scale':0.001},
+    {'row':3, 'col':4, 'tag':'Ploss', 'title':'Pdc - Pac',  'ylabel':'kW', 'scale':0.001}
   ]
 
 def start_plot(case_title):
@@ -109,5 +110,13 @@ with h5py.File(filename, 'a') as f:
       for i in range(dlen):
         ctl[i] = np.interp (t[i], ctl_t, ctl_y)
       grp.create_dataset ('Ctl', data=ctl, compression='gzip')
+    if 'Ploss' not in grp:
+      print ('creating Ploss for', grp_name)
+      pdc = np.zeros(dlen)
+      pac = np.zeros(dlen)
+      grp['Pdc'].read_direct(pdc)
+      grp['P'].read_direct(pac)
+      ploss = pdc - pac
+      grp.create_dataset ('Ploss', data=ploss, compression='gzip')
     plot_group (ax, grp)
 finish_plot (ax)
