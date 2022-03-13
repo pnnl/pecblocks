@@ -165,7 +165,7 @@ if __name__ == '__main__':
   ax[0,1].plot (plt_t, plt_Fc, label='F[pu]')
   ax[0,1].plot (plt_t, plt_Ud, label='Ud[pu]')
   ax[0,1].legend(loc='best')
-  ax[0,2].set_title ('Rgrid')
+  ax[0,2].set_title ('Rload')
   ax[0,2].plot (plt_t, plt_rg)
   ax[0,3].set_title ('Vrms')
   if do_atp:
