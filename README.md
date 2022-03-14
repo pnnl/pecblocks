@@ -59,9 +59,9 @@ responsible for differences in the ATP and IIR output variables, _Vdc_, _Idc_, a
 
 | Variable | RMSE  |  Mean  |  Rel. Error |
 |:---      |   ---:|    ---:|         ---:|
-|Vdc  | 33.1230 | 365.5493 | 9.06%| 
-|Idc  | 0.4016  | 27.1984  | 1.48%| 
-|Irms | 6.3669  | 45.4824  | 14.00%|
+|Vdc  | 34.4120 | 365.9086 | 9.40%| 
+|Idc  | 0.4247  | 27.2002  | 1.56%| 
+|Irms | 6.5667  | 45.5142  | 14.43%|
  
 Notes to investigate:
 
