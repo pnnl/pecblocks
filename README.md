@@ -83,6 +83,14 @@ are updated with _Fc_ at each time step. In this example, _Fc_ changes from 60 H
 at approximately 4.5 seconds. There is a voltage drop through the LCL filter, from _Vs_ to
 _Vc_, with a small corresponding increase in the output current, _Ic_.
 
+| Case | Lf [mH] | Cf [uF] | Lc [mH] |
+|:---  |     ---:|     ---:|     ---:|
+|1-phs |  2.0000 |    20.0 |  0.4000 | 
+|3-phs |  0.0610 |    19.1 |  0.0367 | 
+
+The 3-phase circuit has parallel damping resistors, _Rf_=91.5 and _Rc_=55.05, providing
+a damping factor of 7.5 for each inductor. The _Cf_ has a series resistance of 0.01.
+
 ![LCL_Sim](/examples/hwpv/LCL_Simulation.png)
 
 **System Simulation with LCL Output Filter**
