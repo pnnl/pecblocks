@@ -5,7 +5,11 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = r'./data/gfm8.hdf5'
+root = 'unbalanced'  # 'gfm8'
+nrows = 2
+ncols = 8
+
+data_path = r'./data/{:s}.hdf5'.format(root)
 model_folder = r'./models'
 
 def plot_case(model, idx):
@@ -17,7 +21,7 @@ def plot_case(model, idx):
 #  print ('y_true shape', y_true.shape)
 #  print ('u shape', u.shape)
 
-  fig, ax = plt.subplots (3, 4, sharex = 'col', figsize=(15,8), constrained_layout=True)
+  fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
   fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}'.format(idx, valstr))
   j = 0
   for key in model.COL_U:
@@ -26,14 +30,8 @@ def plot_case(model, idx):
     if bNormalized:
       scale = 1.0
       offset = 0.0
-    if j > 3:
-      row = 1
-      col = j-4
-    else:
-      row = 0
-      col = j
-    ax[row,col].set_title ('Input {:s}'.format (key))
-    ax[row,col].plot (model.t, u[:,j]*scale + offset)
+    ax[0,j].set_title ('Input {:s}'.format (key))
+    ax[0,j].plot (model.t, u[:,j]*scale + offset)
     j += 1
   j = 0
   for key in model.COL_Y:
@@ -42,13 +40,10 @@ def plot_case(model, idx):
     if bNormalized:
       scale = 1.0
       offset = 0.0
-    row = 2
-    col = j
-    ax[row,col].set_title ('Output {:s}'.format (key))
-    ax[row,col].plot (model.t, y_true[:,j]*scale + offset, label='y')
-    ax[row,col].plot (model.t, y_hat[0,:,j]*scale + offset, label='y_hat')
-#    ax[2,j].plot (model.t, y_hat[:,j]*scale + offset, label='y_hat')
-    ax[row,col].legend()
+    ax[1,j].set_title ('Output {:s}'.format (key))
+    ax[1,j].plot (model.t, y_true[:,j]*scale + offset, label='y')
+    ax[1,j].plot (model.t, y_hat[0,:,j]*scale + offset, label='y_hat')
+    ax[1,j].legend()
     j += 1
   plt.show()
 
@@ -62,7 +57,7 @@ if __name__ == '__main__':
     if int(sys.argv[2]) > 0:
       bNormalized = True
 
-  model = pv3_model.pv3(os.path.join(model_folder,'gfm8_config.json'))
+  model = pv3_model.pv3(os.path.join(model_folder,'{:s}_config.json'.format(root)))
   model.loadTrainingData(data_path)
   model.loadAndApplyNormalization(os.path.join(model_folder,'normfacs.json'))
   model.initializeModelStructure()

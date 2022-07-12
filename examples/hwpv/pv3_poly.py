@@ -14,7 +14,7 @@ import torch.nn as nn
 import math
 import control
 
-data_path = r'./data/pv1.hdf5'
+# data_path = r'./data/pv1.hdf5'
 model_folder = r'./models'
 
 class pv3():

@@ -3,12 +3,14 @@ import os
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = r'./data/gfm8.hdf5'
+root = 'unbalanced'  # 'gfm8'
+
+data_path = r'./data/{:s}.hdf5'.format(root)
 model_folder = r'./models'
 
 if __name__ == '__main__':
 
-  model = pv3_model.pv3(os.path.join(model_folder,'gfm8_config.json'))
+  model = pv3_model.pv3(os.path.join(model_folder,'{:s}_config.json'.format(root)))
   model.loadTrainingData(data_path)
   model.applyAndSaveNormalization(model_folder)
   model.initializeModelStructure()
@@ -28,5 +30,5 @@ if __name__ == '__main__':
   plt.figure()
   plt.plot(LOSS)
   plt.grid(True)
-  plt.savefig(os.path.join(model_folder, 'GFM8_train_loss.pdf'))
+  plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(root)))
   plt.show()
