@@ -61,6 +61,10 @@ class pv3():
     self.lr = config['lr']
     self.num_iter = config['num_iter']
     self.print_freq = config['print_freq']
+    if 't_step' in config:
+      self.t_step = config['t_step']
+    else:
+      self.t_step = 1.0e-3
     self.batch_size = config['batch_size']
     self.n_skip = config['n_skip']
     self.n_trunc = config['n_trunc']
@@ -81,7 +85,6 @@ class pv3():
     self.normfacs = None
     self.t = None
     self.n_cases = 0
-    self.t_step = 1.0e-3
 
   def read_lti(self, config):
     n_in = config['n_in']
@@ -197,7 +200,10 @@ class pv3():
     # get the len of data of interest 
     df_1 = df_list[0]
     time_arr = np.array(df_1[self.COL_T], dtype=np.float32)
-    self.t_step = np.mean(np.diff(time_arr.ravel())) #time_exp[1] - time_exp[0]
+    new_t_step = np.mean(np.diff(time_arr.ravel())) #time_exp[1] - time_exp[0]
+    if abs(self.t_step - new_t_step)/self.t_step > 0.001:
+      print ('*** warning: specified t_step {:.6f} differs from data {:.6f}'.format (self.t_step, new_t_step))
+    self.t_step = new_t_step
     data_len = df_1[self.COL_T].size
     self.t = np.arange(data_len)*self.t_step
 
@@ -334,7 +340,7 @@ class pv3():
     self.F2.load_state_dict(B3)
 
   def exportModel(self, filename):
-    config = {'name':'PV1', 'type':'F1+H1+F2', 't_step': self.t_step}
+    config = {'name':'PV3', 'type':'F1+H1+F2', 't_step': self.t_step}
     config['normfacs'] = {}
     for key, val in self.normfacs.items():
       config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset']}
