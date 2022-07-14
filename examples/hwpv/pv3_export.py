@@ -2,7 +2,7 @@ import os
 import sys
 import pv3_poly as pv3_model
 
-root = 'unbalanced' # 'gfm8'
+root = 'tacs' # 'unbalanced' # 'gfm8'
 model_folder = r'./models'
 
 if __name__ == '__main__':
