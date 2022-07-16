@@ -1,10 +1,10 @@
 {
   "COL_T": ["t"],
-  "COL_U": ["T", "G", "Fc", "Md", "Mq", "Vrms", "GVrms", "Ctl"],
+  "COL_U": ["T", "G", "Fc", "Md", "Mq", "Vrms", "GVrms", "Ctl", "Unb"],
   "COL_Y": ["Vdc", "Idc", "Idlo", "Iqlo", "I0lo", "Idhi", "Iqhi", "I0hi"],
   "lr": 1.0e-3,
   "t_step": 0.002,
-  "num_iter": 5000,
+  "num_iter": 2000,
   "print_freq": 10,
   "batch_size": 270,
   "n_skip": 1,

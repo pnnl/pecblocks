@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-root = 'tacs' # 'unbalanced'  # 'gfm8'
+root = 'unbalanced'  # 'gfm8'
 
 #data_path = r'./data/{:s}.hdf5'.format(root)
 data_path = r'./data/unbalanced.hdf5'
