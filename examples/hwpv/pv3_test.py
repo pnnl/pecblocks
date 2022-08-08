@@ -5,13 +5,13 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-root = 'unbalanced' # 'tacs' 'gfm8'
+root = 'balanced' # 'unbalanced' # 'tacs' 'gfm8'
 nrows = 2
 ncols = 9
 
 data_path = r'./data/{:s}.hdf5'.format(root)
 #data_path = r'./data/unbalanced.hdf5'.format(root)
-model_folder = r'./models'
+model_folder = r'./big'
 
 def plot_case(model, idx):
   rmse, y_hat, y_true, u = model.testOneCase(idx)

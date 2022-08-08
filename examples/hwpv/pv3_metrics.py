@@ -3,10 +3,10 @@ import sys
 
 import pv3_poly as pv3_model
 
-root = 'unbalanced'  # 'gfm8' 'tacs'
+root = 'balanced'  # 'gfm8' 'tacs'
 
 data_path = r'./data/{:s}.hdf5'.format(root)
-model_folder = r'./models'
+model_folder = r'./big'
 
 if __name__ == '__main__':
 

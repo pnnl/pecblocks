@@ -2,8 +2,8 @@ import os
 import sys
 import pv3_poly as pv3_model
 
-root = 'unbalanced' # 'gfm8'
-model_folder = r'./models'
+root = 'balanced' # 'gfm8'
+model_folder = r'./big'
 
 if __name__ == '__main__':
   model = pv3_model.pv3(os.path.join(model_folder,'{:s}_config.json'.format(root)))

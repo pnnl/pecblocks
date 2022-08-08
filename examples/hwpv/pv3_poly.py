@@ -14,8 +14,7 @@ import torch.nn as nn
 import math
 import control
 
-# data_path = r'./data/pv1.hdf5'
-model_folder = r'./models'
+model_folder = r'./big'
 
 class pv3():
   def __init__(self, training_config=None, sim_config=None):

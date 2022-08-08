@@ -3,11 +3,11 @@ import os
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-root = 'unbalanced'  # 'gfm8'
+root = 'balanced' # ]'unbalanced'  # 'gfm8'
 
 #data_path = r'./data/{:s}.hdf5'.format(root)
-data_path = r'./data/unbalanced.hdf5'
-model_folder = r'./models'
+data_path = r'./data/balanced.hdf5'
+model_folder = r'./big'
 
 if __name__ == '__main__':
 
