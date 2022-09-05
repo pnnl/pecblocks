@@ -395,7 +395,7 @@ class pv3():
     y_non = self.F1 (ub)
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
-    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
+#    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
 #    self.printStateDicts()
 #    print (y_lin)
 

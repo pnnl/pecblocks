@@ -18,11 +18,13 @@ bNormalized = False
 
 data_path = './data/balanced.hdf5'
 model_path = './big/balanced_config.json'
+report_path = './report'
 
-def plot_case(model, idx):
+def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
-  print ('column', model.COL_Y, 'RMS errors', rmse)
+  if not bPNG:
+    print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
   maestr = ' '.join('{:.4f}'.format(val) for val in mae)
 #  print ('y_hat shape', y_hat.shape)
@@ -55,7 +57,11 @@ def plot_case(model, idx):
     ax[1,j].plot (model.t[i1:], y_hat[0,i1:,j]*scale + offset, label='y_hat')
     ax[1,j].legend()
     j += 1
-  plt.show()
+  if bPNG:
+    plt.savefig(os.path.join(report_path,'case{:d}.png'.format(idx)))
+  else:
+    plt.show()
+  plt.close(fig)
 
 if __name__ == '__main__':
 
@@ -87,7 +93,9 @@ if __name__ == '__main__':
 
   if case_idx < 0:
     for idx in range(model.n_cases):
-      plot_case (model, idx)
+      plot_case (model, idx, bPNG=True)
+      if (idx+1) % 10 == 0:
+        print ('plotted {:d} of {:d} cases'.format(idx+1, model.n_cases))
   else:
     plot_case (model, case_idx)
 
