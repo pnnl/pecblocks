@@ -1,24 +1,38 @@
+# copyright 2021-2022 Battelle Memorial Institute
+# supervises training of HW model for a three-phase inverter
+#  arg1: relative path to trained model configuration file
+#  arg2: relative path to the training data file, HDF5
+
 import numpy as np
 import os
+import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-root = 'balanced' # ]'unbalanced'  # 'gfm8'
-
-#data_path = r'./data/{:s}.hdf5'.format(root)
-data_path = r'./data/balanced.hdf5'
-model_folder = r'./big'
+data_path = './data/balanced.hdf5'
+model_path = './big/balanced_config.json'
 
 if __name__ == '__main__':
+  if len(sys.argv) > 1:
+    model_path = sys.argv[1]
+    if len(sys.argv) > 2:
+      data_path = sys.argv[2]
 
-  model = pv3_model.pv3(os.path.join(model_folder,'{:s}_config.json'.format(root)))
+  model_folder, config_file = os.path.split(model_path)
+  model_root = config_file.rstrip('.json')
+  model_root = model_root.rstrip('_config')
+  print ('model_folder =', model_folder)
+  print ('model_root =', model_root)
+  print ('data_path =', data_path)
+
+  model = pv3_model.pv3(training_config=model_path)
   model.loadTrainingData(data_path)
-  model.applyAndSaveNormalization(model_folder)
+  model.applyAndSaveNormalization()
   model.initializeModelStructure()
-  train_time, LOSS = model.trainModelCoefficients()
-  model.saveModelCoefficients(model_folder)
+  train_time, LOSS = model.trainModelCoefficients(bMAE=False)
+  model.saveModelCoefficients()
 #  quit()
-  rmse, mae, case_rmse = model.trainingErrors(False)
+  rmse, mae, case_rmse, case_mae = model.trainingErrors(bByCase=False)
 
   nlookback = 10 * int(model.n_cases / model.batch_size)
   recent_loss = LOSS[len(LOSS)-nlookback:]
@@ -27,9 +41,11 @@ if __name__ == '__main__':
   valstr = ' '.join('{:.4f}'.format(rmse[col]) for col in model.COL_Y)
   print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
     np.mean(recent_loss), valstr))
+  valstr = ' '.join('{:.4f}'.format(mae[col]) for col in model.COL_Y)
+  print ('                          MAE Errors: {:s}'.format (valstr))
 
   plt.figure()
   plt.plot(LOSS)
   plt.grid(True)
-  plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(root)))
+  plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(model_root)))
   plt.show()

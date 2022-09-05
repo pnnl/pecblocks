@@ -1,3 +1,6 @@
+# copyright 2021-2022 Battelle Memorial Institute
+# HW model training and simulation code for 3-phase inverters
+
 import pandas as pd
 import numpy as np
 import os
@@ -13,8 +16,6 @@ import torch
 import torch.nn as nn
 import math
 import control
-
-model_folder = r'./big'
 
 class pv3():
   def __init__(self, training_config=None, sim_config=None):
@@ -52,11 +53,13 @@ class pv3():
     self.Lf = None
     self.Lc = None
     self.Cf = None
+    self.model_folder = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
+    self.model_folder = os.path.split(filename)[0]
     self.lr = config['lr']
     self.num_iter = config['num_iter']
     self.print_freq = config['print_freq']
@@ -145,6 +148,7 @@ class pv3():
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
+    self.model_folder = os.path.split(filename)[0]
     self.set_sim_config (config, model_only)
 
 #-------------------------------------
@@ -218,7 +222,7 @@ class pv3():
     self.data_train = data_mat.astype(np.float32)
     print (self.COL_U, self.COL_Y, self.data_train.shape)
 
-  def applyAndSaveNormalization(self, model_folder):
+  def applyAndSaveNormalization(self):
     # Normalize the data; save the normalization factors
     self.normfacs = {}
     in_size = len(self.COL_U)
@@ -250,12 +254,14 @@ class pv3():
       print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, 
         dmin, dmax, dmean, drange, self.normfacs[c]['scale'], self.normfacs[c]['offset']))
       idx += 1
-    fname = os.path.join(model_folder,'normfacs.json')
+    fname = os.path.join(self.model_folder,'normfacs.json')
     fp = open (fname, 'w')
     json.dump (self.normfacs, fp, indent=2)
     fp.close()
 
-  def loadNormalization(self, filename):
+  def loadNormalization(self, filename=None):
+    if filename is None:
+      filename = os.path.join(self.model_folder,'normfacs.json')
     fp = open (filename, 'r')
     cfg = json.load (fp)
     fp.close()
@@ -264,7 +270,7 @@ class pv3():
     else:
       self.normfacs = cfg
 
-  def loadAndApplyNormalization(self, filename):
+  def loadAndApplyNormalization(self, filename=None):
     self.loadNormalization(filename)
     idx = 0
     for c in self.COL_U + self.COL_Y:
@@ -286,7 +292,7 @@ class pv3():
     self.u0 = torch.zeros((self.batch_size, self.nb), dtype=torch.float)
     self.F2 = MimoStaticNonLinearity(in_channels=len(self.idx_out), out_channels=len(self.idx_out), n_hidden=self.nh2, activation=self.activation)
 
-  def trainModelCoefficients(self):
+  def trainModelCoefficients(self, bMAE = False):
     self.optimizer = torch.optim.Adam([
       {'params': self.F1.parameters(), 'lr': self.lr},
       {'params': self.H1.parameters(), 'lr': self.lr},
@@ -311,8 +317,10 @@ class pv3():
           err_fit = yb[:,self.n_loss_skip:,:] - y_hat[:,self.n_loss_skip:,:]
         else:
           err_fit = yb - y_hat
-#        loss_fit = torch.sum(torch.abs(err_fit))
-        loss_fit = torch.mean(err_fit**2)
+        if bMAE:
+          loss_fit = torch.sum(torch.abs(err_fit))
+        else:
+          loss_fit = torch.mean(err_fit**2)
         loss = loss_fit
 
         LOSS.append(loss.item())
@@ -325,17 +333,17 @@ class pv3():
     train_time = time.time() - start_time
     return train_time, LOSS
 
-  def saveModelCoefficients(self, model_folder):
-    torch.save(self.F1.state_dict(), os.path.join(model_folder, "F1.pkl"))
-    torch.save(self.H1.state_dict(), os.path.join(model_folder, "H1.pkl"))
-    torch.save(self.F2.state_dict(), os.path.join(model_folder, "F2.pkl"))
+  def saveModelCoefficients(self):
+    torch.save(self.F1.state_dict(), os.path.join(self.model_folder, "F1.pkl"))
+    torch.save(self.H1.state_dict(), os.path.join(self.model_folder, "H1.pkl"))
+    torch.save(self.F2.state_dict(), os.path.join(self.model_folder, "F2.pkl"))
 
-  def loadModelCoefficients(self, model_folder):
-    B1 = torch.load(os.path.join(model_folder, "F1.pkl"))
+  def loadModelCoefficients(self):
+    B1 = torch.load(os.path.join(self.model_folder, "F1.pkl"))
     self.F1.load_state_dict(B1)
-    B2 = torch.load(os.path.join(model_folder, "H1.pkl"))
+    B2 = torch.load(os.path.join(self.model_folder, "H1.pkl"))
     self.H1.load_state_dict(B2)
-    B3 = torch.load(os.path.join(model_folder, "F2.pkl"))
+    B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"))
     self.F2.load_state_dict(B3)
 
   def exportModel(self, filename):
@@ -394,7 +402,8 @@ class pv3():
     y_hat = y_hat.detach().numpy()[[0], :, :]
     y_true = np.transpose(case_data[0,:,self.idx_out])
     rmse = dynonet.metrics.error_rmse(y_true, y_hat[0])
-    return rmse, y_hat, y_true, np.transpose(case_data[0,:,self.idx_in])
+    mae = dynonet.metrics.error_mae(y_true, y_hat[0])
+    return rmse, mae, y_hat, y_true, np.transpose(case_data[0,:,self.idx_in])
 
   def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
@@ -437,8 +446,10 @@ class pv3():
     total_mae = {}
     if bByCase:
       case_rmse = lst1 = [dict() for i in range(self.n_cases)]
+      case_mae = lst2 = [dict() for i in range(self.n_cases)]
     else:
       case_rmse = None
+      case_mae = None
     for col in self.COL_Y:
       SUMSQ = 0.0
       MAE = 0.0
@@ -449,6 +460,7 @@ class pv3():
         colrms = dynonet.metrics.error_rmse(y1, y2)
         if bByCase:
           case_rmse[icase][col] = colrms
+          case_mae[icase][col] = colmae
         MAE += colmae
         SUMSQ += (colrms*colrms)
       MAE /= self.n_cases
@@ -457,7 +469,7 @@ class pv3():
       total_mae[col] = MAE
       total_rmse[col] = RMSE
       icol += 1
-    return total_rmse, total_mae, case_rmse
+    return total_rmse, total_mae, case_rmse, case_mae
 
   def set_LCL_filter(self, Lf, Cf, Lc):
     self.Lf = Lf
