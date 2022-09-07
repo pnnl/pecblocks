@@ -140,6 +140,16 @@ class pv3():
       self.COL_T = config['COL_T']
       self.COL_Y = config['COL_Y']
       self.COL_U = config['COL_U']
+      self.n_skip = config['n_skip']
+      self.n_trunc = config['n_trunc']
+      self.n_dec = config['n_dec']
+      self.na = config['na']
+      self.nb = config['nb']
+      self.nk = config['nk']
+      self.activation = config['activation']
+      self.nh1 = config['nh1']
+      self.nh2 = config['nh2']
+      self.batch_size = config['batch_size']
       self.set_idx_in_out()
       self.normfacs = config['normfacs']
       self.t_step = config['t_step']
@@ -272,6 +282,9 @@ class pv3():
 
   def loadAndApplyNormalization(self, filename=None):
     self.loadNormalization(filename)
+    self.applyNormalization()
+
+  def applyNormalization(self):
     idx = 0
     for c in self.COL_U + self.COL_Y:
       dmean = self.normfacs[c]['offset']
@@ -537,22 +550,23 @@ class pv3():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
-  def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms):
-    Vc = np.complex (Vrms+0.0j)
-    if self.Lf is not None:
-      omega = 2.0*math.pi*Fc
-      ZLf = np.complex(0.0+omega*self.Lf*1j)
-      ZLc = np.complex(0.0+omega*self.Lc*1j)
-      ZCf = np.complex(0.0-1j/omega/self.Cf)
+  def step_simulation (self, G, T, Md, Mq, Fc, Vrms, Ctl, GVrms):
+#   Vc = np.complex (Vrms+0.0j)
+#   if self.Lf is not None:
+#     omega = 2.0*math.pi*Fc
+#     ZLf = np.complex(0.0+omega*self.Lf*1j)
+#     ZLc = np.complex(0.0+omega*self.Lc*1j)
+#     ZCf = np.complex(0.0-1j/omega/self.Cf)
     G = self.normalize (G, self.normfacs['G'])
     T = self.normalize (T, self.normfacs['T'])
-    Ud = self.normalize (Ud, self.normfacs['Ud'])
+    Md = self.normalize (Md, self.normfacs['Md'])
+    Mq = self.normalize (Mq, self.normfacs['Mq'])
     Fc = self.normalize (Fc, self.normfacs['Fc'])
     Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    Mode = self.normalize (Mode, self.normfacs['Mode'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
     GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
 
-    ub = torch.tensor ([T, G, Fc, Ud, Vrms, GVrms, Mode], dtype=torch.float)
+    ub = torch.tensor ([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl], dtype=torch.float)
     with torch.no_grad():
       y_non = self.F1 (ub)
       self.ysum[:] = 0.0
@@ -571,21 +585,23 @@ class pv3():
 
     Vdc = y_hat[0].item()
     Idc = y_hat[1].item()
-    Irms = y_hat[2].item()
+    Id = y_hat[2].item()
+    Iq = y_hat[3].item()
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])
-    Irms = self.de_normalize (Irms, self.normfacs['Irms'])
+    Id = self.de_normalize (Id, self.normfacs['Id'])
+    Iq = self.de_normalize (Iq, self.normfacs['Iq'])
 
-    if self.Lf is not None:
-      Ic = np.complex (Irms+0.0j)
-      Vf = Vc + ZLc * Ic
-      If = Vf / ZCf
-      Is = Ic + If
-      Vs = Vf + ZLf * Is
-    else:
-      Vs = Vc
-      Is = np.complex (Irms+0.0j)
+#   if self.Lf is not None:
+#     Ic = np.complex (Irms+0.0j)
+#     Vf = Vc + ZLc * Ic
+#     If = Vf / ZCf
+#     Is = Ic + If
+#     Vs = Vf + ZLf * Is
+#   else:
+#     Vs = Vc
+#     Is = np.complex (Irms+0.0j)
 
-    return Vdc, Idc, Irms, Vs, Is
+    return Vdc, Idc, Id, Iq
 
