@@ -7,7 +7,7 @@ if __name__ == '__main__':
   fname_out1 = 'pv3_server.json'
   fname_out2 = 'pv3_client.json'
   fname_bat = 'pv3_helics.bat'
-  case = 'ramp3'
+  case = 'flat3' # 'ramp3'
   if len(sys.argv) > 1:
     fname_in = sys.argv[1]
   fp = open (fname_in, 'r')

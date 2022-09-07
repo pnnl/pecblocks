@@ -418,12 +418,37 @@ class pv3():
     mae = dynonet.metrics.error_mae(y_true, y_hat[0])
     return rmse, mae, y_hat, y_true, np.transpose(case_data[0,:,self.idx_in])
 
+  def simulateVectors(self, G, T, Md, Mq, Fc, Vrms, GVrms, Ctl):
+    G = self.normalize (G, self.normfacs['G'])
+    T = self.normalize (T, self.normfacs['T'])
+    Md = self.normalize (Md, self.normfacs['Md'])
+    Mq = self.normalize (Mq, self.normfacs['Mq'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
+    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
+    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
+
+    data = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl]).transpose()
+    ub = torch.tensor (np.expand_dims(data, axis=0), dtype=torch.float)
+    print ('ub, y0, u0 shapes =', ub.shape, self.y0.shape, self.u0.shape)
+
+    y_non = self.F1 (ub)
+    y_lin = self.H1 (y_non, self.y0, self.u0)
+    y_hat = self.F2 (y_lin)
+
+    y_hat = y_hat.detach().numpy()[[0], :, :].squeeze()
+    Vdc = self.de_normalize (y_hat[:,0], self.normfacs['Vdc'])
+    Idc = self.de_normalize (y_hat[:,1], self.normfacs['Idc'])
+    Id = self.de_normalize (y_hat[:,2], self.normfacs['Id'])
+    Iq = self.de_normalize (y_hat[:,3], self.normfacs['Iq'])
+    return Vdc, Idc, Id, Iq
+
   def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(self.idx_out)))
     ub = torch.zeros((1, 1, len(self.idx_in)), dtype=torch.float)
-    print ('case_data', case_data.shape, 'y_hat', y_hat.shape)
+#    print ('case_data', case_data.shape, 'y_hat', y_hat.shape)
     self.start_simulation()
     for k in range(n):
       ub = torch.tensor (case_data[k,self.idx_in])
