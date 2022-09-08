@@ -8,23 +8,23 @@ import pv3_poly as pv3_model
 model_path = './big/balanced_fhf.json'
 
 def buildInputVector():
-  tstop = 0.2
+  tstop = 0.5 # 0.2
   dt = 0.002
   n = int(tstop/dt+1.0)
   t = np.linspace(0.0, tstop, num=n)
-  G = np.full(n, 0.0)
   T = np.full(n, 25.0)
+  G = np.full(n, 0.0)
   Fc = np.full(n, 60.0)
   Md = np.full(n, 1.0)
-  Mq = np.full(n, 0.0001)
+  Mq = np.full(n, 0.001)
   Vrms = np.full(n, 0.0)
   GVrms = np.full(n, 0.0)
   Ctl = np.full(n, 0.0)
-  return t, G, T, Fc, Md, Mq, Vrms, GVrms, Ctl
+  return t, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl
 
 def plot_case(model):
-  t, G, T, Fc, Md, Mq, Vrms, GVrms, Ctl = buildInputVector()
-  Vdc, Idc, Id, Iq = model.simulateVectors(G, T, Fc, Md, Mq, Vrms, GVrms, Ctl)
+  t, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl = buildInputVector()
+  Vdc, Idc, Id, Iq = model.simulateVectors(T=T, G=G, Fc=Fc, Md=Md, Mq=Mq, Vrms=Vrms, GVrms=GVrms, Ctl=Ctl)
 
   fig, ax = plt.subplots (2, 4, sharex = 'col', figsize=(15,8), constrained_layout=True)
   fig.suptitle ('Initialization Test')

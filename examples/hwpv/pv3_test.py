@@ -31,7 +31,7 @@ def plot_case(model, idx, bPNG=False):
 #  print ('y_true shape', y_true.shape)
 #  print ('u shape', u.shape)
 
-  i1 = 50 # 2*model.n_loss_skip
+  i1 = 1 # 2*model.n_loss_skip
 
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
   fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
@@ -54,7 +54,7 @@ def plot_case(model, idx, bPNG=False):
       offset = 0.0
     ax[1,j].set_title ('Output {:s}'.format (key))
     ax[1,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
-    ax[1,j].plot (model.t[i1:], y_hat[0,i1:,j]*scale + offset, label='y_hat')
+    ax[1,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
     ax[1,j].legend()
     j += 1
   if bPNG:

@@ -402,45 +402,78 @@ class pv3():
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
-  def testOneCase(self, case_idx):
+  def testOneCase(self, case_idx, npad=500):
     case_data = self.data_train[[case_idx],:,:]
-    ub = torch.tensor (case_data[:,:,self.idx_in])
+    udata = case_data[0,:,self.idx_in].squeeze().transpose()
+
+    # padding initial conditions
+    ic = np.zeros((npad, len(self.idx_in)))
+    for i in range(len(self.idx_in)):
+      ic[:,i] = udata[0,i]
+    print (case_data.shape, udata.shape, ic.shape)
+    print (ic)
+    udata = np.concatenate ((ic, udata))
+
+    ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
     y_non = self.F1 (ub)
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
-#    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
+    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
 #    self.printStateDicts()
 #    print (y_lin)
 
-    y_hat = y_hat.detach().numpy()[[0], :, :]
-    y_true = np.transpose(case_data[0,:,self.idx_out])
-    rmse = dynonet.metrics.error_rmse(y_true, y_hat[0])
-    mae = dynonet.metrics.error_mae(y_true, y_hat[0])
-    return rmse, mae, y_hat, y_true, np.transpose(case_data[0,:,self.idx_in])
+    y_hat = y_hat.detach().numpy()[[0], npad:, :].squeeze()
+    y_true = np.transpose(case_data[0,:,self.idx_out]).squeeze()
+    rmse = dynonet.metrics.error_rmse(y_true, y_hat)
+    mae = dynonet.metrics.error_mae(y_true, y_hat)
+    udata = udata[npad:,:]
+    print (rmse.shape, mae.shape, y_hat.shape, y_true.shape, udata.shape)
+    return rmse, mae, y_hat, y_true, udata
 
-  def simulateVectors(self, G, T, Md, Mq, Fc, Vrms, GVrms, Ctl):
-    G = self.normalize (G, self.normfacs['G'])
+  def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad=100):
     T = self.normalize (T, self.normfacs['T'])
+    G = self.normalize (G, self.normfacs['G'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
     Md = self.normalize (Md, self.normfacs['Md'])
     Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
     Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
     GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
     Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
 
     data = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl]).transpose()
+#   print (data.shape)
+#   # padding initial conditions
+    ic = np.zeros((npad, 8))
+    ic[:,0] = T[0]
+    ic[:,1] = G[0]
+    ic[:,2] = Fc[0]
+    ic[:,3] = Md[0]
+    ic[:,4] = Mq[0]
+    ic[:,5] = Vrms[0]
+    ic[:,6] = GVrms[0]
+    ic[:,7] = Ctl[0]
+    data = np.concatenate ((ic, data))
+#    print (data)
     ub = torch.tensor (np.expand_dims(data, axis=0), dtype=torch.float)
-    print ('ub, y0, u0 shapes =', ub.shape, self.y0.shape, self.u0.shape)
+#    print ('ub, y0, u0 shapes =', ub.shape, self.y0.shape, self.u0.shape)
 
     y_non = self.F1 (ub)
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
 
+#   print ('y_non', y_non.shape)
+#   print (y_non[0,0,:])
+#   print ('y_lin', y_lin.shape)
+#   print (y_lin[0,0:10,:])
+#   print ('y_hat', y_hat.shape)
+#   print (y_hat[0,0:10,:])
+
     y_hat = y_hat.detach().numpy()[[0], :, :].squeeze()
-    Vdc = self.de_normalize (y_hat[:,0], self.normfacs['Vdc'])
-    Idc = self.de_normalize (y_hat[:,1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[:,2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[:,3], self.normfacs['Iq'])
+
+    Vdc = self.de_normalize (y_hat[npad:,0], self.normfacs['Vdc'])
+    Idc = self.de_normalize (y_hat[npad:,1], self.normfacs['Idc'])
+    Id = self.de_normalize (y_hat[npad:,2], self.normfacs['Id'])
+    Iq = self.de_normalize (y_hat[npad:,3], self.normfacs['Iq'])
     return Vdc, Idc, Id, Iq
 
   def stepOneCase(self, case_idx):
@@ -575,21 +608,21 @@ class pv3():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
-  def step_simulation (self, G, T, Md, Mq, Fc, Vrms, Ctl, GVrms):
+  def step_simulation (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
 #   Vc = np.complex (Vrms+0.0j)
 #   if self.Lf is not None:
 #     omega = 2.0*math.pi*Fc
 #     ZLf = np.complex(0.0+omega*self.Lf*1j)
 #     ZLc = np.complex(0.0+omega*self.Lc*1j)
 #     ZCf = np.complex(0.0-1j/omega/self.Cf)
-    G = self.normalize (G, self.normfacs['G'])
     T = self.normalize (T, self.normfacs['T'])
+    G = self.normalize (G, self.normfacs['G'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
     Md = self.normalize (Md, self.normfacs['Md'])
     Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
     Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
     GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
 
     ub = torch.tensor ([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl], dtype=torch.float)
     with torch.no_grad():

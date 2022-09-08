@@ -1,5 +1,5 @@
 #second topic type(d,s,i,c) value
--1.000 G    d  476.0
+-1.000 G    d    0.0
 -1.000 Ctl  d    0.0
 -1.000 T    d   25.0
 -1.000 Fc   d   60.0
