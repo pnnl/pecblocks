@@ -9,8 +9,8 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = './data/balanced.hdf5'
-model_path = './big/balanced_config.json'
+data_path = './data/flatbalanced.hdf5'
+model_path = './flatbal/flatbal_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:

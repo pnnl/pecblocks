@@ -4,6 +4,8 @@
 #  arg2: 1 to plot normalized quantities (default false)
 #  arg3: relative path to trained model configuration file
 #  arg4: relative path to the training data file, HDF5
+#
+# example: python pv3_test.py 189 1 flatbal/flatbal_config.json
 
 import pandas as pd
 import numpy as np
@@ -16,12 +18,12 @@ nrows = 2
 ncols = 9
 bNormalized = False
 
-data_path = './data/balanced.hdf5'
-model_path = './big/balanced_config.json'
+data_path = './data/flatbalanced.hdf5'
+model_path = './flatbal/flatbal_config.json'
 report_path = './report'
 
 def plot_case(model, idx, bPNG=False):
-  rmse, mae, y_hat, y_true, u = model.testOneCase(idx)
+  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
   if not bPNG:
     print ('column', model.COL_Y, 'RMS errors', rmse)
@@ -60,6 +62,7 @@ def plot_case(model, idx, bPNG=False):
   if bPNG:
     plt.savefig(os.path.join(report_path,'case{:d}.png'.format(idx)))
   else:
+    plt.rcParams['savefig.directory'] = os.getcwd()
     plt.show()
   plt.close(fig)
 

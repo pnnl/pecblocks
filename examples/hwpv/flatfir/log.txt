@@ -1,0 +1,93 @@
+C:\src\pecblocks\examples\hwpv>python pv3_training.py ./flatfir/flatfir_config.json
+model_folder = ./flatfir
+model_root = flatfir
+data_path = ./data/flatbalanced.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6, 7]
+idx_out [8, 9, 10, 11]
+read 1500 dataframes
+dt=0.002000 data_len=2500 n_io=12 n_case=1500
+['T', 'G', 'Fc', 'Md', 'Mq', 'Vrms', 'GVrms', 'Ctl'] ['Vdc', 'Idc', 'Id', 'Iq'] (1500, 2500, 12)
+shapes of t (2500,) data_train (1500, 2500, 12) n_in=8, n_out=4
+t range 0.000000 to 4.998000
+Before Scaling:
+Column       Min       Max      Mean     Range
+T         15.000    35.003    25.001    20.003
+G         -0.000   999.995   384.713   999.995
+Fc        55.000    65.000    60.002    10.000
+Md         0.800     1.200     1.001     0.400
+Mq        -0.499     0.501     0.001     1.000
+Vrms       0.000   566.449   338.458   566.449
+GVrms     -0.000   566.446   178.877   566.446
+Ctl        0.000     1.000     0.599     1.000
+Vdc       -0.000   439.789   275.138   439.789
+Idc       -0.000   292.836   100.089   292.836
+Id        -0.000   195.264    65.443   195.264
+Iq       -81.164    72.384    -1.357   153.549
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+T         -0.500     0.500    -0.000     1.000    20.003    25.001
+G         -0.385     0.615    -0.000     1.000   999.995   384.713
+Fc        -0.500     0.500     0.000     1.000    10.000    60.002
+Md        -0.503     0.497     0.000     1.000     0.400     1.001
+Mq        -0.500     0.500    -0.000     1.000     1.000     0.001
+Vrms      -0.598     0.402     0.000     1.000   566.449   338.458
+GVrms     -0.316     0.684    -0.000     1.000   566.446   178.877
+Ctl       -0.599     0.401    -0.000     1.000     1.000     0.599
+Vdc       -0.626     0.374     0.000     1.000   439.789   275.138
+Idc       -0.342     0.658     0.000     1.000   292.836   100.089
+Id        -0.335     0.665    -0.000     1.000   195.264    65.443
+Iq        -0.520     0.480    -0.000     1.000   153.549    -1.357
+make_mimo_block fir
+Iter    0 of  500 | Loss     0.071197
+Iter   10 of  500 | Loss     0.032736
+Iter   20 of  500 | Loss     0.011921
+Iter   30 of  500 | Loss     0.008740
+Iter   40 of  500 | Loss     0.005427
+Iter   50 of  500 | Loss     0.003613
+Iter   60 of  500 | Loss     0.002494
+Iter   70 of  500 | Loss     0.002339
+Iter   80 of  500 | Loss     0.002208
+Iter   90 of  500 | Loss     0.002087
+Iter  100 of  500 | Loss     0.002003
+Iter  110 of  500 | Loss     0.001917
+Iter  120 of  500 | Loss     0.001831
+Iter  130 of  500 | Loss     0.001736
+Iter  140 of  500 | Loss     0.001628
+Iter  150 of  500 | Loss     0.001498
+Iter  160 of  500 | Loss     0.001340
+Iter  170 of  500 | Loss     0.001160
+Iter  180 of  500 | Loss     0.000980
+Iter  190 of  500 | Loss     0.000842
+Iter  200 of  500 | Loss     0.000766
+Iter  210 of  500 | Loss     0.000726
+Iter  220 of  500 | Loss     0.000700
+Iter  230 of  500 | Loss     0.000678
+Iter  240 of  500 | Loss     0.000660
+Iter  250 of  500 | Loss     0.000643
+Iter  260 of  500 | Loss     0.000629
+Iter  270 of  500 | Loss     0.000615
+Iter  280 of  500 | Loss     0.000602
+Iter  290 of  500 | Loss     0.000590
+Iter  300 of  500 | Loss     0.000579
+Iter  310 of  500 | Loss     0.000568
+Iter  320 of  500 | Loss     0.000557
+Iter  330 of  500 | Loss     0.000547
+Iter  340 of  500 | Loss     0.000537
+Iter  350 of  500 | Loss     0.000527
+Iter  360 of  500 | Loss     0.000517
+Iter  370 of  500 | Loss     0.000542
+Iter  380 of  500 | Loss     0.000498
+Iter  390 of  500 | Loss     0.000493
+Iter  400 of  500 | Loss     0.000479
+Iter  410 of  500 | Loss     0.000470
+Iter  420 of  500 | Loss     0.000460
+Iter  430 of  500 | Loss     0.000450
+Iter  440 of  500 | Loss     0.000440
+Iter  450 of  500 | Loss     0.000430
+Iter  460 of  500 | Loss     0.000420
+Iter  470 of  500 | Loss     0.000410
+Iter  480 of  500 | Loss     0.000399
+Iter  490 of  500 | Loss     0.000389
+COL_Y ['Vdc', 'Idc', 'Id', 'Iq']
+Train time: 4933.28, Recent loss: 0.000384, RMS Errors: 0.0401 0.0455 0.0408 0.0226
+                                            MAE Errors: 0.0131 0.0190 0.0177 0.0087

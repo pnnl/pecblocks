@@ -7,6 +7,8 @@ import os
 import sys
 import time
 from dynonet.lti import MimoLinearDynamicalOperator
+from dynonet.lti import MimoFirLinearDynamicalOperator
+from dynonet.lti import StableSecondOrderMimoLinearDynamicalOperator
 from dynonet.static import MimoStaticNonLinearity
 import dynonet.metrics
 from common import PVInvDataset
@@ -31,6 +33,8 @@ class pv3():
     self.print_freq = None
     self.batch_size = None
     self.n_loss_skip = None
+    self.n_pad = None
+    self.gtype = None
     self.n_skip = None
     self.n_trunc = None
     self.n_dec = None
@@ -71,6 +75,14 @@ class pv3():
     self.n_skip = config['n_skip']
     self.n_trunc = config['n_trunc']
     self.n_loss_skip = config['n_loss_skip']
+    if 'n_pad' in config:
+      self.n_pad = config['n_pad']
+    else:
+      self.n_pad = 100
+    if 'gtype' in config:
+      self.gtype = config['gtype']
+    else:
+      self.gtype = 'iir'
     self.n_dec = config['n_dec']
     self.na = config['na']
     self.nb = config['nb']
@@ -88,13 +100,42 @@ class pv3():
     self.t = None
     self.n_cases = 0
 
+  def make_mimo_block(self, gtype, n_in, n_out, n_a, n_b, n_k):
+    print ('make_mimo_block', gtype)
+    if gtype == 'fir':
+      block = MimoFirLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b)
+      if n_a > 0:
+        print (' *** for FIR block, n_a should be 0, not', n_a)
+    elif gtype == 'stable2nd':
+      block = StableSecondOrderMimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out)
+      if n_a != 2:
+        print (' *** for FIR block, n_a should be 2, not', n_a)
+      if n_b != 2:
+        print (' *** for FIR block, n_b should be 2, not', n_a)
+    elif gtype == 'iir':
+      block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
+    else:
+      print (' *** unrecognized gtype, using IIR')
+      block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
+    return block
+
+  def make_mimo_ylin(self, y_non):
+    if self.gtype == 'iir':
+      return self.H1 (y_non, self.y0, self.u0)
+    elif self.gtype == 'fir':
+      return self.H1 (y_non)
+    elif self.gtype == 'stable2nd':
+      return self.H1 (y_non, self.y0, self.u0)
+    return None
+
   def read_lti(self, config):
     n_in = config['n_in']
     n_out = config['n_out']
     n_a = config['n_a']
     n_b = config['n_b']
     n_k = config['n_k']
-    block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
+    gtype = config['gtype']
+    block = self.make_mimo_block (n_in, n_out, n_a, n_b, n_k)
     dict = block.state_dict()
     for i in range(n_out):
       for j in range(n_in):
@@ -153,6 +194,14 @@ class pv3():
       self.set_idx_in_out()
       self.normfacs = config['normfacs']
       self.t_step = config['t_step']
+      if 'n_pad' in config:
+        self.n_pad = config['n_pad']
+      else:
+        self.n_pad = 100
+      if 'gtype' in config:
+        self.gtype = config['gtype']
+      else:
+        self.gtype = 'iir'
 
   def load_sim_config(self, filename, model_only=True):
     fp = open (filename, 'r')
@@ -187,7 +236,43 @@ class pv3():
     key = 'net.2.bias'
     model[label][key] = block[key][:].numpy().tolist()
 
+  def append_fir(self, model, label, H):
+    n_in = H.in_channels
+    n_out = H.out_channels
+    model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': H.n_b, 'n_a': H.n_a, 'n_k':0}
+    block = H.state_dict()
+    b = block['G.weight'].numpy()
+    for i in range(n_out):
+      for j in range(n_in):
+        key = 'b_{:d}_{:d}'.format(i, j)
+        ary = b[i,j,:]
+        model[label][key] = ary.tolist()
+
+  def append_2nd(self, model, label, H):
+    n_in = H.b_coeff.shape[1]
+    n_out = H.b_coeff.shape[0]
+    model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 2, 'n_a': 2, 'n_k':0}
+    block = H.state_dict()
+    b = block['b_coeff'].numpy()
+    rho = block['rho'].numpy().squeeze()
+    psi = block['psi'].numpy().squeeze()
+    for i in range(n_out):
+      for j in range(n_in):
+        key = 'b_{:d}_{:d}'.format(i, j)
+        ary = b[i,j,:]
+        model[label][key] = ary.tolist()
+        key = 'rho_{:d}_{:d}'.format(i, j)
+        model[label][key] = float(rho[i,j])
+        key = 'psi_{:d}_{:d}'.format(i, j)
+        model[label][key] = float(psi[i,j])
+
   def append_lti(self, model, label, H):
+    if self.gtype == 'fir':
+      self.append_fir(model, label, H)
+      return
+    elif self.gtype == 'stable2nd':
+      self.append_2nd(model, label, H)
+      return
     n_in = H.in_channels
     n_out = H.out_channels
     model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': H.n_b, 'n_a': H.n_a, 'n_k': H.n_k}
@@ -300,9 +385,13 @@ class pv3():
     # structure is FHF cascade:
     #  inputs COL_U as ub; outputs COL_Y as y_hat
     self.F1 = MimoStaticNonLinearity(in_channels=len(self.idx_in), out_channels=len(self.idx_out), n_hidden=self.nh1, activation=self.activation)
-    self.H1 = MimoLinearDynamicalOperator(in_channels=len(self.idx_out), out_channels=len(self.idx_out), n_b=self.nb, n_a=self.na, n_k=self.nk)
-    self.y0 = torch.zeros((self.batch_size, self.na), dtype=torch.float)
-    self.u0 = torch.zeros((self.batch_size, self.nb), dtype=torch.float)
+    self.H1 = self.make_mimo_block(gtype=self.gtype, n_in=len(self.idx_out), n_out=len(self.idx_out), n_b=self.nb, n_a=self.na, n_k=self.nk)
+    if self.gtype in ['iir', 'stable2nd']:
+      self.y0 = torch.zeros((self.batch_size, self.na), dtype=torch.float)
+      self.u0 = torch.zeros((self.batch_size, self.nb), dtype=torch.float)
+    else:
+      self.y0 = None
+      self.u0 = None
     self.F2 = MimoStaticNonLinearity(in_channels=len(self.idx_out), out_channels=len(self.idx_out), n_hidden=self.nh2, activation=self.activation)
 
   def trainModelCoefficients(self, bMAE = False):
@@ -323,7 +412,7 @@ class pv3():
         self.optimizer.zero_grad()
         # Simulate FHF
         y_non = self.F1 (ub)
-        y_lin = self.H1 (y_non, self.y0, self.u0)
+        y_lin = self.make_mimo_ylin (y_non)
         y_hat = self.F2 (y_lin)
         # Compute fit loss
         if self.n_loss_skip > 0:
@@ -372,6 +461,8 @@ class pv3():
     config['n_trunc'] = self.n_trunc
     config['n_dec'] = self.n_dec
     config['n_loss_skip'] = self.n_loss_skip
+    config['n_pad'] = self.n_pad
+    config['gtype'] = self.gtype
     config['na'] = self.na
     config['nb'] = self.nb
     config['nk'] = self.nk
@@ -402,7 +493,7 @@ class pv3():
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
-  def testOneCase(self, case_idx, npad=500):
+  def testOneCase(self, case_idx, npad):
     case_data = self.data_train[[case_idx],:,:]
     udata = case_data[0,:,self.idx_in].squeeze().transpose()
 
@@ -416,7 +507,7 @@ class pv3():
 
     ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
     y_non = self.F1 (ub)
-    y_lin = self.H1 (y_non, self.y0, self.u0)
+    y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
     print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
 #    self.printStateDicts()
@@ -430,7 +521,7 @@ class pv3():
     print (rmse.shape, mae.shape, y_hat.shape, y_true.shape, udata.shape)
     return rmse, mae, y_hat, y_true, udata
 
-  def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad=100):
+  def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad):
     T = self.normalize (T, self.normfacs['T'])
     G = self.normalize (G, self.normfacs['G'])
     Fc = self.normalize (Fc, self.normfacs['Fc'])
@@ -458,7 +549,7 @@ class pv3():
 #    print ('ub, y0, u0 shapes =', ub.shape, self.y0.shape, self.u0.shape)
 
     y_non = self.F1 (ub)
-    y_lin = self.H1 (y_non, self.y0, self.u0)
+    y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
 
 #   print ('y_non', y_non.shape)
@@ -505,7 +596,7 @@ class pv3():
   def trainingErrors(self, bByCase=False):
     ub = torch.tensor (self.data_train[:,:,self.idx_in])
     y_non = self.F1 (ub)
-    y_lin = self.H1 (y_non, self.y0, self.u0)
+    y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
 
     y_hat = y_hat.detach().numpy()
