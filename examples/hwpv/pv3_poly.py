@@ -109,9 +109,9 @@ class pv3():
     elif gtype == 'stable2nd':
       block = StableSecondOrderMimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out)
       if n_a != 2:
-        print (' *** for FIR block, n_a should be 2, not', n_a)
-      if n_b != 2:
-        print (' *** for FIR block, n_b should be 2, not', n_a)
+        print (' *** for stable 2nd-order block, n_a should be 2, not', n_a)
+      if n_b != 3:
+        print (' *** for stable 2nd-order block, n_b should be 3, not', n_b)
     elif gtype == 'iir':
       block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
     else:
@@ -501,15 +501,15 @@ class pv3():
     ic = np.zeros((npad, len(self.idx_in)))
     for i in range(len(self.idx_in)):
       ic[:,i] = udata[0,i]
-    print (case_data.shape, udata.shape, ic.shape)
-    print (ic)
+#    print (case_data.shape, udata.shape, ic.shape)
+#    print (ic)
     udata = np.concatenate ((ic, udata))
 
     ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
     y_non = self.F1 (ub)
     y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
-    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
+#    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
 #    self.printStateDicts()
 #    print (y_lin)
 
@@ -518,7 +518,7 @@ class pv3():
     rmse = dynonet.metrics.error_rmse(y_true, y_hat)
     mae = dynonet.metrics.error_mae(y_true, y_hat)
     udata = udata[npad:,:]
-    print (rmse.shape, mae.shape, y_hat.shape, y_true.shape, udata.shape)
+#    print (rmse.shape, mae.shape, y_hat.shape, y_true.shape, udata.shape)
     return rmse, mae, y_hat, y_true, udata
 
   def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad):
@@ -638,6 +638,73 @@ class pv3():
     self.Cf = Cf
     self.Lc = Lc
 
+  def check_poles(self):
+    #----------------------------------------------
+    # create a matrix of SISO transfer functions
+    #----------------------------------------------
+    HTF = {}
+    n_in = 1
+    n_out = 1
+    if self.gtype == 'fir':
+      print ('FIR H(z) is always stable')
+      return
+    elif self.gtype == 'stable2nd':
+      b = self.H1.b_coeff.detach().numpy().squeeze()
+      n_in = b.shape[1]
+      n_out = b.shape[0]
+      rho = self.H1.rho.detach().numpy().squeeze()
+      psi = self.H1.psi.detach().numpy().squeeze()
+      print ('b', b.shape, b)
+      print ('rho', rho.shape, rho)
+      print ('psi', psi.shape, psi)
+      r = 1 / (1 + np.exp(-rho))
+      beta = np.pi / (1 + np.exp(-psi))
+      a1 = -2 * r * np.cos(beta)
+      a2 = r * r
+      print ('a1', a1)
+      print ('a2', a2)
+      a = np.ones ((b.shape[0], b.shape[1], 3))
+      a[:,:,1] = a1
+      a[:,:,2] = a2
+      print ('a', a)
+      for i in range(n_out):
+        HTF[i] = {}
+        for j in range(n_in):
+          HTF[i][j] = control.TransferFunction (b[i, j, :], a[i, j, :], self.t_step)
+    elif self.gtype == 'iir':
+      a_coeff = self.H1.a_coeff.detach().numpy()
+      b_coeff = self.H1.b_coeff.detach().numpy()
+      n_in = b_coeff.shape[1]
+      n_out = b_coeff.shape[0]
+      num, den = self.H1.get_tfdata()
+      print ('num', num.shape, num)
+      print ('den', den.shape, den)
+      print ('n_k', self.H1.n_k, self.H1.n_a, self.H1.n_b)
+      G_tf = control.TransferFunction (num[0][0], den[0][0], self.t_step)
+      print ('G_tf', G_tf)
+      for i in range(n_out):
+        HTF[i] = {}
+        for j in range(n_in):
+          HTF[i][j] = control.TransferFunction (b_coeff[i, j, :], # indexing ::-1 will reverse the order
+                                                np.hstack(([1.0],a_coeff[i, j, :])),
+                                                self.t_step)
+      print ('HTF', HTF[0][0])
+    else:
+      print ('cannot check poles for unknown gtype', self.gtype)
+      return
+
+    for i in range(n_out):
+      for j in range(n_in):
+        flag = ''
+        polemag = abs(HTF[i][j].poles())
+        if np.any(polemag >= 1.0):
+          print ('==H(z)[{:d}][{:d}] ({:s} from {:s})'.format(i, j, self.COL_Y[i], self.COL_Y[j]))
+          print (HTF[i][j])
+          flag = '*** UNSTABLE ***'
+          print (' {:s} Magnitudes of Poles: {:s}'.format (flag, str(polemag)))
+        else:
+          print ('==H(z)[{:d}][{:d}] ({:s} from {:s}) pole magnitudes {:s}'.format(i, j, self.COL_Y[i], self.COL_Y[j], str(polemag)))
+
   def start_simulation(self):
 #-------------------------------------------------------------------------------------------------------
 ## control MIMO TransferFunction, needs 'slycot' package for forced_response
@@ -656,25 +723,6 @@ class pv3():
 #    self.y0 = torch.zeros((1, self.H1.n_a), dtype=torch.float)
 #    self.u0 = torch.zeros((1, self.H1.n_b), dtype=torch.float)
 #    self.H1.eval()                                            
-#--------------------------------------------------------------
-# implement a matrix of SISO transfer functions; y0 = u0*h00 + u1*h10 + u2*h20, etc.
-#---------------------------------------------------------------------------------------
-#    a_coeff = self.H1.a_coeff.detach().numpy()                                         
-#    b_coeff = self.H1.b_coeff.detach().numpy()                                         
-#    self.HTF = {}                                                                      
-#    self.HTF_X0 = {}                                                                   
-#    self.HTF_Y = np.zeros (self.H1.out_channels)                                       
-#    for i in range(self.H1.in_channels):                                               
-#      self.HTF[i] = {}                                                                 
-#      self.HTF_X0[i] = {}                                                              
-#      for j in range(self.H1.out_channels):                                            
-#        self.HTF_X0[i][j] = 0.0                                                        
-#        self.HTF[i][j] = control.TransferFunction (b_coeff[i, j, :],                   
-#                                                   np.hstack(([1.0],a_coeff[i, j, :])),
-#                                                   self.t_step)                        
-#    for i in range(self.H1.in_channels):                                               
-#      for j in range(self.H1.out_channels):                                            
-#        print (self.HTF[i][j])                                                         
 #---------------------------------------------------------------------------------------
 # set up IIR filters for time step simulation
     self.a_coeff = self.H1.a_coeff.detach().numpy()                                         

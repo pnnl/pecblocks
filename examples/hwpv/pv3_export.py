@@ -8,6 +8,7 @@ import sys
 import pv3_poly as pv3_model
 
 model_path = './big/balanced_config.json'
+model_path = './flatstable/flatstable_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -27,4 +28,6 @@ if __name__ == '__main__':
   model.initializeModelStructure()
   model.loadModelCoefficients()
   model.exportModel(export_path)
+  model.check_poles()
+#  model.printStateDicts()
 

@@ -11,6 +11,7 @@ import pv3_poly as pv3_model
 
 data_path = './data/flatbalanced.hdf5'
 model_path = './flatbal/flatbal_config.json'
+model_path = './flatstable/flatstable_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:

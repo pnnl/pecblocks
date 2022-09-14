@@ -22,6 +22,8 @@ data_path = './data/flatbalanced.hdf5'
 model_path = './flatbal/flatbal_config.json'
 report_path = './report'
 
+model_path = './flatstable/flatstable_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)

@@ -14,7 +14,7 @@
   "n_pad": 500,
   "gtype": "stable2nd",
   "na": 2,
-  "nb": 2,
+  "nb": 3,
   "nk": 0,
   "activation": "tanh",
   "nh1": 80,
