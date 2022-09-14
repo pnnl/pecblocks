@@ -18,6 +18,7 @@ import torch
 import torch.nn as nn
 import math
 import control
+import harold
 
 class pv3():
   def __init__(self, training_config=None, sim_config=None):
@@ -448,6 +449,48 @@ class pv3():
     B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"))
     self.F2.load_state_dict(B3)
 
+  def make_H1s(self, Hz):
+    if self.gtype != 'iir':
+      return {}
+    n_in = Hz.in_channels
+    n_out = Hz.out_channels
+    n_a = Hz.n_a + 1
+    n_b = Hz.n_b
+    H1s = {'n_in':n_in, 'n_out':n_out, 'na': n_a, 'nb': n_b}
+    btf, atf = Hz.get_tfdata()
+    b_coeff, a_coeff = Hz.__get_ba_coeff__()
+#   print ('btf', btf.shape, btf[0][0])
+#   print ('b_coeff', b_coeff.shape, b_coeff[0][0])
+#   print ('atf', atf.shape, atf[0][0])
+#   print ('a_coeff', a_coeff.shape, a_coeff[0][0])
+    a = atf
+    b = b_coeff
+
+    # convert each MIMO channel one at a time
+    for i in range(n_out):
+      for j in range(n_in):
+        Hz_har = harold.Transfer (b[i][j], a[i][j], dt=self.t_step)
+        Hs_har = harold.undiscretize (Hz_har, method='forward euler', prewarp_at=499.99, q='none')
+        numHs = np.array(Hs_har.num).ravel().tolist()
+        denHs = np.array(Hs_har.den).ravel().tolist()
+        Hs = control.TransferFunction(numHs, denHs)
+        poles = control.pole(Hs)
+        real_poles = np.real(poles)
+        imag_poles = np.imag(poles) / (2.0 * np.pi)
+        if np.all(real_poles < 0):
+          flag = ''
+        else:
+          flag = '** unstable **'
+        frequencies_present = []
+        for hz in imag_poles:
+          if hz > 0.0:
+            frequencies_present.append (hz)
+        print ('H1s[{:d}][{:d}] {:s} Real Poles:'.format(i, j, flag), real_poles, 'Freqs [Hz]:', frequencies_present)
+        H1s['b_{:d}_{:d}'.format(i,j)] = np.array(Hs.num).squeeze().tolist()
+        H1s['a_{:d}_{:d}'.format(i,j)] = np.array(Hs.den).squeeze().tolist()
+
+    return H1s
+
   def exportModel(self, filename):
     config = {'name':'PV3', 'type':'F1+H1+F2', 't_step': self.t_step}
     config['normfacs'] = {}
@@ -480,6 +523,7 @@ class pv3():
     config['COL_U'] = self.COL_U
 
     self.append_lti (config, 'H1', self.H1)
+    config['H1s'] = self.make_H1s(self.H1)
     self.append_net (config, 'F1', self.F1)
     self.append_net (config, 'F2', self.F2)
 
@@ -654,19 +698,19 @@ class pv3():
       n_out = b.shape[0]
       rho = self.H1.rho.detach().numpy().squeeze()
       psi = self.H1.psi.detach().numpy().squeeze()
-      print ('b', b.shape, b)
-      print ('rho', rho.shape, rho)
-      print ('psi', psi.shape, psi)
+#     print ('b', b.shape, b)
+#     print ('rho', rho.shape, rho)
+#     print ('psi', psi.shape, psi)
       r = 1 / (1 + np.exp(-rho))
       beta = np.pi / (1 + np.exp(-psi))
       a1 = -2 * r * np.cos(beta)
       a2 = r * r
-      print ('a1', a1)
-      print ('a2', a2)
+#     print ('a1', a1)
+#     print ('a2', a2)
       a = np.ones ((b.shape[0], b.shape[1], 3))
       a[:,:,1] = a1
       a[:,:,2] = a2
-      print ('a', a)
+#     print ('a', a)
       for i in range(n_out):
         HTF[i] = {}
         for j in range(n_in):
@@ -677,18 +721,18 @@ class pv3():
       n_in = b_coeff.shape[1]
       n_out = b_coeff.shape[0]
       num, den = self.H1.get_tfdata()
-      print ('num', num.shape, num)
-      print ('den', den.shape, den)
-      print ('n_k', self.H1.n_k, self.H1.n_a, self.H1.n_b)
+#     print ('num', num.shape, num)
+#     print ('den', den.shape, den)
+#     print ('n_k', self.H1.n_k, self.H1.n_a, self.H1.n_b)
       G_tf = control.TransferFunction (num[0][0], den[0][0], self.t_step)
-      print ('G_tf', G_tf)
+#     print ('G_tf', G_tf)
       for i in range(n_out):
         HTF[i] = {}
         for j in range(n_in):
           HTF[i][j] = control.TransferFunction (b_coeff[i, j, :], # indexing ::-1 will reverse the order
                                                 np.hstack(([1.0],a_coeff[i, j, :])),
                                                 self.t_step)
-      print ('HTF', HTF[0][0])
+#     print ('HTF', HTF[0][0])
     else:
       print ('cannot check poles for unknown gtype', self.gtype)
       return
@@ -703,7 +747,8 @@ class pv3():
           flag = '*** UNSTABLE ***'
           print (' {:s} Magnitudes of Poles: {:s}'.format (flag, str(polemag)))
         else:
-          print ('==H(z)[{:d}][{:d}] ({:s} from {:s}) pole magnitudes {:s}'.format(i, j, self.COL_Y[i], self.COL_Y[j], str(polemag)))
+          pass
+#          print ('==H(z)[{:d}][{:d}] ({:s} from {:s}) pole magnitudes {:s}'.format(i, j, self.COL_Y[i], self.COL_Y[j], str(polemag)))
 
   def start_simulation(self):
 #-------------------------------------------------------------------------------------------------------
