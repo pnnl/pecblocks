@@ -1,6 +1,6 @@
 # copyright 2021-2022 Battelle Memorial Institute
 # reads a spreadsheet of Simscape output, plots channels and converts to HDF5
-#  arg1: input file name, format like case###.xlsx, default case500.xlsx
+#  arg1: input file name, format like case###.xlsx, default case500.xlsx, *.xlsx to glob
 #  arg2: output file name, default test.hdf5
 #  example: python xlsx_to_hdf5.py newcase.xlsx new.hdf5
 #
@@ -10,11 +10,16 @@
 # file uses the same schema as for COMTRADE analog channels, which
 # are compatible with HWPV training scripts.
 
+# this next line would save the Pandas Dataframe, which is not suited for HWPV fitting
+#  df.to_hdf(outputfile, key='Test', mode='w')
+#  df.plot(subplots=True)
+
 import sys
 import os
 import pandas as pd
 import h5py
 import matplotlib.pyplot as plt
+import glob
 
 plot_defs = [
   {'row':0, 'col':0, 'tags':['G'], 'title':'Irradiance', 'ylabel':'W/m2'},
@@ -46,31 +51,23 @@ def saveas_comtrade_channels (filename, groupname, df, mode='w'):
     grp.create_dataset (lbl, data=data, compression='gzip')
   f.close()
 
-if __name__ == '__main__':
-  inputfile = 'case500.xlsx'
-  outputfile = 'test.hdf5'
-  if len(sys.argv) > 1:
-    inputfile = sys.argv[1]
-    if len(sys.argv) > 2:
-      outputfile = sys.argv[2]
-
+def read_one_xlsx (inputfile, bSummarize=False):
+  casenumber = os.path.basename(inputfile).rstrip('.xlsx').lstrip('case')
+  if not bSummarize:
+    print ('Processing {:s} as case {:s}'.format(inputfile, casenumber))
   df = pd.read_excel (inputfile)
   df.set_index ('t', inplace=True)
-  df.info()
-  print ('Column                         Min           Max          Mean')
-  for lbl, data in df.iteritems():
-    print ('{:20s} {:13.5f} {:13.5f} {:13.5f}'.format (lbl, data.min(), data.max(), data.mean()))
+  if bSummarize:
+    df.info()
+    print ('Column                         Min           Max          Mean')
+    for lbl, data in df.iteritems():
+      print ('{:20s} {:13.5f} {:13.5f} {:13.5f}'.format (lbl, data.min(), data.max(), data.mean()))
+  return df, casenumber
 
-# this next line would save the Pandas Dataframe, which is not suited for HWPV fitting
-#  df.to_hdf(outputfile, key='Test', mode='w')
-#  df.plot(subplots=True)
-  
-  casenumber = inputfile.rstrip('.xlsx').lstrip('case')
-  saveas_comtrade_channels (outputfile, casenumber, df)
-
+def plot_dataframe (df, casenumber):
   plt.rcParams['savefig.directory'] = os.getcwd()
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
-  fig.suptitle ('Simulation Results from {:s}'.format(inputfile))
+  fig.suptitle ('Simulation Results from Case {:s}'.format(casenumber))
   t = df.index
   for plot in plot_defs:
     plt_ax = ax[plot['row'], plot['col']]
@@ -80,6 +77,28 @@ if __name__ == '__main__':
     plt_ax.set_ylabel (plot['ylabel'])
     plt_ax.grid()
     plt_ax.legend (loc='best')
-  
   plt.show()
+  plt.close()
+
+if __name__ == '__main__':
+  inputfile = 'case500.xlsx'
+  outputfile = 'test.hdf5'
+  if len(sys.argv) > 1:
+    inputfile = sys.argv[1]
+    if len(sys.argv) > 2:
+      outputfile = sys.argv[2]
+
+  mode = 'w'
+  if '*' in inputfile:
+    files = glob.glob (inputfile)
+    print ('Writing {:d} xlsx files to {:s}'.format (len(files), outputfile))
+    for fname in files:
+      df, casenumber = read_one_xlsx (fname, bSummarize=False)
+      saveas_comtrade_channels (outputfile, casenumber, df, mode=mode)
+      mode = 'a'
+  else:
+    df, casenumber = read_one_xlsx (inputfile, bSummarize=True)
+    saveas_comtrade_channels (outputfile, casenumber, df, mode=mode)
+    plot_dataframe (df, casenumber)
+
 

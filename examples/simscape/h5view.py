@@ -21,6 +21,7 @@ with h5py.File(fname, 'r') as f:
     print (' ', grp_name)
     for key in grp:
       print ('   ', key)
+    break
 
   dlen = grp['t'].len()
   t = np.zeros(dlen)
