@@ -24,6 +24,13 @@ report_path = './report'
 
 model_path = './flatstable/flatstable_config.json'
 
+
+data_path = './data/balanced.hdf5'
+model_path = './big/balanced_config.json'
+
+data_path = '../simscape/balanced.hdf5'
+model_path = '../simscape/balanced_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)

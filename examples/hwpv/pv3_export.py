@@ -11,6 +11,8 @@ model_path = './big/balanced_config.json'
 model_path = './flatstable/flatstable_config.json'
 model_path = './models/unbalanced_config.json'
 
+model_path = '../simscape/balanced_config.json'
+
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     model_path = sys.argv[1]

@@ -21,13 +21,7 @@ To run this example:
     python h5view.py
     python training_plot.py
 
-![Example Simscape Channels](case500.png)
-
-![Example HWPV Training Inputs](BalInputs.png)
-
-![Example HWPV Training Outputs](BalOutputs.png)
-
-### Notes to Investigate
+In the first example simulation result, shown below, some corrections were identified:
 
 - The output variables do not start at zero output. When _G_ is zero at _t=0_, _Vdc_ seems to be at its open-circuit value at _t=0_. This leads to non-zero initialization of _Idc_, _Id_, and _Iq_. This will cause problems in fitting HWPV models.
 - Oscillations in _Idc_ will also cause problems in fitting HWPV models. Is there a filtered _Idc_ available from Simscape?
@@ -36,13 +30,23 @@ To run this example:
 - The time step was not defined in _case500.xlsx_. The assumption is 0.002s, because it results in a 4-second simulation time.
 - The training simulations should now begin with 1 second of zero initialization, i.e., the ramp in _G_ should start at 1s. The step event should begin at 3s, and the simulation runs for 5s.
 
-A full set of 1500 training cases should cover input ranges similar to the following (plus 1 second of initialization):
+![Example Simscape Channels](case500.png)
 
-[1500 Inputs (4 seconds)](../hwpv/big/BalInputs.png)
+### Fitted Model
 
-This produces 1500 training case outputs that cover a full range of _Iq_ and other variables, similar to the following:
+A full set of 1500 Simscape training simulations was provided, with most of the noted corrections.
+As shown below, the ramp in _G_ still begins at 0.1s instead of 1.0s.
 
-[1500 Outputs (4 seconds)](../hwpv/big/BalOutputs.png)
+![1500 HWPV Training Inputs](BalInputs.png)
+
+![1500 HWPV Training Outputs](BalOutputs.png)
+
+An HWPV model was fitted to this data, achieving normalized RMSE=[0.0093 0.0079 0.0068 0.0036] for [Vdc Idc Id Iq]
+after 2000 iterations. All s-domain poles of H1(s) are stable. The training time was 6.63 hours. An example
+result of the fitted model is shown below. See _balanced\_fhf.json_ for the HWPV coefficients and _log.txt_ for
+a record of the training loss and H1(s) poles.
+
+![Fitted Case 189](Trained_Case189.png)
 
 ### License
 

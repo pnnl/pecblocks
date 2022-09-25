@@ -13,6 +13,9 @@ data_path = './data/flatbalanced.hdf5'
 model_path = './flatbal/flatbal_config.json'
 model_path = './flatstable/flatstable_config.json'
 
+data_path = '../simscape/balanced.hdf5'
+model_path = '../simscape/balanced_config.json'
+
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     model_path = sys.argv[1]
