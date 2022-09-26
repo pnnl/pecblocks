@@ -18,6 +18,7 @@ model_path = '../simscape/balanced_config.json'
 
 data_path = '../../../atptools/unbalanced.hdf5'
 model_path = './tacs/tacs_config.json'
+model_path = './unbal/unbal_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
