@@ -18,15 +18,20 @@ data_path = r'./data/pv1.hdf5'
 model_folder = r'./models'
 
 idx_in = [0,1,2,3,4,5,6]
-idx_out = [7,8,9]
+idx_out = [7,8,9,10]
+idx_out1 = idx_out[:2]
+idx_out2 = idx_out[2:]
+idx_out3 = idx_out[3:]
 
 class pv1():
   def __init__(self, training_config=None, sim_config=None):
     self.init_to_none()
     if training_config is not None:
       self.load_training_config (training_config)
+      print('train_config')
     if sim_config is not None:
       self.load_sim_config (sim_config)
+      print('sim_config')
 
   def init_to_none(self):
     self.lr = None
@@ -58,6 +63,7 @@ class pv1():
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
+    print(filename)
     config = json.load (fp)
     fp.close()
     self.lr = config['lr']
@@ -101,7 +107,7 @@ class pv1():
         dict['b_coeff'][i,j,:] = torch.Tensor(b)
 
     block.load_state_dict (dict)
-#    print ('state dict', block.state_dict())
+    print ('state dict', block.state_dict())
     return block
 
   def read_net(self, config):
@@ -140,10 +146,10 @@ class pv1():
 #    print ('COL_U', self.COL_U)      
 #    print ('COL_Y', self.COL_Y)      
 #    print ('t_step', self.t_step)    
-#    print ('F1', self.F1)            
-#    print ('H1', self.H1)            
-#    print ('F2', self.F2)            
-#    print ('normfacs', self.normfacs)
+    # print ('F1', self.F1)            
+    # print ('H1', self.H1)            
+    # print ('F2', self.F2)            
+    # print ('normfacs', self.normfacs)
 #-------------------------------------
 
   def append_net(self, model, label, F):
@@ -264,6 +270,7 @@ class pv1():
   def loadAndApplyNormalization(self, filename):
     self.loadNormalization(filename)
     idx = 0
+    #for c in self.COL_U :
     for c in self.COL_U + self.COL_Y:
       dmean = self.normfacs[c]['offset']
       drange = self.normfacs[c]['scale']
@@ -282,8 +289,16 @@ class pv1():
     self.y0 = torch.zeros((self.batch_size, self.na), dtype=torch.float)
     self.u0 = torch.zeros((self.batch_size, self.nb), dtype=torch.float)
     self.F2 = MimoStaticNonLinearity(in_channels=len(idx_out), out_channels=len(idx_out), n_hidden=self.nh2, activation=self.activation)
+    self.H2 = MimoLinearDynamicalOperator(in_channels=len(idx_out2), out_channels=len(idx_out3), n_b=3, n_a=1, n_k=0)
+   
+    H2a_coeff = torch.tensor([[[0.00],[0.00 ]]])
+    self.H2.a_coeff = nn.Parameter(H2a_coeff)
+    H2b_coeff = torch.tensor([[[-0.955e-2,0.955e-2,0],[1.0095,-1.91e-2,0.955e-2]]])
+    self.H2.b_coeff = nn.Parameter(H2b_coeff)
+    print ('H2.a', self.H2.a_coeff)
+    print ('H2.b', self.H2.b_coeff)
 
-  def trainModelCoefficients(self):
+  def trainModelCoefficients(self, bMAE = False):
     self.optimizer = torch.optim.Adam([
       {'params': self.F1.parameters(), 'lr': self.lr},
       {'params': self.H1.parameters(), 'lr': self.lr},
@@ -303,25 +318,62 @@ class pv1():
         y_non = self.F1 (ub)
         y_lin = self.H1 (y_non, self.y0, self.u0)
         y_hat = self.F2 (y_lin)
+        y_hat1 = y_hat[:,:,0:2]
+        y_hat2 = y_hat[:,:,2:4]
+        
+        # print('ub', ub.size())
+        # print('y_non', y_non.size())
+        # print('y_lin', y_lin.size())
+        # print('y_hat', y_hat.size())
+        # print('y_hat1', y_hat1.size())
+        # print('y_hat2', y_hat2.size())
+       
+        
+        y_lin2 = self.H2 (y_hat2, self.y0, self.u0)
+        #print('y_lin2', y_lin2.size())
+        #print('yb', yb.size())
+        y_hat3 = torch.cat((y_hat1,y_lin2), dim = 2)
+        # print('y_hat3', y_hat2.size())
         # Compute fit loss
-        err_fit = yb - y_hat
-        loss_fit = torch.sum(torch.abs(err_fit))
+        err_fit0 = yb[:,:,0]*1 - y_hat3[:,:,0]*1
+        err_fit1 = yb[:,:,1]*1 - y_hat3[:,:,1]*1
+        err_fit2 = yb[:,:,2]/2 - y_hat3[:,:,2]/2
+        
+        err_fit = torch.cat((err_fit0,err_fit1,err_fit2))
+        if bMAE:            
+          loss_fit = torch.sum(torch.abs(err_fit))
+          #print('mae error')
+        else:
+          loss_fit = torch.mean(err_fit**2)
+        
+        
+        
         loss = loss_fit
+        
 
         LOSS.append(loss.item())
         if itr % self.print_freq == 0:
-          print('Iter {:4d} of {:4d} | Loss {:12.4f}'.format (itr, self.num_iter, loss_fit))
+          print('Iter {:4d} of {:4d} | Loss {:12.4f}'.format (itr, self.num_iter, loss))
 
         # Optimize
         loss.backward()
         self.optimizer.step()
     train_time = time.time() - start_time
+    
+    # print ('F1', self.F1)            
+    print ('H2.a', self.H2.a_coeff)
+    print ('H2.b', self.H2.b_coeff)
+    # print ('H1.out', self.H1.out_channels)            
+    # print ('F2', self.F2)            
+    
     return train_time, LOSS
 
   def saveModelCoefficients(self, model_folder):
     torch.save(self.F1.state_dict(), os.path.join(model_folder, "F1.pkl"))
     torch.save(self.H1.state_dict(), os.path.join(model_folder, "H1.pkl"))
     torch.save(self.F2.state_dict(), os.path.join(model_folder, "F2.pkl"))
+    torch.save(self.H2.state_dict(), os.path.join(model_folder, "H2.pkl"))
+
 
   def loadModelCoefficients(self, model_folder):
     B1 = torch.load(os.path.join(model_folder, "F1.pkl"))
@@ -330,6 +382,10 @@ class pv1():
     self.H1.load_state_dict(B2)
     B3 = torch.load(os.path.join(model_folder, "F2.pkl"))
     self.F2.load_state_dict(B3)
+    B4 = torch.load(os.path.join(model_folder, "H2.pkl"))
+    self.H2.load_state_dict(B4)
+    
+    
 
   def exportModel(self, filename):
     config = {'name':'PV1', 'type':'F1+H1+F2', 't_step': self.t_step}
@@ -372,6 +428,8 @@ class pv1():
     print ('F2', self.F2.state_dict())
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
+    print ('H2', self.H2.in_channels, self.H2.out_channels, self.H2.n_a, self.H2.n_b, self.H2.n_k)
+    print (self.H2.state_dict())
 
   def testOneCase(self, case_idx):
     case_data = self.data_train[[case_idx],:,:]
@@ -379,14 +437,22 @@ class pv1():
     y_non = self.F1 (ub)
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
+    y_hat1 = y_hat[:,:,0:2]
+    y_hat2 = y_hat[:,:,2:4]
+    y_lin2 = self.H2 (y_hat2, self.y0, self.u0)
+    y_hat3 = torch.cat((y_hat1,y_lin2), dim = 2)
+        
     print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
+    print ('H2', self.H2.in_channels, self.H2.out_channels, self.H2.n_a, self.H2.n_b, self.H2.n_k)
+    print (self.H2.state_dict())
 #    self.printStateDicts()
 #    print (y_lin)
 
-    y_hat = y_hat.detach().numpy()[[0], :, :]
-    y_true = np.transpose(case_data[0,:,idx_out])
-    rmse = dynonet.metrics.error_rmse(y_true, y_hat[0])
-    return rmse, y_hat, y_true, np.transpose(case_data[0,:,idx_in])
+    y_hat3 = y_hat3.detach().numpy()[[0], :, :]
+    y_hat2 = y_hat2.detach().numpy()[[0], :, :]
+    y_true = np.transpose(case_data[0,:,idx_out[:3]])
+    rmse = dynonet.metrics.error_rmse(y_true, y_hat3[0])
+    return rmse, y_hat3, y_true, np.transpose(case_data[0,:,idx_in]), y_hat2
 
   def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
@@ -419,9 +485,13 @@ class pv1():
     y_non = self.F1 (ub)
     y_lin = self.H1 (y_non, self.y0, self.u0)
     y_hat = self.F2 (y_lin)
+    y_hat1 = y_hat[:,:,0:2]
+    y_hat2 = y_hat[:,:,2:4]
+    y_lin2 = self.H2 (y_hat2, self.y0, self.u0)
+    y_hat3 = torch.cat((y_hat1,y_lin2), dim = 2)
 
-    y_hat = y_hat.detach().numpy()
-    y_true = self.data_train[:,:,idx_out]
+    y_hat3 = y_hat3.detach().numpy()
+    y_true = self.data_train[:,:,idx_out[:3]]
     self.n_cases = self.data_train.shape[0]
 
     icol = 0
@@ -429,18 +499,21 @@ class pv1():
     total_mae = {}
     if bByCase:
       case_rmse = lst1 = [dict() for i in range(self.n_cases)]
+      case_mae = lst2 = [dict() for i in range(self.n_cases)]
     else:
       case_rmse = None
+      case_mae = None
     for col in self.COL_Y:
       SUMSQ = 0.0
       MAE = 0.0
       for icase in range(self.n_cases):
         y1 = y_true[icase,:,icol]
-        y2 = y_hat[icase,:,icol]
+        y2 = y_hat3[icase,:,icol]
         colmae = dynonet.metrics.error_mae(y1, y2)
         colrms = dynonet.metrics.error_rmse(y1, y2)
         if bByCase:
           case_rmse[icase][col] = colrms
+          case_mae[icase][col] = colmae
         MAE += colmae
         SUMSQ += (colrms*colrms)
       MAE /= self.n_cases
@@ -449,7 +522,7 @@ class pv1():
       total_mae[col] = MAE
       total_rmse[col] = RMSE
       icol += 1
-    return total_rmse, total_mae, case_rmse
+    return total_rmse, total_mae, case_rmse, case_mae
 
   def set_LCL_filter(self, Lf, Cf, Lc):
     self.Lf = Lf

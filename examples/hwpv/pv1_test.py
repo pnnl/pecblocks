@@ -7,18 +7,27 @@ import pv1_poly as pv1_model
 #import pv1_fhf as pv1_model
 #import pv1_model
 #import pv1_feedback as pv1_model
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 data_path = r'./data/pv1.hdf5'
 model_folder = r'./models'
 
 def plot_case(model, idx):
-  rmse, y_hat, y_true, u = model.testOneCase(idx)
+  rmse, y_hat, y_true, u, VsIs = model.testOneCase(idx)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
   print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
 #  print ('y_hat shape', y_hat.shape)
 #  print ('y_true shape', y_true.shape)
 #  print ('u shape', u.shape)
+  
+  fig, ax = plt.subplots (1, 2, sharex = 'col', figsize=(7,4), constrained_layout=True)
+  ax[0].plot (model.t, VsIs[0,:,0]*290.83447265625 + 203.58287048339844, label='Vs')
+  ax[0].legend()
+  ax[1].plot (model.t, VsIs[0,:,1]*66.92162322998047 + 30.236408233642578, label='Is')
+  ax[1].legend()
+  
+  plt.show()
 
   fig, ax = plt.subplots (2, 5, sharex = 'col', figsize=(15,8), constrained_layout=True)
   fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}'.format(idx, valstr))
@@ -43,6 +52,10 @@ def plot_case(model, idx):
     if bNormalized:
       scale = 1.0
       offset = 0.0
+    print('offset',offset)
+    print('scale',scale)
+    #scale = 1.0
+    #offset = 0.0
     ax[1,j].set_title ('Output {:s}'.format (col))
     ax[1,j].plot (model.t, y_true[:,j]*scale + offset, label='y')
     ax[1,j].plot (model.t, y_hat[0,:,j]*scale + offset, label='y_hat')
@@ -50,6 +63,21 @@ def plot_case(model, idx):
     ax[1,j].legend()
     j += 1
   plt.show()
+  
+  plt.figure()
+  #plt.plot (model.t, y_true[:,2], label='Irms_true')
+  plt.plot (model.t, y_hat[0,:,2], label='Irms_hat')
+  plt.plot (model.t, VsIs[0,:,1], label='Is')
+  plt.legend()
+  plt.show()
+  
+  plt.figure()
+  #plt.plot (model.t, y_true[:,2], label='Irms_true')
+  #plt.plot (model.t, y_hat[0,:,2], label='Irms_hat')
+  plt.plot (model.t, VsIs[0,:,1]-y_hat[0,:,2], label='Is - Irms')
+  plt.legend()
+  plt.show()
+
 
 if __name__ == '__main__':
 
@@ -72,4 +100,4 @@ if __name__ == '__main__':
       plot_case (model, idx)
   else:
     plot_case (model, case_idx)
-
+    
