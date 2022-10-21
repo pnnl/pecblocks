@@ -36,7 +36,7 @@ def helics_loop(cfg_filename):
     pub = helics.helicsFederateGetPublicationByIndex(h_fed, i)
     key = helics.helicsPublicationGetName(pub)
     print ('pub', i, key)
-    if 'Vrms' in key:
+    if key.endswith('Vrms'):
       pub_Vrms = pub
     else:
       print (' ** could not match', key)
@@ -52,19 +52,19 @@ def helics_loop(cfg_filename):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
     key = helics.helicsSubscriptionGetTarget(sub)
     print ('sub', i, key)
-    if 'Id' in key:
+    if key.endswith('Id'):
       sub_Id = sub
-    elif 'Iq' in key:
+    elif key.endswith('Iq'):
       sub_Iq = sub
-    elif 'Idc' in key:
+    elif key.endswith('Idc'):
       sub_Idc = sub
-    elif 'Vdc' in key:
+    elif key.endswith('Vdc'):
       sub_Vdc = sub
-    elif 'Ra' in key:
+    elif key.endswith('Ra'):
       sub_Ra = sub
-    elif 'Rb' in key:
+    elif key.endswith('Rb'):
       sub_Rb = sub
-    elif 'Rc' in key:
+    elif key.endswith('Rc'):
       sub_Rc = sub
     else:
       print (' ** could not match', key)
@@ -93,7 +93,7 @@ def helics_loop(cfg_filename):
     Rg = (Ra + Rb + Rc) / 3.0
     Irms = math.sqrt(1.5) * math.sqrt(Id*Id + Iq*Iq)
     Vrms = Rg * Irms
-    print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Irms={:.3f}, Vrms={:.3f}'.format(ts, Id, Iq, Rg, Irms, Vrms))
+#    print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Irms={:.3f}, Vrms={:.3f}'.format(ts, Id, Iq, Rg, Irms, Vrms))
     if pub_Vrms is not None:
       helics.helicsPublicationPublishComplex(pub_Vrms, Vrms+0j)
     ts = helics.helicsFederateRequestTime(h_fed, tmax)

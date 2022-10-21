@@ -50,13 +50,13 @@ def helics_loop(cfg_filename, hdf5_filename):
     pub = helics.helicsFederateGetPublicationByIndex(h_fed, i)
     key = helics.helicsPublicationGetName(pub)
     print ('pub', i, key)
-    if 'Vdc' in key:
+    if key.endswith('Vdc'):
       pub_Vdc = pub
-    elif 'Idc' in key:
+    elif key.endswith('Idc'):
       pub_Idc = pub
-    elif 'Id' in key:
+    elif key.endswith('Id'):
       pub_Id = pub
-    elif 'Iq' in key:
+    elif key.endswith('Iq'):
       pub_Iq = pub
     else:
       print (' ** could not match', key)
@@ -72,19 +72,19 @@ def helics_loop(cfg_filename, hdf5_filename):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
     key = helics.helicsSubscriptionGetTarget(sub)
     print ('sub', i, key)
-    if 'Vrms' in key:
+    if key.endswith('Vrms'):
       sub_Vrms = sub
-    elif 'G' in key:
+    elif key.endswith('G'):
       sub_G = sub
-    elif 'T' in key:
+    elif key.endswith('T'):
       sub_T = sub
-    elif 'Md' in key:
+    elif key.endswith('Md'):
       sub_Md = sub
-    elif 'Mq' in key:
+    elif key.endswith('Mq'):
       sub_Mq = sub
-    elif 'Fc' in key:
+    elif key.endswith('Fc'):
       sub_Fc = sub
-    elif 'Ctl' in key:
+    elif key.endswith('Ctl'):
       sub_Ctl = sub
     else:
       print (' ** could not match', key)
@@ -114,9 +114,9 @@ def helics_loop(cfg_filename, hdf5_filename):
     Mq = newDouble (Mq, sub_Mq)
     Fc = newDouble (Fc, sub_Fc)
     Vrms = newComplexMag (Vrms, sub_Vrms)
-    GVrms = 0.001 * G * Vrms
+    GVrms = G * Vrms
 
-    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Md={:.3f}, Mq={:.3f}, Fc={:.3f}, Ctl={:.1f}'.format(ts, Vrms, G, GVrms, T, Md, Mq, Fc, Ctl))
+#    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Md={:.3f}, Mq={:.3f}, Fc={:.3f}, Ctl={:.1f}'.format(ts, Vrms, G, GVrms, T, Md, Mq, Fc, Ctl))
 
     Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
 
