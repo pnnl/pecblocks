@@ -91,7 +91,7 @@ def helics_loop(cfg_filename):
     Id = newComplexMag (Id, sub_Id)
     Iq = newComplexMag (Iq, sub_Iq)
     Rg = (Ra + Rb + Rc) / 3.0
-    Irms = math.sqrt(Id*Id + Iq*Iq)
+    Irms = math.sqrt(1.5) * math.sqrt(Id*Id + Iq*Iq)
     Vrms = Rg * Irms
     print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Irms={:.3f}, Vrms={:.3f}'.format(ts, Id, Iq, Rg, Irms, Vrms))
     if pub_Vrms is not None:

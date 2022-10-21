@@ -135,8 +135,11 @@ class pv3():
     n_a = config['n_a']
     n_b = config['n_b']
     n_k = config['n_k']
-    gtype = config['gtype']
-    block = self.make_mimo_block (n_in, n_out, n_a, n_b, n_k)
+    if 'gtype' in config:
+      gtype = config['gtype']
+    else:
+      gtype = 'iir'
+    block = self.make_mimo_block (gtype, n_in, n_out, n_a, n_b, n_k)
     dict = block.state_dict()
     for i in range(n_out):
       for j in range(n_in):
