@@ -1,15 +1,22 @@
+# configure a three-phase HELICS simulation
+#  arg1: the player[.txt] file of inputs
+#  arg2: the model coefficient JSON file
+
 import json
 import sys
 
 if __name__ == '__main__':
   Tmax = 8.0
   fname_in = '../simscape/balanced_fhf.json'
+  fname_in = 'big/balanced_fhf.json'
   fname_out1 = 'pv3_server.json'
   fname_out2 = 'pv3_client.json'
   fname_bat = 'pv3_helics.bat'
-  case = 'ucf' # 'flat3' # 'ramp3'
+  case = 'flat3' # 'ucf' # 'flat3' # 'ramp3'
   if len(sys.argv) > 1:
-    fname_in = sys.argv[1]
+    case = sys.argv[1]
+    if len(sys.argv) > 2:
+      fname_in = sys.argv[2]
   fp = open (fname_in, 'r')
   cfg_app = json.load (fp)
   fp.close()

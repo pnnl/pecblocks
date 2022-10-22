@@ -1,6 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+plt.rcParams['savefig.directory'] = os.getcwd()
 
 df = pd.read_hdf ('pv3_server.hdf5')
 #print (df)

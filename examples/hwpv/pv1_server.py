@@ -38,15 +38,15 @@ def helics_loop(cfg_filename, hdf5_filename):
     pub = helics.helicsFederateGetPublicationByIndex(h_fed, i)
     key = helics.helicsPublicationGetName(pub)
     print ('pub', i, key)
-    if 'vdc' in key:
+    if key.endswith('vdc'):
       pub_vdc = pub
-    elif 'idc' in key:
+    elif key.endswith('idc'):
       pub_idc = pub
-    elif 'Vs' in key:
+    elif key.endswith('Vs'):
       pub_Vs = pub
-    elif 'Is' in key:
+    elif key.endswith('Is'):
       pub_Is = pub
-    elif 'Ic' in key:
+    elif key.endswith('Ic'):
       pub_Ic = pub
     else:
       print (' ** could not match', key)
@@ -61,17 +61,17 @@ def helics_loop(cfg_filename, hdf5_filename):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
     key = helics.helicsSubscriptionGetTarget(sub)
     print ('sub', i, key)
-    if 'Vrms' in key:
+    if key.endswith('Vrms'):
       sub_Vrms = sub
-    elif 'G' in key:
+    elif key.endswith('G'):
       sub_G = sub
-    elif 'T' in key:
+    elif key.endswith('T'):
       sub_T = sub
-    elif 'Ud' in key:
+    elif key.endswith('Ud'):
       sub_Ud = sub
-    elif 'Fc' in key:
+    elif key.endswith('Fc'):
       sub_Fc = sub
-    elif 'ctl' in key:
+    elif key.endswith('ctl'):
       sub_ctl = sub
     else:
       print (' ** could not match', key)
@@ -102,13 +102,13 @@ def helics_loop(cfg_filename, hdf5_filename):
     if (sub_Fc is not None) and (helics.helicsInputIsUpdated(sub_Fc)):
       Fc = helics.helicsInputGetDouble(sub_Fc)
     if (sub_Vrms is not None) and (helics.helicsInputIsUpdated(sub_Vrms)):
-      re, im = helics.helicsInputGetComplex(sub_Vrms)
-      Vc = complex(re, im)
+      Vc = helics.helicsInputGetComplex(sub_Vrms)
+#      Vc = complex(re, im)
     if (sub_G is not None) and (helics.helicsInputIsUpdated(sub_G)):
       G = helics.helicsInputGetDouble(sub_G)
     Vrms = abs(Vc)
     GVrms = 0.001 * G * Vrms
-    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Ud={:.3f}, Fc={:.3f}'.format(ts, Vrms, G, GVrms, T, Ud, Fc))
+#    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Ud={:.3f}, Fc={:.3f}'.format(ts, Vrms, G, GVrms, T, Ud, Fc))
     vdc, idc, irms, Vs, Is = model.step_simulation (G=G, T=T, Ud=Ud, Fc=Fc, Vrms=Vrms, Mode=ctl, GVrms=GVrms)
     Ic = irms+0j
     if pub_idc is not None:
