@@ -35,6 +35,12 @@ model_path = './unbal/unbal_config.json'
 data_path = '../simscape/balanced.hdf5'
 model_path = '../simscape/balanced_config.json'
 
+data_path = './data/osg_vrms.hdf5'
+model_path = './osg_vrms/osg_vrms_config.json'
+
+data_path = './data/osg_vdvq.hdf5'
+model_path = './osg_vdvq/osg_vdvq_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
@@ -81,7 +87,7 @@ def plot_case(model, idx, bPNG=False):
 
 if __name__ == '__main__':
 
-  case_idx = 189
+  case_idx = 36 # 189
   if len(sys.argv) > 1:
     case_idx = int(sys.argv[1])
   if len(sys.argv) > 2:

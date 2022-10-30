@@ -59,6 +59,7 @@ class pv3():
     self.Lc = None
     self.Cf = None
     self.model_folder = None
+    self.h5grp_prefix = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
@@ -68,6 +69,8 @@ class pv3():
     self.lr = config['lr']
     self.num_iter = config['num_iter']
     self.print_freq = config['print_freq']
+    if 'h5grp_prefix' in config:
+      self.h5grp_prefix = config['h5grp_prefix']
     if 't_step' in config:
       self.t_step = config['t_step']
     else:
@@ -296,7 +299,7 @@ class pv3():
 
   def loadTrainingData(self, data_path):
     df_list = pecblocks.util.read_hdf5_file (data_path, self.COL_T + self.COL_Y + self.COL_U, 
-                                             self.n_dec, self.n_skip, self.n_trunc)
+                                             self.n_dec, self.n_skip, self.n_trunc, prefix=self.h5grp_prefix)
     print ('read', len(df_list), 'dataframes')
 
     # get the len of data of interest 

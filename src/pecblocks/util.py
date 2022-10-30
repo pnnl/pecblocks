@@ -6,13 +6,16 @@ import h5py
 import math
 
 '''adds each group to a list of Pandas dataframes'''
-def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0):
+def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0, prefix=None):
   pdata=[]
   with h5py.File(filename, 'r') as f:
     ngroups = len(f.items())
-#    for grp_name, grp in f.items():
     for i in range(ngroups):
-      grp = f[str(i)]
+      if prefix is not None:
+        key = '{:s}{:d}'.format(prefix,i)
+      else:
+        key = str(i)
+      grp = f[key]
       vals = []
       ncols = len (cols)
       nrows = grp[cols[0]].len()

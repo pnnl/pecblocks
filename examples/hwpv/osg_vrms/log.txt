@@ -1,0 +1,242 @@
+C:\src\pecblocks\examples\hwpv>python pv1_training.py
+model_folder = ./osg_vrms
+model_root = osg_vrms
+data_path = ./data/osg_vrms.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6, 7]
+idx_out [8, 9, 10, 11]
+read 80 dataframes
+dt=0.001000 data_len=5000 n_io=12 n_case=80
+['T', 'G', 'Fc', 'Ud', 'Uq', 'Vrms', 'GVrms', 'Ctl'] ['Vdc', 'Idc', 'Id', 'Iq'] (80, 5000, 12)
+shapes of t (5000,) data_train (80, 5000, 12) n_in=8, n_out=4
+t range 0.000000 to 4.999000
+Before Scaling:
+Column       Min       Max      Mean     Range
+T         15.000    35.000    25.000    20.000
+G         -0.000   999.995   552.635   999.995
+Fc        55.000    65.000    60.000    10.000
+Ud         0.900     1.100     1.000     0.200
+Uq        -0.400     0.400     0.001     0.800
+Vrms      -0.000   282.025   192.155   282.025
+GVrms     -0.000   273.909   120.745   273.909
+Ctl        0.000     1.000     0.499     1.000
+Vdc       -0.000   456.918   333.864   456.918
+Idc       -0.000    32.792    17.650    32.792
+Id        -0.454    85.964    39.252    86.418
+Iq       -46.303    15.829    -6.060    62.132
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+T         -0.500     0.500    -0.000     1.000    20.000    25.000
+G         -0.553     0.447    -0.000     1.000   999.995   552.635
+Fc        -0.500     0.500    -0.000     1.000    10.000    60.000
+Ud        -0.500     0.500    -0.000     1.000     0.200     1.000
+Uq        -0.501     0.499    -0.000     1.000     0.800     0.001
+Vrms      -0.681     0.319    -0.000     1.000   282.025   192.155
+GVrms     -0.441     0.559    -0.000     1.000   273.909   120.745
+Ctl       -0.499     0.501     0.000     1.000     1.000     0.499
+Vdc       -0.731     0.269    -0.000     1.000   456.918   333.864
+Idc       -0.538     0.462     0.000     1.000    32.792    17.650
+Id        -0.459     0.541     0.000     1.000    86.418    39.252
+Iq        -0.648     0.352     0.000     1.000    62.132    -6.060
+Iter    0 of 2000 | Loss       0.0778
+Iter   10 of 2000 | Loss       0.0655
+Iter   20 of 2000 | Loss       0.0614
+Iter   30 of 2000 | Loss       0.0584
+Iter   40 of 2000 | Loss       0.0512
+Iter   50 of 2000 | Loss       0.0366
+Iter   60 of 2000 | Loss       0.0204
+Iter   70 of 2000 | Loss       0.0171
+Iter   80 of 2000 | Loss       0.0160
+Iter   90 of 2000 | Loss       0.0156
+Iter  100 of 2000 | Loss       0.0153
+Iter  110 of 2000 | Loss       0.0150
+Iter  120 of 2000 | Loss       0.0148
+Iter  130 of 2000 | Loss       0.0145
+Iter  140 of 2000 | Loss       0.0142
+Iter  150 of 2000 | Loss       0.0138
+Iter  160 of 2000 | Loss       0.0130
+Iter  170 of 2000 | Loss       0.0119
+Iter  180 of 2000 | Loss       0.0100
+Iter  190 of 2000 | Loss       0.0073
+Iter  200 of 2000 | Loss       0.0040
+Iter  210 of 2000 | Loss       0.0028
+Iter  220 of 2000 | Loss       0.0023
+Iter  230 of 2000 | Loss       0.0021
+Iter  240 of 2000 | Loss       0.0019
+Iter  250 of 2000 | Loss       0.0018
+Iter  260 of 2000 | Loss       0.0017
+Iter  270 of 2000 | Loss       0.0017
+Iter  280 of 2000 | Loss       0.0016
+Iter  290 of 2000 | Loss       0.0016
+Iter  300 of 2000 | Loss       0.0016
+Iter  310 of 2000 | Loss       0.0015
+Iter  320 of 2000 | Loss       0.0015
+Iter  330 of 2000 | Loss       0.0015
+Iter  340 of 2000 | Loss       0.0015
+Iter  350 of 2000 | Loss       0.0015
+Iter  360 of 2000 | Loss       0.0014
+Iter  370 of 2000 | Loss       0.0014
+Iter  380 of 2000 | Loss       0.0014
+Iter  390 of 2000 | Loss       0.0014
+Iter  400 of 2000 | Loss       0.0014
+Iter  410 of 2000 | Loss       0.0013
+Iter  420 of 2000 | Loss       0.0013
+Iter  430 of 2000 | Loss       0.0013
+Iter  440 of 2000 | Loss       0.0013
+Iter  450 of 2000 | Loss       0.0013
+Iter  460 of 2000 | Loss       0.0012
+Iter  470 of 2000 | Loss       0.0012
+Iter  480 of 2000 | Loss       0.0012
+Iter  490 of 2000 | Loss       0.0012
+Iter  500 of 2000 | Loss       0.0012
+Iter  510 of 2000 | Loss       0.0011
+Iter  520 of 2000 | Loss       0.0011
+Iter  530 of 2000 | Loss       0.0011
+Iter  540 of 2000 | Loss       0.0011
+Iter  550 of 2000 | Loss       0.0011
+Iter  560 of 2000 | Loss       0.0010
+Iter  570 of 2000 | Loss       0.0010
+Iter  580 of 2000 | Loss       0.0010
+Iter  590 of 2000 | Loss       0.0010
+Iter  600 of 2000 | Loss       0.0010
+Iter  610 of 2000 | Loss       0.0010
+Iter  620 of 2000 | Loss       0.0009
+Iter  630 of 2000 | Loss       0.0009
+Iter  640 of 2000 | Loss       0.0009
+Iter  650 of 2000 | Loss       0.0009
+Iter  660 of 2000 | Loss       0.0009
+Iter  670 of 2000 | Loss       0.0009
+Iter  680 of 2000 | Loss       0.0008
+Iter  690 of 2000 | Loss       0.0008
+Iter  700 of 2000 | Loss       0.0008
+Iter  710 of 2000 | Loss       0.0008
+Iter  720 of 2000 | Loss       0.0008
+Iter  730 of 2000 | Loss       0.0008
+Iter  740 of 2000 | Loss       0.0008
+Iter  750 of 2000 | Loss       0.0008
+Iter  760 of 2000 | Loss       0.0007
+Iter  770 of 2000 | Loss       0.0007
+Iter  780 of 2000 | Loss       0.0007
+Iter  790 of 2000 | Loss       0.0007
+Iter  800 of 2000 | Loss       0.0007
+Iter  810 of 2000 | Loss       0.0007
+Iter  820 of 2000 | Loss       0.0007
+Iter  830 of 2000 | Loss       0.0007
+Iter  840 of 2000 | Loss       0.0007
+Iter  850 of 2000 | Loss       0.0007
+Iter  860 of 2000 | Loss       0.0006
+Iter  870 of 2000 | Loss       0.0006
+Iter  880 of 2000 | Loss       0.0006
+Iter  890 of 2000 | Loss       0.0006
+Iter  900 of 2000 | Loss       0.0006
+Iter  910 of 2000 | Loss       0.0006
+Iter  920 of 2000 | Loss       0.0006
+Iter  930 of 2000 | Loss       0.0006
+Iter  940 of 2000 | Loss       0.0006
+Iter  950 of 2000 | Loss       0.0006
+Iter  960 of 2000 | Loss       0.0006
+Iter  970 of 2000 | Loss       0.0006
+Iter  980 of 2000 | Loss       0.0006
+Iter  990 of 2000 | Loss       0.0006
+Iter 1000 of 2000 | Loss       0.0006
+Iter 1010 of 2000 | Loss       0.0006
+Iter 1020 of 2000 | Loss       0.0005
+Iter 1030 of 2000 | Loss       0.0005
+Iter 1040 of 2000 | Loss       0.0005
+Iter 1050 of 2000 | Loss       0.0005
+Iter 1060 of 2000 | Loss       0.0005
+Iter 1070 of 2000 | Loss       0.0005
+Iter 1080 of 2000 | Loss       0.0005
+Iter 1090 of 2000 | Loss       0.0005
+Iter 1100 of 2000 | Loss       0.0005
+Iter 1110 of 2000 | Loss       0.0005
+Iter 1120 of 2000 | Loss       0.0005
+Iter 1130 of 2000 | Loss       0.0005
+Iter 1140 of 2000 | Loss       0.0005
+Iter 1150 of 2000 | Loss       0.0005
+Iter 1160 of 2000 | Loss       0.0005
+Iter 1170 of 2000 | Loss       0.0005
+Iter 1180 of 2000 | Loss       0.0005
+Iter 1190 of 2000 | Loss       0.0005
+Iter 1200 of 2000 | Loss       0.0005
+Iter 1210 of 2000 | Loss       0.0005
+Iter 1220 of 2000 | Loss       0.0005
+Iter 1230 of 2000 | Loss       0.0005
+Iter 1240 of 2000 | Loss       0.0005
+Iter 1250 of 2000 | Loss       0.0005
+Iter 1260 of 2000 | Loss       0.0004
+Iter 1270 of 2000 | Loss       0.0004
+Iter 1280 of 2000 | Loss       0.0004
+Iter 1290 of 2000 | Loss       0.0004
+Iter 1300 of 2000 | Loss       0.0004
+Iter 1310 of 2000 | Loss       0.0004
+Iter 1320 of 2000 | Loss       0.0004
+Iter 1330 of 2000 | Loss       0.0004
+Iter 1340 of 2000 | Loss       0.0004
+Iter 1350 of 2000 | Loss       0.0004
+Iter 1360 of 2000 | Loss       0.0004
+Iter 1370 of 2000 | Loss       0.0004
+Iter 1380 of 2000 | Loss       0.0004
+Iter 1390 of 2000 | Loss       0.0004
+Iter 1400 of 2000 | Loss       0.0004
+Iter 1410 of 2000 | Loss       0.0004
+Iter 1420 of 2000 | Loss       0.0004
+Iter 1430 of 2000 | Loss       0.0004
+Iter 1440 of 2000 | Loss       0.0004
+Iter 1450 of 2000 | Loss       0.0004
+Iter 1460 of 2000 | Loss       0.0004
+Iter 1470 of 2000 | Loss       0.0004
+Iter 1480 of 2000 | Loss       0.0004
+Iter 1490 of 2000 | Loss       0.0004
+Iter 1500 of 2000 | Loss       0.0004
+Iter 1510 of 2000 | Loss       0.0004
+Iter 1520 of 2000 | Loss       0.0004
+Iter 1530 of 2000 | Loss       0.0004
+Iter 1540 of 2000 | Loss       0.0004
+Iter 1550 of 2000 | Loss       0.0004
+Iter 1560 of 2000 | Loss       0.0004
+Iter 1570 of 2000 | Loss       0.0003
+Iter 1580 of 2000 | Loss       0.0003
+Iter 1590 of 2000 | Loss       0.0003
+Iter 1600 of 2000 | Loss       0.0003
+Iter 1610 of 2000 | Loss       0.0003
+Iter 1620 of 2000 | Loss       0.0003
+Iter 1630 of 2000 | Loss       0.0003
+Iter 1640 of 2000 | Loss       0.0003
+Iter 1650 of 2000 | Loss       0.0003
+Iter 1660 of 2000 | Loss       0.0003
+Iter 1670 of 2000 | Loss       0.0003
+Iter 1680 of 2000 | Loss       0.0003
+Iter 1690 of 2000 | Loss       0.0003
+Iter 1700 of 2000 | Loss       0.0003
+Iter 1710 of 2000 | Loss       0.0003
+Iter 1720 of 2000 | Loss       0.0003
+Iter 1730 of 2000 | Loss       0.0003
+Iter 1740 of 2000 | Loss       0.0003
+Iter 1750 of 2000 | Loss       0.0003
+Iter 1760 of 2000 | Loss       0.0003
+Iter 1770 of 2000 | Loss       0.0003
+Iter 1780 of 2000 | Loss       0.0003
+Iter 1790 of 2000 | Loss       0.0003
+Iter 1800 of 2000 | Loss       0.0003
+Iter 1810 of 2000 | Loss       0.0003
+Iter 1820 of 2000 | Loss       0.0003
+Iter 1830 of 2000 | Loss       0.0003
+Iter 1840 of 2000 | Loss       0.0003
+Iter 1850 of 2000 | Loss       0.0003
+Iter 1860 of 2000 | Loss       0.0003
+Iter 1870 of 2000 | Loss       0.0003
+Iter 1880 of 2000 | Loss       0.0003
+Iter 1890 of 2000 | Loss       0.0003
+Iter 1900 of 2000 | Loss       0.0003
+Iter 1910 of 2000 | Loss       0.0003
+Iter 1920 of 2000 | Loss       0.0003
+Iter 1930 of 2000 | Loss       0.0003
+Iter 1940 of 2000 | Loss       0.0003
+Iter 1950 of 2000 | Loss       0.0003
+Iter 1960 of 2000 | Loss       0.0003
+Iter 1970 of 2000 | Loss       0.0003
+Iter 1980 of 2000 | Loss       0.0003
+Iter 1990 of 2000 | Loss       0.0003
+COL_Y ['Vdc', 'Idc', 'Id', 'Iq']
+Train time: 3840.14, Recent loss: 0.00, RMS Errors: 0.0287 0.0254 0.0242 0.0157
+
