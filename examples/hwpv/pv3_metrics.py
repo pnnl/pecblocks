@@ -14,6 +14,9 @@ model_path = './big/balanced_config.json'
 data_path = './data/flatbalanced.hdf5'
 model_path = './flatbal/flatbal_config.json'
 
+data_path = './data/osg_vrms.hdf5'
+model_path = './osg_vrms/osg_vrms_config.json'
+
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     model_path = sys.argv[1]
