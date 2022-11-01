@@ -41,6 +41,9 @@ model_path = './osg_vrms/osg_vrms_config.json'
 data_path = './data/osg_vdvq.hdf5'
 model_path = './osg_vdvq/osg_vdvq_config.json'
 
+data_path = './data/balanced_vdvq.hdf5'
+model_path = './dc/dc_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)

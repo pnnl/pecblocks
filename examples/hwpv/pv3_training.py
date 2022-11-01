@@ -9,22 +9,25 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = './data/flatbalanced.hdf5'
-model_path = './flatbal/flatbal_config.json'
-model_path = './flatstable/flatstable_config.json'
+data_path = './data/balanced_vdvq.hdf5'
+#model_path = './dc/dc_config.json'
+model_path = './flat_vdvq/flat_vdvq_config.json'
 
-data_path = '../simscape/balanced.hdf5'
-model_path = '../simscape/balanced_config.json'
+#model_path = './flatbal/flatbal_config.json'
+#model_path = './flatstable/flatstable_config.json'
 
-data_path = '../../../atptools/unbalanced.hdf5'
-model_path = './tacs/tacs_config.json'
-model_path = './unbal/unbal_config.json'
+#data_path = '../simscape/balanced.hdf5'
+#model_path = '../simscape/balanced_config.json'
 
-data_path = './data/osg_vrms.hdf5'
-model_path = './osg_vrms/osg_vrms_config.json'
+#data_path = '../../../atptools/unbalanced.hdf5'
+#model_path = './tacs/tacs_config.json'
+#model_path = './unbal/unbal_config.json'
 
-data_path = './data/osg_vdvq.hdf5'
-model_path = './osg_vdvq/osg_vdvq_config.json'
+#data_path = './data/osg_vrms.hdf5'
+#model_path = './osg_vrms/osg_vrms_config.json'
+
+#data_path = './data/osg_vdvq.hdf5'
+#model_path = './osg_vdvq/osg_vdvq_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
