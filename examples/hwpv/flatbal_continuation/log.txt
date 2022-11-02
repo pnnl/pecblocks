@@ -1,0 +1,195 @@
+C:\src\pecblocks\examples\hwpv>python pv3_training.py
+model_folder = ./flatbal_continuation
+model_root = flatbal_continuat
+data_path = ./data/flatbalanced.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6, 7]
+idx_out [8, 9, 10, 11]
+read 1500 dataframes
+dt=0.002000 data_len=2500 n_io=12 n_case=1500
+['T', 'G', 'Fc', 'Md', 'Mq', 'Vrms', 'GVrms', 'Ctl'] ['Vdc', 'Idc', 'Id', 'Iq'] (1500, 2500, 12)
+shapes of t (2500,) data_train (1500, 2500, 12) n_in=8, n_out=4
+t range 0.000000 to 4.998000
+Before Scaling:
+Column       Min       Max      Mean     Range
+T         15.000    35.003    25.001    20.003
+G         -0.000   999.995   384.713   999.995
+Fc        55.000    65.000    60.002    10.000
+Md         0.800     1.200     1.001     0.400
+Mq        -0.499     0.501     0.001     1.000
+Vrms       0.000   566.449   338.458   566.449
+GVrms     -0.000   566.446   178.877   566.446
+Ctl        0.000     1.000     0.599     1.000
+Vdc       -0.000   439.789   275.138   439.789
+Idc       -0.000   292.836   100.089   292.836
+Id        -0.000   195.264    65.443   195.264
+Iq       -81.164    72.384    -1.357   153.549
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+T         -0.500     0.500     0.000     1.000    20.003    25.001
+G         -0.385     0.615     0.000     1.000   999.995   384.713
+Fc        -0.500     0.500     0.000     1.000    10.000    60.002
+Md        -0.503     0.497     0.000     1.000     0.400     1.001
+Mq        -0.500     0.500    -0.000     1.000     1.000     0.001
+Vrms      -0.598     0.402     0.000     1.000   566.449   338.458
+GVrms     -0.316     0.684    -0.000     1.000   566.446   178.877
+Ctl       -0.599     0.401    -0.000     1.000     1.000     0.599
+Vdc       -0.626     0.374     0.000     1.000   439.789   275.138
+Idc       -0.342     0.658     0.000     1.000   292.836   100.089
+Id        -0.335     0.665     0.000     1.000   195.264    65.443
+Iq        -0.520     0.480    -0.000     1.000   153.549    -1.357
+make_mimo_block iir
+continuing iterations on existing model coefficients
+Iter    0 of 1500 | Loss     0.000533
+Iter   10 of 1500 | Loss     0.000668
+Iter   20 of 1500 | Loss     0.000533
+Iter   30 of 1500 | Loss     0.000511
+Iter   40 of 1500 | Loss     0.000504
+Iter   50 of 1500 | Loss     0.000497
+Iter   60 of 1500 | Loss     0.000485
+Iter   70 of 1500 | Loss     0.000479
+Iter   80 of 1500 | Loss     0.000471
+Iter   90 of 1500 | Loss     0.000464
+Iter  100 of 1500 | Loss     0.000457
+Iter  110 of 1500 | Loss     0.000449
+Iter  120 of 1500 | Loss     0.000442
+Iter  130 of 1500 | Loss     0.000435
+Iter  140 of 1500 | Loss     0.000428
+Iter  150 of 1500 | Loss     0.000420
+Iter  160 of 1500 | Loss     0.000413
+Iter  170 of 1500 | Loss     0.000406
+Iter  180 of 1500 | Loss     0.000398
+Iter  190 of 1500 | Loss     0.000391
+Iter  200 of 1500 | Loss     0.000383
+Iter  210 of 1500 | Loss     0.000375
+Iter  220 of 1500 | Loss     0.000367
+Iter  230 of 1500 | Loss     0.000359
+Iter  240 of 1500 | Loss     0.000350
+Iter  250 of 1500 | Loss     0.000341
+Iter  260 of 1500 | Loss     0.000331
+Iter  270 of 1500 | Loss     0.000321
+Iter  280 of 1500 | Loss     0.000310
+Iter  290 of 1500 | Loss     0.000298
+Iter  300 of 1500 | Loss     0.000285
+Iter  310 of 1500 | Loss     0.000272
+Iter  320 of 1500 | Loss     0.000258
+Iter  330 of 1500 | Loss     0.000244
+Iter  340 of 1500 | Loss     0.000232
+Iter  350 of 1500 | Loss     0.000222
+Iter  360 of 1500 | Loss     0.000215
+Iter  370 of 1500 | Loss     0.000207
+Iter  380 of 1500 | Loss     0.000200
+Iter  390 of 1500 | Loss     0.000194
+Iter  400 of 1500 | Loss     0.000188
+Iter  410 of 1500 | Loss     0.000182
+Iter  420 of 1500 | Loss     0.000177
+Iter  430 of 1500 | Loss     0.000172
+Iter  440 of 1500 | Loss     0.000167
+Iter  450 of 1500 | Loss     0.000163
+Iter  460 of 1500 | Loss     0.000159
+Iter  470 of 1500 | Loss     0.000155
+Iter  480 of 1500 | Loss     0.000151
+Iter  490 of 1500 | Loss     0.000148
+Iter  500 of 1500 | Loss     0.000145
+Iter  510 of 1500 | Loss     0.000142
+Iter  520 of 1500 | Loss     0.000139
+Iter  530 of 1500 | Loss     0.000137
+Iter  540 of 1500 | Loss     0.000134
+Iter  550 of 1500 | Loss     0.000132
+Iter  560 of 1500 | Loss     0.000130
+Iter  570 of 1500 | Loss     0.000128
+Iter  580 of 1500 | Loss     0.000126
+Iter  590 of 1500 | Loss     0.000124
+Iter  600 of 1500 | Loss     0.000122
+Iter  610 of 1500 | Loss     0.000121
+Iter  620 of 1500 | Loss     0.000119
+Iter  630 of 1500 | Loss     0.000118
+Iter  640 of 1500 | Loss     0.000116
+Iter  650 of 1500 | Loss     0.000115
+Iter  660 of 1500 | Loss     0.000113
+Iter  670 of 1500 | Loss     0.000112
+Iter  680 of 1500 | Loss     0.000111
+Iter  690 of 1500 | Loss     0.000110
+Iter  700 of 1500 | Loss     0.000108
+Iter  710 of 1500 | Loss     0.000107
+Iter  720 of 1500 | Loss     0.000106
+Iter  730 of 1500 | Loss     0.000105
+Iter  740 of 1500 | Loss     0.000104
+Iter  750 of 1500 | Loss     0.000108
+Iter  760 of 1500 | Loss     0.000105
+Iter  770 of 1500 | Loss     0.000101
+Iter  780 of 1500 | Loss     0.000100
+Iter  790 of 1500 | Loss     0.000099
+Iter  800 of 1500 | Loss     0.000098
+Iter  810 of 1500 | Loss     0.000097
+Iter  820 of 1500 | Loss     0.000096
+Iter  830 of 1500 | Loss     0.000095
+Iter  840 of 1500 | Loss     0.000094
+Iter  850 of 1500 | Loss     0.000104
+Iter  860 of 1500 | Loss     0.000097
+Iter  870 of 1500 | Loss     0.000092
+Iter  880 of 1500 | Loss     0.000091
+Iter  890 of 1500 | Loss     0.000090
+Iter  900 of 1500 | Loss     0.000089
+Iter  910 of 1500 | Loss     0.000088
+Iter  920 of 1500 | Loss     0.000087
+Iter  930 of 1500 | Loss     0.000088
+Iter  940 of 1500 | Loss     0.000086
+Iter  950 of 1500 | Loss     0.000093
+Iter  960 of 1500 | Loss     0.000086
+Iter  970 of 1500 | Loss     0.000085
+Iter  980 of 1500 | Loss     0.000083
+Iter  990 of 1500 | Loss     0.000082
+Iter 1000 of 1500 | Loss     0.000081
+Iter 1010 of 1500 | Loss     0.000080
+Iter 1020 of 1500 | Loss     0.000080
+Iter 1030 of 1500 | Loss     0.000080
+Iter 1040 of 1500 | Loss     0.000098
+Iter 1050 of 1500 | Loss     0.000078
+Iter 1060 of 1500 | Loss     0.000079
+Iter 1070 of 1500 | Loss     0.000076
+Iter 1080 of 1500 | Loss     0.000076
+Iter 1090 of 1500 | Loss     0.000075
+Iter 1100 of 1500 | Loss     0.000074
+Iter 1110 of 1500 | Loss     0.000075
+Iter 1120 of 1500 | Loss     0.000075
+Iter 1130 of 1500 | Loss     0.000074
+Iter 1140 of 1500 | Loss     0.000072
+Iter 1150 of 1500 | Loss     0.000073
+Iter 1160 of 1500 | Loss     0.000080
+Iter 1170 of 1500 | Loss     0.000072
+Iter 1180 of 1500 | Loss     0.000070
+Iter 1190 of 1500 | Loss     0.000069
+Iter 1200 of 1500 | Loss     0.000069
+Iter 1210 of 1500 | Loss     0.000069
+Iter 1220 of 1500 | Loss     0.000078
+Iter 1230 of 1500 | Loss     0.000069
+Iter 1240 of 1500 | Loss     0.000067
+Iter 1250 of 1500 | Loss     0.000066
+Iter 1260 of 1500 | Loss     0.000066
+Iter 1270 of 1500 | Loss     0.000071
+Iter 1280 of 1500 | Loss     0.000070
+Iter 1290 of 1500 | Loss     0.000064
+Iter 1300 of 1500 | Loss     0.000064
+Iter 1310 of 1500 | Loss     0.000069
+Iter 1320 of 1500 | Loss     0.000063
+Iter 1330 of 1500 | Loss     0.000064
+Iter 1340 of 1500 | Loss     0.000063
+Iter 1350 of 1500 | Loss     0.000062
+Iter 1360 of 1500 | Loss     0.000061
+Iter 1370 of 1500 | Loss     0.000061
+Iter 1380 of 1500 | Loss     0.000060
+Iter 1390 of 1500 | Loss     0.000060
+Iter 1400 of 1500 | Loss     0.000060
+Iter 1410 of 1500 | Loss     0.000070
+Iter 1420 of 1500 | Loss     0.000065
+Iter 1430 of 1500 | Loss     0.000060
+Iter 1440 of 1500 | Loss     0.000060
+Iter 1450 of 1500 | Loss     0.000058
+Iter 1460 of 1500 | Loss     0.000058
+Iter 1470 of 1500 | Loss     0.000057
+Iter 1480 of 1500 | Loss     0.000057
+Iter 1490 of 1500 | Loss     0.000056
+COL_Y ['Vdc', 'Idc', 'Id', 'Iq']
+Train time: 21100.97, Recent loss: 0.000056, RMS Errors: 0.0309 0.0145 0.0153 0.0040
+                          MAE Errors: 0.0065 0.0057 0.0066 0.0018
+

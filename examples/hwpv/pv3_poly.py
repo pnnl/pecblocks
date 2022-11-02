@@ -31,6 +31,7 @@ class pv3():
   def init_to_none(self):
     self.lr = None
     self.num_iter = None
+    self.continue_iterations = False
     self.print_freq = None
     self.batch_size = None
     self.n_loss_skip = None
@@ -68,6 +69,8 @@ class pv3():
     self.model_folder = os.path.split(filename)[0]
     self.lr = config['lr']
     self.num_iter = config['num_iter']
+    if 'continue_iterations' in config:
+      self.continue_iterations = config['continue_iterations']
     self.print_freq = config['print_freq']
     if 'h5grp_prefix' in config:
       self.h5grp_prefix = config['h5grp_prefix']
@@ -412,6 +415,10 @@ class pv3():
     train_ds = PVInvDataset(self.data_train,in_size,out_size)
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=self.batch_size, shuffle=True)
 
+    if self.continue_iterations:
+      print ('continuing iterations on existing model coefficients')
+      self.loadModelCoefficients()
+
     LOSS = []
     start_time = time.time()
     for itr in range(0, self.num_iter):
@@ -503,7 +510,9 @@ class pv3():
     for key, val in self.normfacs.items():
       config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset']}
     config['lr'] = self.lr
+    config['h5grp_prefix'] = self.h5grp_prefix
     config['num_iter'] = self.num_iter
+    config['continue_iterations'] = self.continue_iterations
     config['print_freq'] = self.print_freq
     config['batch_size'] = self.batch_size
     config['n_skip'] = self.n_skip

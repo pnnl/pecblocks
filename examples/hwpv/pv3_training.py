@@ -9,9 +9,12 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = './data/balanced_vdvq.hdf5'
+data_path = './data/flatbalanced.hdf5'
+model_path = './flatbal_continuation/flatbal_continuation_config.json'
+
+#data_path = './data/balanced_vdvq.hdf5'
 #model_path = './dc/dc_config.json'
-model_path = './flat_vdvq/flat_vdvq_config.json'
+#model_path = './flat_vdvq/flat_vdvq_config.json'
 
 #model_path = './flatbal/flatbal_config.json'
 #model_path = './flatstable/flatstable_config.json'
