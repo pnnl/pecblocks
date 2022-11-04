@@ -183,3 +183,118 @@ H1s[7][5]  Real Poles: [-776.24385292 -532.59651247 -532.59651247  -74.39603654]
 H1s[7][6]  Real Poles: [-710.55643232 -527.79586866 -527.79586866 -208.81701901] Freqs [Hz]: [37.03074991144739]
 H1s[7][7]  Real Poles: [-792.21194811 -532.36273593 -532.36273593  -53.87470463] Freqs [Hz]: [48.08881753664082]
 
+C:\src\pecblocks\examples\hwpv>python pv3_training.py
+model_folder = ./unbal
+model_root = unbal
+data_path = ../../../atptools/unbalanced.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6, 7, 8]
+idx_out [9, 10, 11, 12, 13, 14, 15, 16]
+read 2310 dataframes
+dt=0.002000 data_len=2500 n_io=17 n_case=2310
+['T', 'G', 'Fc', 'Md', 'Mq', 'Vrms', 'GVrms', 'Ctl', 'Unb'] ['Vdc', 'Idc', 'Idlo', 'Iqlo', 'I0lo', 'Idhi', 'Iqhi', 'I0hi'] (2310, 2500, 17)
+shapes of t (2500,) data_train (2310, 2500, 17) n_in=9, n_out=8
+t range 0.000000 to 4.998000
+Before Scaling:
+Column       Min       Max      Mean     Range
+T         15.000    35.003    26.754    20.003
+G         -0.000   999.995   403.273   999.995
+Fc        55.000    65.000    60.002    10.000
+Md         0.800     1.200     1.001     0.400
+Mq        -0.499     0.501     0.001     1.000
+Vrms       0.000   575.565   116.056   575.565
+GVrms     -0.000   546.787    69.094   546.787
+Ctl        0.000     1.000     0.599     1.000
+Unb        0.000     1.000     0.140     1.000
+Vdc       -0.000   443.094   273.609   443.094
+Idc       -0.000   292.836   103.908   292.836
+Idlo      -0.270   189.458    67.640   189.727
+Iqlo     -81.686    72.976    -1.439   154.661
+I0lo      -0.788     0.496    -0.000     1.283
+Idhi      -0.123    15.174     0.621    15.297
+Iqhi      -0.288    15.248     0.617    15.536
+I0hi      -0.290    14.641     0.614    14.932
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+T         -0.588     0.412    -0.000     1.000    20.003    26.754
+G         -0.403     0.597    -0.000     1.000   999.995   403.273
+Fc        -0.500     0.500    -0.000     1.000    10.000    60.002
+Md        -0.502     0.498    -0.000     1.000     0.400     1.001
+Mq        -0.500     0.500     0.000     1.000     1.000     0.001
+Vrms      -0.202     0.798     0.000     1.000   575.565   116.056
+GVrms     -0.126     0.874     0.000     1.000   546.787    69.094
+Ctl       -0.599     0.401    -0.000     1.000     1.000     0.599
+Unb       -0.140     0.860    -0.000     1.000     1.000     0.140
+Vdc       -0.617     0.383    -0.000     1.000   443.094   273.609
+Idc       -0.355     0.645     0.000     1.000   292.836   103.908
+Idlo      -0.358     0.642     0.000     1.000   189.727    67.640
+Iqlo      -0.519     0.481    -0.000     1.000   154.661    -1.439
+I0lo      -0.614     0.386     0.000     1.000     1.283    -0.000
+Idhi      -0.049     0.951     0.000     1.000    15.297     0.621
+Iqhi      -0.058     0.942    -0.000     1.000    15.536     0.617
+I0hi      -0.061     0.939    -0.000     1.000    14.932     0.614
+make_mimo_block iir
+continuing iterations on existing model coefficients
+Iter    0 of  600 | Loss     0.002647
+Iter   10 of  600 | Loss     0.003648
+Iter   20 of  600 | Loss     0.002902
+Iter   30 of  600 | Loss     0.002657
+Iter   40 of  600 | Loss     0.002670
+Iter   50 of  600 | Loss     0.002642
+Iter   60 of  600 | Loss     0.002624
+Iter   70 of  600 | Loss     0.002615
+Iter   80 of  600 | Loss     0.002608
+Iter   90 of  600 | Loss     0.002602
+Iter  100 of  600 | Loss     0.002596
+Iter  110 of  600 | Loss     0.002591
+Iter  120 of  600 | Loss     0.002585
+Iter  130 of  600 | Loss     0.002579
+Iter  140 of  600 | Loss     0.002573
+Iter  150 of  600 | Loss     0.002566
+Iter  160 of  600 | Loss     0.002560
+Iter  170 of  600 | Loss     0.002553
+Iter  180 of  600 | Loss     0.002546
+Iter  190 of  600 | Loss     0.002539
+Iter  200 of  600 | Loss     0.002532
+Iter  210 of  600 | Loss     0.002525
+Iter  220 of  600 | Loss     0.002517
+Iter  230 of  600 | Loss     0.002509
+Iter  240 of  600 | Loss     0.002501
+Iter  250 of  600 | Loss     0.002493
+Iter  260 of  600 | Loss     0.002484
+Iter  270 of  600 | Loss     0.002475
+Iter  280 of  600 | Loss     0.002466
+Iter  290 of  600 | Loss     0.002456
+Iter  300 of  600 | Loss     0.002446
+Iter  310 of  600 | Loss     0.002436
+Iter  320 of  600 | Loss     0.002425
+Iter  330 of  600 | Loss     0.002413
+Iter  340 of  600 | Loss     0.002401
+Iter  350 of  600 | Loss     0.002389
+Iter  360 of  600 | Loss     0.002375
+Iter  370 of  600 | Loss     0.002361
+Iter  380 of  600 | Loss     0.002347
+Iter  390 of  600 | Loss     0.002339
+Iter  400 of  600 | Loss     0.002316
+Iter  410 of  600 | Loss     0.002300
+Iter  420 of  600 | Loss     0.002284
+Iter  430 of  600 | Loss     0.002266
+Iter  440 of  600 | Loss     0.002262
+Iter  450 of  600 | Loss     0.002235
+Iter  460 of  600 | Loss     0.002215
+Iter  470 of  600 | Loss     0.002196
+Iter  480 of  600 | Loss     0.002177
+Iter  490 of  600 | Loss     0.002171
+Iter  500 of  600 | Loss     0.002141
+Iter  510 of  600 | Loss     0.002114
+Iter  520 of  600 | Loss     0.002106
+Iter  530 of  600 | Loss     0.002072
+Iter  540 of  600 | Loss     0.002058
+Iter  550 of  600 | Loss     0.002132
+Iter  560 of  600 | Loss     0.002003
+Iter  570 of  600 | Loss     0.002006
+Iter  580 of  600 | Loss     0.002173
+Iter  590 of  600 | Loss     0.001994
+COL_Y ['Vdc', 'Idc', 'Idlo', 'Iqlo', 'I0lo', 'Idhi', 'Iqhi', 'I0hi']
+Train time: 49026.92, Recent loss: 0.001969, RMS Errors: 0.0627 0.0267 0.0293 0.0174 0.0115 0.0557 0.0550 0.0571
+                          MAE Errors: 0.0388 0.0159 0.0169 0.0096 0.0055 0.0212 0.0212 0.0208
+
