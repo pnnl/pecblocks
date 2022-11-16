@@ -1,19 +1,9 @@
 # copyright 2021-2022 Battelle Memorial Institute
-# reads a spreadsheet of Simscape output, plots channels and converts to HDF5
-#  arg1: input file name, format like case###.xlsx, default case500.xlsx, *.xlsx to glob
-#  arg2: output file name, default test.hdf5
-#  example: python xlsx_to_hdf5.py newcase.xlsx new.hdf5
+# reads the spreadsheets of Simscape output, plots channels and converts to HDF5
+# 
+#  input: case0.xlsx through case4.xlsx should exist in current directory
+#  output: new.hdf5
 #
-# This script reads the XLSX file into a Pandas Dataframe, because
-# Pandas has a one-step function to import XLSX files. However, the
-# HWPV training scripts do not use Pandas. Therefore, the saved HDF5
-# file uses the same schema as for COMTRADE analog channels, which
-# are compatible with HWPV training scripts.
-
-# this next line would save the Pandas Dataframe, which is not suited for HWPV fitting
-#  df.to_hdf(outputfile, key='Test', mode='w')
-#  df.plot(subplots=True)
-
 import sys
 import os
 import pandas as pd
