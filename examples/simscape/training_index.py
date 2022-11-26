@@ -12,9 +12,9 @@ idx1 = 950
 idx2 = 2450
 idx2 = 1950
 
-tags = ['G', 'T', 'Fc', 'Md', 'Mq', 'Vdc', 'Idc', 'Id', 'Iq', 'Vrms']
-hdr = '     G    T    Fc    Md     Mq    Vdc    Idc    Id     Iq   Vrms'
-fmt = '{:6.1f} {:4.1f} {:5.2f} {:5.3f} {:6.3f} {:6.2f} {:6.2f} {:5.2f} {:6.2f} {:6.2f}'
+tags = ['G', 'T', 'Fc', 'Md1', 'Mq1', 'Vdc', 'Idc', 'Id', 'Iq', 'Vrms', 'Vod', 'Voq']
+hdr = '     G    T    Fc   Md1    Mq1    Vdc    Idc    Id     Iq   Vrms    Vod    Voq'
+fmt = '{:6.1f} {:4.1f} {:5.2f} {:5.3f} {:6.3f} {:6.2f} {:6.2f} {:5.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'
 
 def summarize_group(lbl, grp):
   dlen = grp['t'].len()
@@ -26,8 +26,8 @@ def summarize_group(lbl, grp):
     grp[chan].read_direct (y)
     y1[i] = y[idx1]
     y2[i] = y[idx2]
-  print (('{:4s}    '+fmt+fmt).format (str(lbl), y1[0], y1[1], y1[2], y1[3], y1[4], y1[5], y1[6], y1[7], y1[8], y1[9],
-                                   y2[0], y2[1], y2[2], y2[3], y2[4], y2[5], y2[6], y2[7], y2[8], y2[9]))
+  print (('{:4s}    '+fmt+fmt).format (str(lbl), y1[0], y1[1], y1[2], y1[3], y1[4], y1[5], y1[6], y1[7], y1[8], y1[9], y1[10], y1[11],
+                                   y2[0], y2[1], y2[2], y2[3], y2[4], y2[5], y2[6], y2[7], y2[8], y2[9], y2[10], y2[11]))
 
 filename = 'test.hdf5'
 if len(sys.argv) > 1:
