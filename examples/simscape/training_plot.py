@@ -19,10 +19,12 @@ input_defs = [
     {'row':0, 'col':1, 'tag':'T', 'title':'Temperature', 'ylabel':'C'},
     {'row':0, 'col':2, 'tag':'Vrms', 'title':'Vrms',  'ylabel':'V'},
     {'row':0, 'col':3, 'tag':'GVrms', 'title':'GVrms',  'ylabel':'kVW/m2'},
-    {'row':1, 'col':0, 'tag':'Fc', 'title':'Control Frequency',  'ylabel':'Hz'},
-    {'row':1, 'col':1, 'tag':'Md', 'title':'Md', 'ylabel':'pu'},
-    {'row':1, 'col':2, 'tag':'Mq', 'title':'Mq', 'ylabel':'pu'},
-    {'row':1, 'col':3, 'tag':'Ctl', 'title':'Control Mode',  'ylabel':'[0,GFM,GFL]'},
+    {'row':0, 'col':4, 'tag':'Fc', 'title':'Control Frequency',  'ylabel':'Hz'},
+    {'row':1, 'col':0, 'tag':'Md1', 'title':'Md', 'ylabel':'pu'},
+    {'row':1, 'col':1, 'tag':'Mq1', 'title':'Mq', 'ylabel':'pu'},
+    {'row':1, 'col':2, 'tag':'Vod', 'title':'Vd', 'ylabel':'V'},
+    {'row':1, 'col':3, 'tag':'Voq', 'title':'Vq', 'ylabel':'V'},
+    {'row':1, 'col':4, 'tag':'Ctl', 'title':'Control Mode',  'ylabel':'[0,GFM,GFL]'},
   ]
 
 output_defs = [
@@ -78,10 +80,10 @@ with h5py.File(filename, 'r') as f:
   ax = start_plot ('Inputs from {:s}'.format(filename), input_defs)
   for grp_name, grp in f.items():
     plot_group (ax, grp, input_defs)
-  finish_plot (ax, 'BalInputs.png')
+  finish_plot (ax, 'Ucf2Inputs.png')
 
   ax = start_plot ('Outputs from {:s}'.format(filename), output_defs)
   for grp_name, grp in f.items():
     plot_group (ax, grp, output_defs)
-  finish_plot (ax, 'BalOutputs.png')
+  finish_plot (ax, 'Ucf2Outputs.png')
 

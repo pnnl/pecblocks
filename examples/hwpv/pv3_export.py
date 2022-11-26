@@ -16,6 +16,7 @@ model_path = './tacs/tacs_config.json'
 model_path = './unbal/unbal_config.json'
 
 model_path = './osg_vdvq/osg_vdvq_config.json'
+model_path = './ucf2/ucf2_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:

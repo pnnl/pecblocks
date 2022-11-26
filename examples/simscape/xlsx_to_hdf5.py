@@ -21,6 +21,7 @@ import h5py
 import matplotlib.pyplot as plt
 import glob
 
+# these are for the September dataset
 plot_defs = [
   {'row':0, 'col':0, 'tags':['G'], 'title':'Irradiance', 'ylabel':'W/m2'},
   {'row':0, 'col':1, 'tags':['T'], 'title':'Temperature', 'ylabel':'deg C'},
@@ -36,6 +37,24 @@ plot_defs = [
   {'row':2, 'col':1, 'tags':['Isd','Isq'], 'title':'Inverter Currents', 'ylabel':'A'},
   {'row':2, 'col':2, 'tags':['Vbd','Vbq'], 'title':'Voltages at B?', 'ylabel':'V'},
   {'row':2, 'col':3, 'tags':['Vod','Voq'], 'title':'Voltages at O?', 'ylabel':'V'},
+]
+
+# these are for the November dataset
+plot_defs = [
+  {'row':0, 'col':0, 'tags':['G'], 'title':'Irradiance', 'ylabel':'W/m2'},
+  {'row':0, 'col':1, 'tags':['T'], 'title':'Temperature', 'ylabel':'deg C'},
+  {'row':0, 'col':2, 'tags':['Ctl'], 'title':'Control Mode', 'ylabel':'pu'},
+  {'row':0, 'col':3, 'tags':['Fc'], 'title':'Control Frequency', 'ylabel':'Hz'},
+
+  {'row':1, 'col':0, 'tags':['GVrms'], 'title':'Polynomial Feature', 'ylabel':''},
+  {'row':1, 'col':1, 'tags':['Md1','Mq1'], 'title':'Modulation Indices', 'ylabel':'pu'},
+  {'row':1, 'col':2, 'tags':['Vdc'], 'title':'DC Voltage', 'ylabel':'V'},
+  {'row':1, 'col':3, 'tags':['Idc'], 'title':'DC Current', 'ylabel':'A'},
+
+  {'row':2, 'col':0, 'tags':['Id'], 'title':'PCC Currents', 'ylabel':'A'},
+  {'row':2, 'col':1, 'tags':['Iq'], 'title':'Inverter Currents', 'ylabel':'A'},
+  {'row':2, 'col':2, 'tags':['Vod','Vrms'], 'title':'Vd and Vrms', 'ylabel':'V'},
+  {'row':2, 'col':3, 'tags':['Voq'], 'title':'Vq', 'ylabel':'V'},
 ]
 
 nrows = 3
