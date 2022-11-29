@@ -1,0 +1,246 @@
+C:\src\pecblocks\examples\hwpv>python pv3_training.py
+model_folder = ./ucf2ac
+model_root = ucf2a
+data_path = c:/data/ucf2.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6, 7, 8]
+idx_out [9, 10, 11, 12]
+read 1500 dataframes
+dt=0.002000 data_len=2500 n_io=13 n_case=1500
+['T', 'G', 'Fc', 'Md1', 'Mq1', 'Vod', 'Voq', 'GVrms', 'Ctl'] ['Vdc', 'Idc', 'Id', 'Iq'] (1500, 2500, 13)
+shapes of t (2500,) data_train (1500, 2500, 13) n_in=9, n_out=4
+t range 0.000000 to 4.998000
+Before Scaling:
+Column       Min       Max      Mean     Range
+T         15.000    35.003    25.001    20.003
+G         -0.000   999.995   483.449   999.995
+Fc        55.000    65.000    60.003    10.000
+Md1        0.800     1.200     1.002     0.400
+Mq1       -0.499     0.501     0.001     1.000
+Vod        0.000   345.797   171.304   345.797
+Voq     -158.054   140.520    -4.992   298.574
+GVrms     -0.000 410345.688 135669.844 410345.688
+Ctl        0.000     1.000     0.799     1.000
+Vdc        0.000   667.874   365.254   667.874
+Idc        0.000     5.158     2.236     5.158
+Id         0.000     6.188     3.068     6.188
+Iq        -2.827     2.515    -0.089     5.343
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+T         -0.500     0.500    -0.000     1.000    20.003    25.001
+G         -0.483     0.517    -0.000     1.000   999.995   483.449
+Fc        -0.500     0.500    -0.000     1.000    10.000    60.003
+Md1       -0.505     0.495    -0.000     1.000     0.400     1.002
+Mq1       -0.500     0.500    -0.000     1.000     1.000     0.001
+Vod       -0.495     0.505     0.000     1.000   345.797   171.304
+Voq       -0.513     0.487    -0.000     1.000   298.574    -4.992
+GVrms     -0.331     0.669     0.000     1.000 410345.688 135669.844
+Ctl       -0.799     0.201    -0.000     1.000     1.000     0.799
+Vdc       -0.547     0.453    -0.000     1.000   667.874   365.254
+Idc       -0.433     0.567     0.000     1.000     5.158     2.236
+Id        -0.496     0.504     0.000     1.000     6.188     3.068
+Iq        -0.512     0.488    -0.000     1.000     5.343    -0.089
+make_mimo_block iir
+Epoch    0 of 2000 | Loss     1.922637
+Epoch   10 of 2000 | Loss     0.047525
+Epoch   20 of 2000 | Loss     0.021595
+Epoch   30 of 2000 | Loss     0.004971
+Epoch   40 of 2000 | Loss     0.002609
+Epoch   50 of 2000 | Loss     0.002110
+Epoch   60 of 2000 | Loss     0.001837
+Epoch   70 of 2000 | Loss     0.001555
+Epoch   80 of 2000 | Loss     0.001232
+Epoch   90 of 2000 | Loss     0.000939
+Epoch  100 of 2000 | Loss     0.000755
+Epoch  110 of 2000 | Loss     0.000628
+Epoch  120 of 2000 | Loss     0.000490
+Epoch  130 of 2000 | Loss     0.000444
+Epoch  140 of 2000 | Loss     0.000428
+Epoch  150 of 2000 | Loss     0.000376
+Epoch  160 of 2000 | Loss     0.000429
+Epoch  170 of 2000 | Loss     0.000400
+Epoch  180 of 2000 | Loss     0.000355
+Epoch  190 of 2000 | Loss     0.000386
+Epoch  200 of 2000 | Loss     0.000294
+Epoch  210 of 2000 | Loss     0.000301
+Epoch  220 of 2000 | Loss     0.000279
+Epoch  230 of 2000 | Loss     0.000305
+Epoch  240 of 2000 | Loss     0.000324
+Epoch  250 of 2000 | Loss     0.000247
+Epoch  260 of 2000 | Loss     0.000251
+Epoch  270 of 2000 | Loss     0.000392
+Epoch  280 of 2000 | Loss     0.000230
+Epoch  290 of 2000 | Loss     0.000251
+Epoch  300 of 2000 | Loss     0.000270
+Epoch  310 of 2000 | Loss     0.000278
+Epoch  320 of 2000 | Loss     0.000231
+Epoch  330 of 2000 | Loss     0.000224
+Epoch  340 of 2000 | Loss     0.000228
+Epoch  350 of 2000 | Loss     0.000207
+Epoch  360 of 2000 | Loss     0.000266
+Epoch  370 of 2000 | Loss     0.000217
+Epoch  380 of 2000 | Loss     0.000255
+Epoch  390 of 2000 | Loss     0.000229
+Epoch  400 of 2000 | Loss     0.000185
+Epoch  410 of 2000 | Loss     0.000185
+Epoch  420 of 2000 | Loss     0.000187
+Epoch  430 of 2000 | Loss     0.000193
+Epoch  440 of 2000 | Loss     0.000191
+Epoch  450 of 2000 | Loss     0.000560
+Epoch  460 of 2000 | Loss     0.000211
+Epoch  470 of 2000 | Loss     0.000188
+Epoch  480 of 2000 | Loss     0.000201
+Epoch  490 of 2000 | Loss     0.000167
+Epoch  500 of 2000 | Loss     0.000199
+Epoch  510 of 2000 | Loss     0.000165
+Epoch  520 of 2000 | Loss     0.000161
+Epoch  530 of 2000 | Loss     0.000186
+Epoch  540 of 2000 | Loss     0.000207
+Epoch  550 of 2000 | Loss     0.000205
+Epoch  560 of 2000 | Loss     0.000160
+Epoch  570 of 2000 | Loss     0.000174
+Epoch  580 of 2000 | Loss     0.000214
+Epoch  590 of 2000 | Loss     0.000180
+Epoch  600 of 2000 | Loss     0.000187
+Epoch  610 of 2000 | Loss     0.000165
+Epoch  620 of 2000 | Loss     0.000183
+Epoch  630 of 2000 | Loss     0.000190
+Epoch  640 of 2000 | Loss     0.000161
+Epoch  650 of 2000 | Loss     0.000195
+Epoch  660 of 2000 | Loss     0.000152
+Epoch  670 of 2000 | Loss     0.000205
+Epoch  680 of 2000 | Loss     0.000140
+Epoch  690 of 2000 | Loss     0.000178
+Epoch  700 of 2000 | Loss     0.000157
+Epoch  710 of 2000 | Loss     0.000153
+Epoch  720 of 2000 | Loss     0.000138
+Epoch  730 of 2000 | Loss     0.000146
+Epoch  740 of 2000 | Loss     0.000122
+Epoch  750 of 2000 | Loss     0.000161
+Epoch  760 of 2000 | Loss     0.000161
+Epoch  770 of 2000 | Loss     0.000154
+Epoch  780 of 2000 | Loss     0.000197
+Epoch  790 of 2000 | Loss     0.000204
+Epoch  800 of 2000 | Loss     0.000177
+Epoch  810 of 2000 | Loss     0.000145
+Epoch  820 of 2000 | Loss     0.000134
+Epoch  830 of 2000 | Loss     0.000240
+Epoch  840 of 2000 | Loss     0.000177
+Epoch  850 of 2000 | Loss     0.000126
+Epoch  860 of 2000 | Loss     0.000165
+Epoch  870 of 2000 | Loss     0.000123
+Epoch  880 of 2000 | Loss     0.000144
+Epoch  890 of 2000 | Loss     0.000156
+Epoch  900 of 2000 | Loss     0.000115
+Epoch  910 of 2000 | Loss     0.000130
+Epoch  920 of 2000 | Loss     0.000144
+Epoch  930 of 2000 | Loss     0.000193
+Epoch  940 of 2000 | Loss     0.000171
+Epoch  950 of 2000 | Loss     0.000131
+Epoch  960 of 2000 | Loss     0.000122
+Epoch  970 of 2000 | Loss     0.000153
+Epoch  980 of 2000 | Loss     0.000145
+Epoch  990 of 2000 | Loss     0.000108
+Epoch 1000 of 2000 | Loss     0.000113
+Epoch 1010 of 2000 | Loss     0.000318
+Epoch 1020 of 2000 | Loss     0.000118
+Epoch 1030 of 2000 | Loss     0.000109
+Epoch 1040 of 2000 | Loss     0.000106
+Epoch 1050 of 2000 | Loss     0.000176
+Epoch 1060 of 2000 | Loss     0.000138
+Epoch 1070 of 2000 | Loss     0.000098
+Epoch 1080 of 2000 | Loss     0.000126
+Epoch 1090 of 2000 | Loss     0.000143
+Epoch 1100 of 2000 | Loss     0.000252
+Epoch 1110 of 2000 | Loss     0.000145
+Epoch 1120 of 2000 | Loss     0.000109
+Epoch 1130 of 2000 | Loss     0.000119
+Epoch 1140 of 2000 | Loss     0.000163
+Epoch 1150 of 2000 | Loss     0.000122
+Epoch 1160 of 2000 | Loss     0.000132
+Epoch 1170 of 2000 | Loss     0.000130
+Epoch 1180 of 2000 | Loss     0.000104
+Epoch 1190 of 2000 | Loss     0.000113
+Epoch 1200 of 2000 | Loss     0.000137
+Epoch 1210 of 2000 | Loss     0.000126
+Epoch 1220 of 2000 | Loss     0.000208
+Epoch 1230 of 2000 | Loss     0.000107
+Epoch 1240 of 2000 | Loss     0.000132
+Epoch 1250 of 2000 | Loss     0.000126
+Epoch 1260 of 2000 | Loss     0.000119
+Epoch 1270 of 2000 | Loss     0.000112
+Epoch 1280 of 2000 | Loss     0.000095
+Epoch 1290 of 2000 | Loss     0.000146
+Epoch 1300 of 2000 | Loss     0.000110
+Epoch 1310 of 2000 | Loss     0.000110
+Epoch 1320 of 2000 | Loss     0.000139
+Epoch 1330 of 2000 | Loss     0.000170
+Epoch 1340 of 2000 | Loss     0.000108
+Epoch 1350 of 2000 | Loss     0.000099
+Epoch 1360 of 2000 | Loss     0.000101
+Epoch 1370 of 2000 | Loss     0.000086
+Epoch 1380 of 2000 | Loss     0.000099
+Epoch 1390 of 2000 | Loss     0.000212
+Epoch 1400 of 2000 | Loss     0.000155
+Epoch 1410 of 2000 | Loss     0.000114
+Epoch 1420 of 2000 | Loss     0.000172
+Epoch 1430 of 2000 | Loss     0.000142
+Epoch 1440 of 2000 | Loss     0.000181
+Epoch 1450 of 2000 | Loss     0.000095
+Epoch 1460 of 2000 | Loss     0.000086
+Epoch 1470 of 2000 | Loss     0.000171
+Epoch 1480 of 2000 | Loss     0.000105
+Epoch 1490 of 2000 | Loss     0.000106
+Epoch 1500 of 2000 | Loss     0.000142
+Epoch 1510 of 2000 | Loss     0.000100
+Epoch 1520 of 2000 | Loss     0.000155
+Epoch 1530 of 2000 | Loss     0.000096
+Epoch 1540 of 2000 | Loss     0.000098
+Epoch 1550 of 2000 | Loss     0.000091
+Epoch 1560 of 2000 | Loss     0.000085
+Epoch 1570 of 2000 | Loss     0.000107
+Epoch 1580 of 2000 | Loss     0.000084
+Epoch 1590 of 2000 | Loss     0.000124
+Epoch 1600 of 2000 | Loss     0.000110
+Epoch 1610 of 2000 | Loss     0.000097
+Epoch 1620 of 2000 | Loss     0.000107
+Epoch 1630 of 2000 | Loss     0.000204
+Epoch 1640 of 2000 | Loss     0.000094
+Epoch 1650 of 2000 | Loss     0.000095
+Epoch 1660 of 2000 | Loss     0.000075
+Epoch 1670 of 2000 | Loss     0.000135
+Epoch 1680 of 2000 | Loss     0.000212
+Epoch 1690 of 2000 | Loss     0.000124
+Epoch 1700 of 2000 | Loss     0.000095
+Epoch 1710 of 2000 | Loss     0.000147
+Epoch 1720 of 2000 | Loss     0.000142
+Epoch 1730 of 2000 | Loss     0.000093
+Epoch 1740 of 2000 | Loss     0.000097
+Epoch 1750 of 2000 | Loss     0.000078
+Epoch 1760 of 2000 | Loss     0.000085
+Epoch 1770 of 2000 | Loss     0.000096
+Epoch 1780 of 2000 | Loss     0.000088
+Epoch 1790 of 2000 | Loss     0.000107
+Epoch 1800 of 2000 | Loss     0.000087
+Epoch 1810 of 2000 | Loss     0.000104
+Epoch 1820 of 2000 | Loss     0.000119
+Epoch 1830 of 2000 | Loss     0.000156
+Epoch 1840 of 2000 | Loss     0.000080
+Epoch 1850 of 2000 | Loss     0.000099
+Epoch 1860 of 2000 | Loss     0.000102
+Epoch 1870 of 2000 | Loss     0.000091
+Epoch 1880 of 2000 | Loss     0.000148
+Epoch 1890 of 2000 | Loss     0.000090
+Epoch 1900 of 2000 | Loss     0.000108
+Epoch 1910 of 2000 | Loss     0.000097
+Epoch 1920 of 2000 | Loss     0.000084
+Epoch 1930 of 2000 | Loss     0.000146
+Epoch 1940 of 2000 | Loss     0.000121
+Epoch 1950 of 2000 | Loss     0.000095
+Epoch 1960 of 2000 | Loss     0.000098
+Epoch 1970 of 2000 | Loss     0.000117
+Epoch 1980 of 2000 | Loss     0.000175
+Epoch 1990 of 2000 | Loss     0.000091
+COL_Y ['Vdc', 'Idc', 'Id', 'Iq']
+Train time: 23982.31, Recent loss: 0.000095, RMS Errors: 0.0079 0.0053 0.0066 0.0038
+                          MAE Errors: 0.0018 0.0022 0.0020 0.0012
+

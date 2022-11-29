@@ -34,6 +34,7 @@ import pv3_poly as pv3_model
 
 data_path = 'c:/data/ucf2.hdf5'
 model_path = './ucf2/ucf2_config.json'
+model_path = './ucf2ac/ucf2ac_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -57,7 +58,7 @@ if __name__ == '__main__':
 #  quit()
   rmse, mae, case_rmse, case_mae = model.trainingErrors(bByCase=False)
 
-  nlookback = 10 * int(model.n_cases / model.batch_size)
+  nlookback = 10 #  * int(model.n_cases / model.batch_size)
   recent_loss = LOSS[len(LOSS)-nlookback:]
 #  print (nlookback, recent_loss)
   print ('COL_Y', model.COL_Y)

@@ -55,6 +55,7 @@ model_path = './flat_vdvq/flat_vdvq_config.json'
 
 data_path = 'c:/data/ucf2.hdf5'
 model_path = './ucf2/ucf2_config.json'
+model_path = './ucf2ac/ucf2ac_config.json'
 
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)

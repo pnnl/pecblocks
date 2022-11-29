@@ -422,7 +422,8 @@ class pv3():
     LOSS = []
     start_time = time.time()
     for itr in range(0, self.num_iter):
-      for ub, yb in train_dl:
+      epoch_loss = 0.0
+      for ub, yb in train_dl: # batch loop
         self.optimizer.zero_grad()
         # Simulate FHF
         y_non = self.F1 (ub)
@@ -438,15 +439,18 @@ class pv3():
         else:
           loss_fit = torch.mean(err_fit**2)
         loss = loss_fit
-
-        LOSS.append(loss.item())
-        if itr % self.print_freq == 0:
-          print('Iter {:4d} of {:4d} | Loss {:12.6f}'.format (itr, self.num_iter, loss_fit))
-
-        # Optimize
+        # Optimize on this batch
         loss.backward()
         self.optimizer.step()
+#        print ('  batch size={:d} loss={:12.6f}'.format (ub.shape[0], loss_fit))
+        epoch_loss += loss_fit
+
+      LOSS.append(epoch_loss.item())
+      if itr % self.print_freq == 0:
+        print('Epoch {:4d} of {:4d} | Loss {:12.6f}'.format (itr, self.num_iter, epoch_loss))
+
     train_time = time.time() - start_time
+#    print (LOSS)
     return train_time, LOSS
 
   def saveModelCoefficients(self):
