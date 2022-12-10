@@ -7,7 +7,7 @@
   "t_step": 0.002,
   "num_iter": 2000,
   "print_freq": 10,
-  "batch_size": 1500,
+  "batch_size": 100,
   "n_skip": 1,
   "n_trunc": 0,
   "n_dec": 1,

@@ -343,6 +343,8 @@ class pv3():
       dmin = np.min (self.data_train[:,:,idx])
       dmean = np.mean (self.data_train[:,:,idx]) # mean over scenarios and time
       drange = dmax - dmin
+      if abs(drange) <= 0.0:
+        drange = 1.0
       print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
       self.normfacs[c] = {'scale':float(drange), 'offset':float(dmean)}
       self.data_train[:,:,idx] -= dmean
@@ -356,6 +358,8 @@ class pv3():
       dmax = np.max (self.data_train[:,:,idx])
       dmin = np.min (self.data_train[:,:,idx])
       drange = dmax - dmin
+      if abs(drange) <= 0.0:
+        drange = 1.0
       print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, 
         dmin, dmax, dmean, drange, self.normfacs[c]['scale'], self.normfacs[c]['offset']))
       idx += 1
@@ -420,6 +424,7 @@ class pv3():
       self.loadModelCoefficients()
 
     LOSS = []
+    lossfile = os.path.join(self.model_folder, "Loss.npy")
     start_time = time.time()
     for itr in range(0, self.num_iter):
       epoch_loss = 0.0
@@ -448,9 +453,11 @@ class pv3():
       LOSS.append(epoch_loss.item())
       if itr % self.print_freq == 0:
         print('Epoch {:4d} of {:4d} | Loss {:12.6f}'.format (itr, self.num_iter, epoch_loss))
+        self.saveModelCoefficients()
+        np.save (lossfile, LOSS)
 
     train_time = time.time() - start_time
-#    print (LOSS)
+    np.save (lossfile, LOSS)
     return train_time, LOSS
 
   def saveModelCoefficients(self):

@@ -1,0 +1,23 @@
+{
+  "COL_T": ["t"],
+  "COL_U": ["T", "G", "Fc", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctl"],
+  "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
+  "h5grp_prefix":"case",
+  "lr": 0.5e-3,
+  "t_step": 0.001,
+  "num_iter": 2000,
+  "print_freq": 10,
+  "batch_size": 380,
+  "n_skip": 1,
+  "n_trunc": 0,
+  "n_dec": 1,
+  "n_loss_skip": 100,
+  "n_pad": 100,
+  "gtype": "iir",
+  "na": 8,
+  "nb": 8,
+  "nk": 0,
+  "activation": "tanh",
+  "nh1": 80,
+  "nh2": 60
+}

@@ -1,3 +1,9 @@
 data/balanced.hdf5
 data/flatbalanced.hdf5
 pv3_server.hdf5
+data/balanced_vdvq.hdf5
+data/balanced_vdvq2.hdf5
+data/osg_vdvq.hdf5
+data/osg_vdvq2.hdf5
+data/osg_vrms.hdf5
+V*.png

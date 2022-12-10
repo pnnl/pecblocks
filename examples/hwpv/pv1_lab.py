@@ -5,7 +5,7 @@ import numpy as np
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
-store = pd.HDFStore('c:/data/foobar.hdf5')
+store = pd.HDFStore('c:/data/lab1raw.hdf5')
 #print (store.info())
 for key in store.keys():
   df = store.get(key)
