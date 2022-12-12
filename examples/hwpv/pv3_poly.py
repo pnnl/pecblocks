@@ -34,6 +34,8 @@ class pv3():
     self.continue_iterations = False
     self.print_freq = None
     self.batch_size = None
+    self.n_validation_pct = None
+    self.n_validation_seed = None
     self.n_loss_skip = None
     self.n_pad = None
     self.gtype = None
@@ -79,6 +81,8 @@ class pv3():
     else:
       self.t_step = 1.0e-3
     self.batch_size = config['batch_size']
+    self.n_validation_pct = config['n_validation_pct']
+    self.n_validation_seed = config['n_validation_seed']
     self.n_skip = config['n_skip']
     self.n_trunc = config['n_trunc']
     self.n_loss_skip = config['n_loss_skip']
@@ -416,18 +420,32 @@ class pv3():
     ], lr=self.lr)
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
-    train_ds = PVInvDataset(self.data_train,in_size,out_size)
+
+    # split the data into training and validation datasets
+    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    nvalidation = int (len(total_ds) * float (self.n_validation_pct) / 100.0)
+    ntraining = len(total_ds) - nvalidation
+    splits = [ntraining, nvalidation]
+    train_ds, valid_ds = torch.utils.data.random_split (total_ds, splits, 
+                                                        generator=torch.Generator().manual_seed(self.n_validation_seed))
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=self.batch_size, shuffle=True)
+    valid_dl = torch.utils.data.DataLoader(valid_ds, batch_size=self.batch_size, shuffle=False)
+    validation_scale = float(len(train_ds)) / float(len(valid_ds))
+    print ('Dataset split:', len(total_ds), len(train_ds), len (valid_ds), 'validation_scale={:.3f}'.format(validation_scale))
 
     if self.continue_iterations:
       print ('continuing iterations on existing model coefficients')
       self.loadModelCoefficients()
 
     LOSS = []
+    VALID = []
     lossfile = os.path.join(self.model_folder, "Loss.npy")
     start_time = time.time()
     for itr in range(0, self.num_iter):
       epoch_loss = 0.0
+      self.F1.train()
+      self.H1.train()
+      self.F2.train()
       for ub, yb in train_dl: # batch loop
         self.optimizer.zero_grad()
         # Simulate FHF
@@ -451,14 +469,36 @@ class pv3():
         epoch_loss += loss_fit
 
       LOSS.append(epoch_loss.item())
+
+      # validation loss
+      valid_loss = 0.0
+      self.F1.eval()
+      self.H1.eval()
+      self.F2.eval()
+      for ub, yb in valid_dl:
+        y_non = self.F1 (ub)
+        y_lin = self.make_mimo_ylin (y_non)
+        y_hat = self.F2 (y_lin)
+        # Compute fit loss
+        if self.n_loss_skip > 0:
+          err_fit = yb[:,self.n_loss_skip:,:] - y_hat[:,self.n_loss_skip:,:]
+        else:
+          err_fit = yb - y_hat
+        if bMAE:
+          loss_fit = torch.sum(torch.abs(err_fit))
+        else:
+          loss_fit = torch.mean(err_fit**2)
+        valid_loss += loss_fit * validation_scale
+
+      VALID.append(valid_loss.item())
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Loss {:12.6f}'.format (itr, self.num_iter, epoch_loss))
+        print('Epoch {:4d} of {:4d} | Training Loss {:12.6f} | Validation Loss {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss))
         self.saveModelCoefficients()
-        np.save (lossfile, LOSS)
+        np.save (lossfile, [LOSS, VALID])
 
     train_time = time.time() - start_time
-    np.save (lossfile, LOSS)
-    return train_time, LOSS
+    np.save (lossfile, [LOSS, VALID])
+    return train_time, LOSS, VALID
 
   def saveModelCoefficients(self):
     torch.save(self.F1.state_dict(), os.path.join(self.model_folder, "F1.pkl"))
@@ -526,6 +566,8 @@ class pv3():
     config['continue_iterations'] = self.continue_iterations
     config['print_freq'] = self.print_freq
     config['batch_size'] = self.batch_size
+    config['n_validation_pct'] = self.n_validation_pct
+    config['n_validation_seed'] = self.n_validation_seed
     config['n_skip'] = self.n_skip
     config['n_trunc'] = self.n_trunc
     config['n_dec'] = self.n_dec
