@@ -6,6 +6,7 @@
   "lr": 1.0e-3,
   "t_step": 0.001,
   "num_iter": 1000,
+  "continue_iterations": false,
   "print_freq": 20,
   "batch_size": 3,
   "n_validation_pct": 25,
