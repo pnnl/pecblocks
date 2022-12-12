@@ -8,23 +8,7 @@ import sys
 
 import pv3_poly as pv3_model
 
-data_path = './data/balanced.hdf5'
-model_path = './big/balanced_config.json'
-
-data_path = './data/flatbalanced.hdf5'
-model_path = './flatbal/flatbal_config.json'
-
-data_path = './data/osg_vrms.hdf5'
-model_path = './osg_vrms/osg_vrms_config.json'
-
-data_path = './data/osg_vdvq2.hdf5'
-model_path = './osg_vdvq/osg_vdvq_config.json'
-
-data_path = './data/balanced_vdvq2.hdf5'
-model_path = './flat_vdvq/flat_vdvq_config.json'
-
 data_path = 'c:/data/ucf2.hdf5'
-model_path = './ucf2/ucf2_config.json'
 model_path = './ucf2ac/ucf2ac_config.json'
 
 if __name__ == '__main__':

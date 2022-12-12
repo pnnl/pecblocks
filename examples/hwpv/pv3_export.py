@@ -7,16 +7,6 @@ import os
 import sys
 import pv3_poly as pv3_model
 
-model_path = './big/balanced_config.json'
-model_path = './flatstable/flatstable_config.json'
-model_path = './models/unbalanced_config.json'
-
-model_path = '../simscape/balanced_config.json'
-model_path = './tacs/tacs_config.json'
-model_path = './unbal/unbal_config.json'
-
-model_path = './osg_vdvq/osg_vdvq_config.json'
-model_path = './ucf2/ucf2_config.json'
 model_path = './ucf2ac/ucf2ac_config.json'
 
 if __name__ == '__main__':

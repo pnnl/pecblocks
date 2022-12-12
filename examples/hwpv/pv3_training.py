@@ -9,31 +9,10 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-#data_path = './data/flatbalanced.hdf5'
-#model_path = './flatbal_continuation/flatbal_continuation_config.json'
-
-#data_path = './data/balanced_vdvq.hdf5'
-#model_path = './dc/dc_config.json'
-#model_path = './flat_vdvq/flat_vdvq_config.json'
-
-#model_path = './flatbal/flatbal_config.json'
-#model_path = './flatstable/flatstable_config.json'
-
-#data_path = '../simscape/balanced.hdf5'
-#model_path = '../simscape/balanced_config.json'
-
-#data_path = '../../../atptools/unbalanced.hdf5'
-#model_path = './tacs/tacs_config.json'
-#model_path = './unbal/unbal_config.json'
-
-#data_path = './data/osg_vrms.hdf5'
-#model_path = './osg_vrms/osg_vrms_config.json'
-
 #data_path = 'c:/data/osg4_vdvq.hdf5'
 #model_path = './osg4_vdvq/osg4_vdvq_config.json'
 
 data_path = 'c:/data/ucf2.hdf5'
-model_path = './ucf2/ucf2_config.json'
 model_path = './ucf2ac/ucf2ac_config.json'
 
 if __name__ == '__main__':
@@ -69,8 +48,12 @@ if __name__ == '__main__':
   print ('                          MAE Errors: {:s}'.format (valstr))
 
   plt.figure()
-  plt.plot(LOSS, label='Training Loss')
-  plt.plot(VALID, label='Validation Loss')
+  plt.title(model_root)
+  plt.plot(np.log10(LOSS), label='Training Loss')
+  plt.plot(np.log10(VALID), label='Validation Loss')
+  plt.ylabel ('Log10')
+  plt.xlabel ('Epoch')
   plt.legend()
-  #plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(model_root)))
+  plt.grid(True)
+  plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(model_root)))
   plt.show()
