@@ -1,6 +1,6 @@
 {
   "COL_T": ["t"],
-  "COL_U": ["T", "G", "Fc", "Md", "Mq", "Vrms", "GVrms", "Ctl", "Unb"],
+  "COL_U": ["T", "G", "Fc", "Md", "Mq", "Vdlo", "Vqlo", "V0lo", "Vdhi", "Vqhi", "V0hi", "GVlo", "Ctl", "Unb"],
   "COL_Y": ["Vdc", "Idc", "Idlo", "Iqlo", "I0lo", "Idhi", "Iqhi", "I0hi"],
   "h5grp_prefix":"case",
   "lr": 1.0e-3,
@@ -21,6 +21,6 @@
   "nb": 4,
   "nk": 0,
   "activation": "tanh",
-  "nh1": 80,
+  "nh1": 120,
   "nh2": 60
 }
