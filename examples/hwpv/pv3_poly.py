@@ -706,43 +706,46 @@ class pv3():
     return y_hat # the caller de_normalizes
 
   def trainingErrors(self, bByCase=False):
-    ub = torch.tensor (self.data_train[:,:,self.idx_in])
-    y_non = self.F1 (ub)
-    y_lin = self.make_mimo_ylin (y_non)
-    y_hat = self.F2 (y_lin)
-
-    y_hat = y_hat.detach().numpy()
-    y_true = self.data_train[:,:,self.idx_out]
     self.n_cases = self.data_train.shape[0]
-
-    icol = 0
-    total_rmse = {}
-    total_mae = {}
+    in_size = len(self.COL_U)
+    out_size = len(self.COL_Y)
+    total_rmse = np.zeros(out_size)
+    total_mae = np.zeros(out_size)
     if bByCase:
-      case_rmse = lst1 = [dict() for i in range(self.n_cases)]
-      case_mae = lst2 = [dict() for i in range(self.n_cases)]
+      case_rmse = np.zeros([self.n_cases, out_size])
+      case_mae = np.zeros([self.n_cases, out_size])
     else:
       case_rmse = None
       case_mae = None
-    for col in self.COL_Y:
-      SUMSQ = 0.0
-      MAE = 0.0
-      for icase in range(self.n_cases):
-        y1 = y_true[icase,:,icol]
-        y2 = y_hat[icase,:,icol]
-        colmae = dynonet.metrics.error_mae(y1, y2)
-        colrms = dynonet.metrics.error_rmse(y1, y2)
-        if bByCase:
-          case_rmse[icase][col] = colrms
-          case_mae[icase][col] = colmae
-        MAE += colmae
-        SUMSQ += (colrms*colrms)
-      MAE /= self.n_cases
-      SUMSQ /= self.n_cases
-      RMSE = math.sqrt(SUMSQ)
-      total_mae[col] = MAE
-      total_rmse[col] = RMSE
-      icol += 1
+
+    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
+
+    icase = 0
+    for ub, y_true in total_dl: # batch loop
+      y_non = self.F1 (ub)
+      y_lin = self.make_mimo_ylin (y_non)
+      y_hat = self.F2 (y_lin)
+      y1 = y_true.detach().numpy()
+      y2 = y_hat.detach().numpy()
+      y_err = np.abs(y1-y2)
+      y_sqr = y_err*y_err
+      nb = y_err.shape[0]
+      npts = y_err.shape[1]
+      ncol = y_err.shape[2]
+      mae = np.mean (y_err, axis=1) # nb x ncol
+      mse = np.mean (y_sqr, axis=1)
+      total_mae += np.sum(mae, axis=0)
+      total_rmse += np.sum(mse, axis=0)
+      if bByCase:
+        iend = icase + nb
+        case_mae[icase:iend,:] = mae[:,:]
+        case_rmse[icase:iend,:] = mse[:,:]
+        icase = iend
+    total_rmse = np.sqrt(total_rmse / self.n_cases)
+    total_mae /= self.n_cases
+    if bByCase:
+      case_rmse = np.sqrt(case_rmse)
     return total_rmse, total_mae, case_rmse, case_mae
 
   def set_LCL_filter(self, Lf, Cf, Lc):
