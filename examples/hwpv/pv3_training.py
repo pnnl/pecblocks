@@ -40,11 +40,13 @@ if __name__ == '__main__':
   nlookback = 10 #  * int(model.n_cases / model.batch_size)
   recent_loss = LOSS[len(LOSS)-nlookback:]
 #  print (nlookback, recent_loss)
+
+  out_size = len(model.COL_Y)
   print ('COL_Y', model.COL_Y)
-  valstr = ' '.join('{:.4f}'.format(rmse[col]) for col in model.COL_Y)
+  valstr = ' '.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
   print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
     np.mean(recent_loss), valstr))
-  valstr = ' '.join('{:.4f}'.format(mae[col]) for col in model.COL_Y)
+  valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
   print ('                          MAE Errors: {:s}'.format (valstr))
 
   plt.figure()
