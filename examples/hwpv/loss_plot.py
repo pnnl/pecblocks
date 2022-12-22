@@ -11,7 +11,7 @@ if __name__ == '__main__':
   if len(sys.argv) > 1:
     data_path = sys.argv[1]
 
-  fname = os.path.join (data_path, 'loss.npy')
+  fname = os.path.join (data_path, 'Loss.npy')
   data = np.load (fname)
 
   plt.figure()
