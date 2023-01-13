@@ -152,6 +152,11 @@ def control_signals (idx, t, trigger):
     v2 = 114.0
     f1 = 60.0
     f2 = 60.0
+
+  if idx == 18: # missed trigger
+    r1 = 60.0
+    r2 = 60.0
+
 #  print ('{:2d} {:.3f}s r=[{:.1f},{:.1f}]Ohm v=[{:.1f},{:.1f}]Volt f=[{:.1f},{:.1f}]Hz'.format (idx, trigger, r1, r2, v1, v2, f1, f2))
   n = len(tbase)
   fc = np.zeros(n)
@@ -187,7 +192,7 @@ if __name__ == '__main__':
   print ('Writing {:d} CSV files to {:s}'.format (len(files), output_path))
   f = h5py.File (output_path, 'w')
 
-  idx = 1
+  idx = 1  # csv filenames are 1-based
   for fname in files:
     d = np.loadtxt (fname, delimiter=',', skiprows=1)
     trigger = -d[0,0]
@@ -223,11 +228,11 @@ if __name__ == '__main__':
     vac_flt = vac_flt - vac_0
     iac_flt = iac_flt - iac_0
 
-    wc = fc * 4.0 + 60.0 * OMEGA
+    wc = (fc * 4.0 + 60.0) * OMEGA
     Vd, Vq, Vrms = simulate_osg (tbase, vac_flt, wc)
     Id, Iq, Irms = simulate_osg (tbase, iac_flt, wc)
 
-    grp = f.create_group ('{:s}{:d}'.format (PREFIX, idx))
+    grp = f.create_group ('{:s}{:d}'.format (PREFIX, idx-1)) # hdf5 group names 0-based
     grp.create_dataset ('t', data=tbase, compression='gzip')
     grp.create_dataset ('Fc', data=fc, compression='gzip')
     grp.create_dataset ('Vc', data=vc, compression='gzip')
@@ -241,7 +246,7 @@ if __name__ == '__main__':
     grp.create_dataset ('Iq', data=Iq, compression='gzip')
     grp.create_dataset ('Irms', data=Irms, compression='gzip')
 
-    if idx == 1:
+    if (idx == 18) or (idx == 3) or (idx >= 55):
       fig, ax = plt.subplots (5, 1, sharex = 'col', figsize=(16,10), constrained_layout=True)
       fig.suptitle ('Case {:s}'.format (fname))
       ax[0].set_title('Vdc')
