@@ -12,18 +12,21 @@ plt.rcParams['savefig.directory'] = os.getcwd()
 
 SQRT2 = math.sqrt(2.0)
 OMEGA = 2.0 * math.pi
-# take the middle 0.3s, downsampled to 1 ms
-#TMAX = 0.3
-#DT = 0.001
 PREFIX = 'scope'
-#FC = 60.0
-#VC = 120.0
+
 # the scope file save accounts for 1x and 20x probes and the V/div
 # these scale factors only have to account for the current probe 0.1V/A
 SCALE_VDC = 1.0
 SCALE_IDC = 10.0
 SCALE_VAC = 1.0
 SCALE_IAC = 10.0
+
+FC_OFFSET = 60.0
+FC_SCALE = 4.0
+RC_OFFSET = 50.0
+RC_SCALE = 20.0
+VC_OFFSET = 120.0
+VC_SCALE = 12.0
 
 tticks = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
 
@@ -171,9 +174,6 @@ def control_signals (idx, t, trigger):
       fc[i] = f1
       rc[i] = r1
       vc[i] = v1
-  fc = (fc - 60.0) / 4.0
-  rc = (rc - 50.0) / 20.0
-  vc = (vc - 120.0) / 12.0
   return fc, rc, vc
 
 if __name__ == '__main__':
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     vac_flt = vac_flt - vac_0
     iac_flt = iac_flt - iac_0
 
-    wc = (fc * 4.0 + 60.0) * OMEGA
+    wc = fc * OMEGA
     Vd, Vq, Vrms = simulate_osg (tbase, vac_flt, wc)
     Id, Iq, Irms = simulate_osg (tbase, iac_flt, wc)
 
@@ -246,40 +246,60 @@ if __name__ == '__main__':
     grp.create_dataset ('Iq', data=Iq, compression='gzip')
     grp.create_dataset ('Irms', data=Irms, compression='gzip')
 
-    if (idx == 18) or (idx == 3) or (idx >= 55):
-      fig, ax = plt.subplots (5, 1, sharex = 'col', figsize=(16,10), constrained_layout=True)
-      fig.suptitle ('Case {:s}'.format (fname))
-      ax[0].set_title('Vdc')
-      ax[1].set_title('Idc')
-      ax[2].set_title('Vac')
-      ax[3].set_title('Iac')
-      ax[4].set_title('Ctrl')
-      ax[0].plot(tbase, vdc, label='Signal')
-      ax[0].plot(tbase, vdc_flt, label='Filtered')
-      ax[1].plot(tbase, idc, label='Signal')
-      ax[1].plot(tbase, idc_flt, label='Filtered')
-      ax[2].plot(tbase, vac, label='Signal')
-      ax[2].plot(tbase, vac_flt, label='Filtered')
-      ax[2].plot(tbase, Vd, label='Vd')
-      ax[2].plot(tbase, Vq, label='Vq')
-      ax[2].plot(tbase, Vrms, label='Vrms')
-      ax[3].plot(tbase, iac, label='Signal')
-      ax[3].plot(tbase, iac_flt, label='Filtered')
-      ax[3].plot(tbase, Id, label='Id')
-      ax[3].plot(tbase, Iq, label='Iq')
-      ax[3].plot(tbase, Irms, label='Irms')
-      ax[4].plot(tbase, fc, label='Fc')
-      ax[4].plot(tbase, rc, label='Rc')
-      ax[4].plot(tbase, vc, label='Vc')
-      for i in range(5):
-        ax[i].grid()
-        ax[i].set_xticks(tticks)
-        ax[i].set_xlim (tticks[0], tticks[-1])
-        ax[i].legend()
-      plt.show()
+#   if (idx == 18) or (idx == 3) or (idx >= 55):
+#     fig, ax = plt.subplots (5, 1, sharex = 'col', figsize=(16,10), constrained_layout=True)
+#     fig.suptitle ('Case {:s}'.format (fname))
+#     ax[0].set_title('Vdc')
+#     ax[1].set_title('Idc')
+#     ax[2].set_title('Vac')
+#     ax[3].set_title('Iac')
+#     ax[4].set_title('Ctrl')
+#     ax[0].plot(tbase, vdc, label='Signal')
+#     ax[0].plot(tbase, vdc_flt, label='Filtered')
+#     ax[1].plot(tbase, idc, label='Signal')
+#     ax[1].plot(tbase, idc_flt, label='Filtered')
+#     ax[2].plot(tbase, vac, label='Signal')
+#     ax[2].plot(tbase, vac_flt, label='Filtered')
+#     ax[2].plot(tbase, Vd, label='Vd')
+#     ax[2].plot(tbase, Vq, label='Vq')
+#     ax[2].plot(tbase, Vrms, label='Vrms')
+#     ax[3].plot(tbase, iac, label='Signal')
+#     ax[3].plot(tbase, iac_flt, label='Filtered')
+#     ax[3].plot(tbase, Id, label='Id')
+#     ax[3].plot(tbase, Iq, label='Iq')
+#     ax[3].plot(tbase, Irms, label='Irms')
+#     ax[4].plot(tbase, (fc - FC_OFFSET) / FC_SCALE, label='Fc')
+#     ax[4].plot(tbase, (rc - RC_OFFSET) / RC_SCALE, label='Rc')
+#     ax[4].plot(tbase, (vc - VC_OFFSET) / VC_SCALE, label='Vc')
+#     for i in range(5):
+#       ax[i].grid()
+#       ax[i].set_xticks(tticks)
+#       ax[i].set_xlim (tticks[0], tticks[-1])
+#       ax[i].legend()
+#     plt.show()
     idx += 1
 
+  i_zero = np.zeros(len(tbase))
+  vdc_flat = 48.0 * np.ones(len(tbase))
+  rc_flat = 500.0 * np.ones(len(tbase))
+  for Fc in [58.0, 60.0, 62.0]:
+    fc_flat = Fc * np.ones(len(tbase))
+    for Vc in [114.0, 120.0, 125.0]:
+      vc_flat = Vc * np.ones(len(tbase))
+      grp = f.create_group ('{:s}{:d}'.format (PREFIX, idx-1)) # hdf5 group names 0-based
+      grp.create_dataset ('t', data=tbase, compression='gzip')
+      grp.create_dataset ('Fc', data=fc_flat, compression='gzip')
+      grp.create_dataset ('Vc', data=vc_flat, compression='gzip')
+      grp.create_dataset ('Rc', data=rc_flat, compression='gzip')
+      grp.create_dataset ('Vdc', data=vdc_flat, compression='gzip')
+      grp.create_dataset ('Idc', data=i_zero, compression='gzip')
+      grp.create_dataset ('Vd', data=SQRT2*vc_flat, compression='gzip')
+      grp.create_dataset ('Vq', data=i_zero, compression='gzip')
+      grp.create_dataset ('Vrms', data=vc_flat, compression='gzip')
+      grp.create_dataset ('Id', data=i_zero, compression='gzip')
+      grp.create_dataset ('Iq', data=i_zero, compression='gzip')
+      grp.create_dataset ('Irms', data=i_zero, compression='gzip')
+      idx += 1
+
   f.close()
-
-
 
