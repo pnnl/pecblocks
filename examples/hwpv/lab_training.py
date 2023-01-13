@@ -1,4 +1,4 @@
-# copyright 2021-2022 Battelle Memorial Institute
+# copyright 2021-2023 Battelle Memorial Institute
 # supervises training of HW model from digital scope data
 #  arg1: relative path to trained model configuration file
 #  arg2: relative path to the training data file, HDF5
@@ -9,8 +9,10 @@ import sys
 import matplotlib.pyplot as plt
 import pv3_poly as pv3_model
 
-data_path = 'c:/data/lab1.hdf5'
-model_path = './lab1/lab1_config.json'
+#data_path = 'c:/data/lab1.hdf5'
+#model_path = './lab1/lab1_config.json'
+data_path = 'c:/data/lab2.hdf5'
+model_path = './lab2/lab2_config.json'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -38,10 +40,11 @@ if __name__ == '__main__':
   recent_loss = LOSS[len(LOSS)-nlookback:]
 #  print (nlookback, recent_loss)
   print ('COL_Y', model.COL_Y)
-  valstr = ' '.join('{:.4f}'.format(rmse[col]) for col in model.COL_Y)
+  out_size = len(model.COL_Y)
+  valstr = ' '.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
   print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
     np.mean(recent_loss), valstr))
-  valstr = ' '.join('{:.4f}'.format(mae[col]) for col in model.COL_Y)
+  valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
   print ('                          MAE Errors: {:s}'.format (valstr))
   plt.figure()
   plt.title(model_root)
