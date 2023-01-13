@@ -185,6 +185,8 @@ if __name__ == '__main__':
 
   files = glob.glob (input_path)
   print ('Writing {:d} CSV files to {:s}'.format (len(files), output_path))
+  f = h5py.File (output_path, 'w')
+
   idx = 1
   for fname in files:
     d = np.loadtxt (fname, delimiter=',', skiprows=1)
@@ -225,6 +227,20 @@ if __name__ == '__main__':
     Vd, Vq, Vrms = simulate_osg (tbase, vac_flt, wc)
     Id, Iq, Irms = simulate_osg (tbase, iac_flt, wc)
 
+    grp = f.create_group ('{:s}{:d}'.format (PREFIX, idx))
+    grp.create_dataset ('t', data=tbase, compression='gzip')
+    grp.create_dataset ('Fc', data=fc, compression='gzip')
+    grp.create_dataset ('Vc', data=vc, compression='gzip')
+    grp.create_dataset ('Rc', data=rc, compression='gzip')
+    grp.create_dataset ('Vdc', data=vdc_flt, compression='gzip')
+    grp.create_dataset ('Idc', data=idc_flt, compression='gzip')
+    grp.create_dataset ('Vd', data=Vd, compression='gzip')
+    grp.create_dataset ('Vq', data=Vq, compression='gzip')
+    grp.create_dataset ('Vrms', data=Vrms, compression='gzip')
+    grp.create_dataset ('Id', data=Id, compression='gzip')
+    grp.create_dataset ('Iq', data=Iq, compression='gzip')
+    grp.create_dataset ('Irms', data=Irms, compression='gzip')
+
     if idx == 1:
       fig, ax = plt.subplots (5, 1, sharex = 'col', figsize=(16,10), constrained_layout=True)
       fig.suptitle ('Case {:s}'.format (fname))
@@ -257,92 +273,8 @@ if __name__ == '__main__':
         ax[i].legend()
       plt.show()
     idx += 1
-  quit()
-
-  nbase = int(TMAX/DT)+1
-  tbase = np.linspace (0.0, TMAX, nbase)
-  Vc = VC * np.ones (nbase)
-  Fc = FC * np.ones (nbase)
-  #print (tbase.shape, Vc.shape, Fc.shape)
-
-  store = pd.HDFStore(input_path)
-  idx = 0
-  f = h5py.File (output_path, 'w')
-  #print (store.info())
-
-  fig, ax = plt.subplots (2, 6, sharex = 'col', figsize=(16,8), constrained_layout=True)
-  ax[0,0].set_title('Fc')
-  ax[1,0].set_title('Vc')
-  ax[0,1].set_title('Vdc')
-  ax[1,1].set_title('Idc')
-  ax[0,2].set_title('Vac')
-  ax[1,2].set_title('Iac')
-  ax[0,3].set_title('Vd')
-  ax[1,3].set_title('Vq')
-  ax[0,4].set_title('Id')
-  ax[1,4].set_title('Iq')
-  ax[0,5].set_title('Vrms')
-  ax[1,5].set_title('Irms')
-
-  for key in store.keys():
-    df = store.get(key)
-    tstamps = df.index
-    t = tstamps - tstamps[0]
-    tmax = (t[-1]-t[0]).total_seconds()
-    n = len(t)
-    dt = tmax/float(n-1)
-    #print ('Key={:s}, Tmax={:.6f} seconds, dt={:.6f} microseconds for {:d} points'.format (key, tmax, dt*1.0e6, n))
-    tpad = 0.5 * (tmax - TMAX)
-    istart = int(tpad/dt)
-    iend = istart + int(TMAX/dt)
-    q = int(DT/dt)
-    #print ('   Istart={:d}, Iend={:d}, qdec={:d}'.format (istart, iend, q))
-    x = np.linspace (0.0, tmax, n)
-    df['x'] = x
-    df.set_index ('x', inplace=True)
-    Vdc = df['DCVoltage'].to_numpy()
-    Idc = df['DCCurrent'].to_numpy()
-    Vac = df['ACVoltage'].to_numpy()
-    Iac = df['ACCurrent'].to_numpy()
-
-    Vdc = my_decimate (Vdc, q)[:nbase] * SCALE_VDC
-    Idc = my_decimate (Idc, q)[:nbase] * SCALE_IDC
-    Vac = my_decimate (Vac, q)[:nbase] * SCALE_VAC
-    Iac = my_decimate (Iac, q)[:nbase] * SCALE_IAC
-    Vd, Vq, Vrms = simulate_osg (tbase, Vac, Fc*OMEGA)
-    Id, Iq, Irms = simulate_osg (tbase, Iac, Fc*OMEGA)
-
-    ax[0,0].plot(tbase, Fc)
-    ax[1,0].plot(tbase, Vc)
-    ax[0,1].plot(tbase, Vdc)
-    ax[1,1].plot(tbase, Idc)
-    ax[0,2].plot(tbase, Vac)
-    ax[1,2].plot(tbase, Iac)
-    ax[0,3].plot(tbase, Vd)
-    ax[1,3].plot(tbase, Vq)
-    ax[0,4].plot(tbase, Id)
-    ax[1,4].plot(tbase, Iq)
-    ax[0,5].plot(tbase, Vrms)
-    ax[1,5].plot(tbase, Irms)
-
-    grp = f.create_group ('{:s}{:d}'.format (PREFIX, idx))
-    idx += 1
-    grp.create_dataset ('t', data=tbase, compression='gzip')
-    grp.create_dataset ('Fc', data=Fc, compression='gzip')
-    grp.create_dataset ('Vc', data=Vc, compression='gzip')
-    grp.create_dataset ('Vdc', data=Vdc, compression='gzip')
-    grp.create_dataset ('Idc', data=Idc, compression='gzip')
-    grp.create_dataset ('Vac', data=Vac, compression='gzip')
-    grp.create_dataset ('Iac', data=Iac, compression='gzip')
-    grp.create_dataset ('Vd', data=Vd, compression='gzip')
-    grp.create_dataset ('Vq', data=Vq, compression='gzip')
-    grp.create_dataset ('Vrms', data=Vrms, compression='gzip')
-    grp.create_dataset ('Id', data=Id, compression='gzip')
-    grp.create_dataset ('Iq', data=Iq, compression='gzip')
-    grp.create_dataset ('Irms', data=Irms, compression='gzip')
-    #quit()
 
   f.close()
-  plt.show()
+
 
 
