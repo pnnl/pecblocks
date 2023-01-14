@@ -12,6 +12,9 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
+import os
+
+plt.rcParams['savefig.directory'] = os.getcwd()
 
 plot_defs = [
     {'row':0, 'col':0, 'tag':'Fc',   'title':'Control Frequency', 'ylabel':'Hz'}, # 'scale':4.0,  'offset':60.0},
