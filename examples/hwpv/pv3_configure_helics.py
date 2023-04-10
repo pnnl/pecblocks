@@ -12,7 +12,7 @@ if __name__ == '__main__':
   fname_out1 = 'pv3_server.json'
   fname_out2 = 'pv3_client.json'
   fname_bat = 'pv3_helics.bat'
-  case = 'flat3' # 'ucf' # 'flat3' # 'ramp3'
+  case = 'ucf' # 'flat3' # 'ramp3'
   if len(sys.argv) > 1:
     case = sys.argv[1]
     if len(sys.argv) > 2:
