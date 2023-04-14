@@ -520,7 +520,7 @@ class pv3():
     n_out = Hz.out_channels
     n_a = Hz.n_a + 1
     n_b = Hz.n_b
-    H1s = {'n_in':n_in, 'n_out':n_out, 'na': n_a, 'nb': n_b}
+    H1s = {'n_in':n_in, 'n_out':n_out, 'n_a': n_a, 'n_b': n_b}
     btf, atf = Hz.get_tfdata()
     b_coeff, a_coeff = Hz.__get_ba_coeff__()
 #   print ('btf', btf.shape, btf[0][0])
