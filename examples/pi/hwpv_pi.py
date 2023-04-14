@@ -2,10 +2,10 @@
 import json
 import os
 import sys
-import pandas as pd
+import h5py
 import numpy as np
 import math
-import pv3_poly as pv3_model
+import hwpv_evaluator as hwpv
 
 Ctl_t = [-1.0, 2.50, 2.51, 200.0]
 Ctl_y = [0.00, 0.00, 1.00, 1.00]
@@ -36,13 +36,15 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
   cfg = json.load (fp)
   fp.close()
 
-  model = pv3_model.pv3 ()
-  model.set_sim_config (cfg, model_only=False)
-  model.start_simulation ()
-  rows = []
+  mdl = hwpv.model ()
+  mdl.set_sim_config (cfg)
+  mdl.start_simulation ()
   Id = 0.0
   Iq = 0.0
   t = 0.0
+  n = int(tmax/dt) + 1
+  vals = np.zeros((n,13)) # t, 8 inputs, 4 outputs
+  i = 0
   while t < tmax:
     Ctl = np.interp (t, Ctl_t, Ctl_y)
     T = np.interp (t, T_t, T_y)
@@ -54,16 +56,22 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
     Irms = math.sqrt(1.5) * math.sqrt(Id*Id + Iq*Iq)
     Vrms = Irms * R
     GVrms = G * Vrms
-    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
-    dict = {'t':t,'G':G,'T':T,'Md':Md,'Mq':Mq,'Fc':Fc,'Ctl':Ctl,'Vrms':Vrms,'GVrms':GVrms,'Vdc':Vdc,'Idc':Idc,'Id':Id,'Iq':Iq}
-    rows.append (dict)
+    Vdc, Idc, Id, Iq = mdl.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
+    vals[i,:] = [t, G, T, Md, Mq, Fc, Ctl, Vrms, GVrms, Vdc, Idc, Id, Iq]
     t += dt
+    i += 1
 
-  df = pd.DataFrame (rows)
-  df.to_hdf (hdf5_filename, 'basecase', mode='w', complevel=9)
+  f = h5py.File (hdf5_filename, 'w')
+  grp = f.create_group ('basecase')
+  j = 0
+  for key in ['t', 'G', 'T', 'Md', 'Mq', 'Fc', 'Ctl', 'Vrms', 'GVrms', 'Vdc', 'Idc', 'Id', 'Iq']:
+    grp.create_dataset (key, data=vals[:,j], compression='gzip')
+    j += 1
+  f.close()
 
 if __name__ == '__main__':
-  cfg_filename = 'big/balanced_fhf.json'
+  cfg_filename = '../hwpv/big/balanced_fhf.json'
   hdf5_filename = 'hwpv_pi.hdf5'
+
   evaluation_loop (cfg_filename, hdf5_filename, dt=0.002, tmax=8.0)
 
