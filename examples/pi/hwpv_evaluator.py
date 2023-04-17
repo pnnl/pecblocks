@@ -35,6 +35,19 @@ class model():
 #    print ('\nHb\n', b)
     return a, b
 
+  def load_state_matrices (self, Q):
+    A = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'], Q['n_b'])) # TODO: n_a or n_b first?
+    B = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'])) # TODO: n_a or n_b?
+    C = np.zeros((Q['n_out'], Q['n_in'], Q['n_b'])) # TODO: n_a or n_b?
+    D = np.zeros((Q['n_out'], Q['n_in'])) # TODO: n_a or n_b?
+    for i in range (Q['n_out']):
+      for j in range (Q['n_in']):
+        A[i,j,:,:] = Q['A_{:d}_{:d}'.format(i,j)]
+        B[i,j,:] = Q['B_{:d}_{:d}'.format(i,j)]
+        C[i,j:] = Q['C_{:d}_{:d}'.format(i,j)]
+        D[i,j] = Q['D_{:d}_{:d}'.format(i,j)]
+    return A, B, C, D
+
   def set_sim_config(self, config):
     self.name = config['name']
     self.blocks = config['type']
@@ -60,6 +73,7 @@ class model():
 
     self.za, self.zb = self.load_H_coefficients (config['H1'])
     self.sa, self.sb = self.load_H_coefficients (config['H1s'])
+    self.A, self.B, self.C, self.D = self.load_state_matrices (config['Q1s'])
 
     self.F1_n0w = np.array(config['F1']['net.0.weight'])
     self.F1_n0b = np.array(config['F1']['net.0.bias'])
@@ -79,6 +93,10 @@ class model():
     print ('  Hzb shape', self.zb.shape)
     print ('  Hsa shape', self.sa.shape)
     print ('  Hsb shape', self.sb.shape)
+    print ('  QA shape', self.A.shape)
+    print ('  QB shape', self.B.shape)
+    print ('  QC shape', self.C.shape)
+    print ('  QD shape', self.D.shape)
     print ('  F1 shapes 0w, 0b, 2w, 2b = ', self.F1_n0w.shape, self.F1_n0b.shape, 
            self.F1_n2w.shape, self.F1_n2b.shape, config['F1']['activation'])
     print ('  F2 shapes 0w, 0b, 2w, 2b = ', self.F2_n0w.shape, self.F2_n0b.shape, 
@@ -86,7 +104,7 @@ class model():
     print ('  {:d} inputs from {:s}'.format (self.nin, str(self.COL_U)))
     print ('  {:d} outputs from {:s}'.format (self.nout, str(self.COL_Y)))
 
-  def start_simulation(self):
+  def start_simulation_z(self):
 # set up IIR filters for time step simulation, nin == nout for H1
     self.uhist = {}
     self.yhist = {}
@@ -109,7 +127,7 @@ class model():
     output = np.matmul(n2w, hidden) + n2b
     return output
 
-  def step_simulation (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
+  def step_simulation_z (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
     T = self.normalize (T, self.normfacs['T'])
     G = self.normalize (G, self.normfacs['G'])
     Fc = self.normalize (Fc, self.normfacs['Fc'])
@@ -138,6 +156,55 @@ class model():
     Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
     Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
     Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+
+    return Vdc, Idc, Id, Iq
+
+  def start_simulation_s (self):
+    self.q = np.zeros((self.nout, self.nout, self.nout))
+    self.qdot = np.zeros(self.nout)
+    self.ysum = np.zeros(self.nout)
+
+  def step_simulation_s (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
+    T = self.normalize (T, self.normfacs['T'])
+    G = self.normalize (G, self.normfacs['G'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
+    Md = self.normalize (Md, self.normfacs['Md'])
+    Mq = self.normalize (Mq, self.normfacs['Mq'])
+    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
+    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
+
+    ub = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl])
+    y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
+    if log:
+      print ('\nub = {:s}'.format (str(ub)))
+      print ('y_non = {:s}'.format (str(y_non)))
+    self.ysum[:] = 0.0
+    for i in range(self.nout):
+      for j in range(self.nout):
+#       print ('\nQdot', self.qdot[i,j].shape, self.qdot[i,j])
+#       print ('\nQ', self.q[i,j].shape, self.q[i,j])
+#       print ('\nA', self.A[i,j].shape, self.A[i,j])
+#       print ('\nB', self.B[i,j].shape, self.B[i,j])
+#       print ('\nYnon', y_non[j].shape, y_non[j])
+#       print ('\nTerm 1', np.matmul (self.A[i,j], self.q[i,j]))
+#       print ('\nTerm 2', self.B[i,j] * y_non[j])
+
+        self.qdot = np.matmul (self.A[i,j], self.q[i,j]) + self.B[i,j] * y_non[j]
+        self.q[i,j] += h * self.qdot
+        self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+        if log:
+          print ('  Q[{:d},{:d}] = {:s}'.format (i, j, str(self.q[i,j])))
+    y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
+
+    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
+    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
+    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
+    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+    if log:
+      print ('Ysum = {:s}'.format(str(self.ysum)))
+      print ('y_hat = {:s}'.format(str(y_hat)))
+      print ('Vdc, Idc, Id, Iq = {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format (Vdc, Idc, Id, Iq))
 
     return Vdc, Idc, Id, Iq
 
