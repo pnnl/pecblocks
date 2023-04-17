@@ -81,8 +81,9 @@ class pv3():
     else:
       self.t_step = 1.0e-3
     self.batch_size = config['batch_size']
-    self.n_validation_pct = config['n_validation_pct']
-    self.n_validation_seed = config['n_validation_seed']
+    if 'n_validation_pct' in config:
+      self.n_validation_pct = config['n_validation_pct']
+      self.n_validation_seed = config['n_validation_seed']
     self.n_skip = config['n_skip']
     self.n_trunc = config['n_trunc']
     self.n_loss_skip = config['n_loss_skip']
@@ -513,7 +514,7 @@ class pv3():
     B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"))
     self.F2.load_state_dict(B3)
 
-  def make_H1s(self, Hz):
+  def make_H1Q1s(self, Hz):
     if self.gtype != 'iir':
       return {}
     n_in = Hz.in_channels
@@ -521,6 +522,7 @@ class pv3():
     n_a = Hz.n_a + 1
     n_b = Hz.n_b
     H1s = {'n_in':n_in, 'n_out':n_out, 'n_a': n_a, 'n_b': n_b}
+    Q1s = {'n_in':n_in, 'n_out':n_out, 'n_a': n_a, 'n_b': n_b}
     btf, atf = Hz.get_tfdata()
     b_coeff, a_coeff = Hz.__get_ba_coeff__()
 #   print ('btf', btf.shape, btf[0][0])
@@ -552,8 +554,13 @@ class pv3():
         print ('H1s[{:d}][{:d}] {:s} Real Poles:'.format(i, j, flag), real_poles, 'Freqs [Hz]:', frequencies_present)
         H1s['b_{:d}_{:d}'.format(i,j)] = np.array(Hs.num).squeeze().tolist()
         H1s['a_{:d}_{:d}'.format(i,j)] = np.array(Hs.den).squeeze().tolist()
+        Qs = control.tf2ss (Hs)
+        Q1s['A_{:d}_{:d}'.format(i,j)] = np.array(Qs.A).squeeze().tolist()
+        Q1s['B_{:d}_{:d}'.format(i,j)] = np.array(Qs.B).squeeze().tolist()
+        Q1s['C_{:d}_{:d}'.format(i,j)] = np.array(Qs.C).squeeze().tolist()
+        Q1s['D_{:d}_{:d}'.format(i,j)] = np.array(Qs.D).squeeze().tolist()
 
-    return H1s
+    return H1s, Q1s
 
   def exportModel(self, filename):
     config = {'name':'PV3', 'type':'F1+H1+F2', 't_step': self.t_step}
@@ -591,7 +598,7 @@ class pv3():
     config['COL_U'] = self.COL_U
 
     self.append_lti (config, 'H1', self.H1)
-    config['H1s'] = self.make_H1s(self.H1)
+    config['H1s'], config['Q1s'] = self.make_H1Q1s(self.H1)
     self.append_net (config, 'F1', self.F1)
     self.append_net (config, 'F2', self.F2)
 
