@@ -179,14 +179,16 @@ class model():
     if log:
       print ('\nub = {:s}'.format (str(ub)))
       print ('y_non = {:s}'.format (str(y_non)))
-    self.ysum[:] = 0.0
-    for i in range(self.nout):
-      for j in range(self.nout):
-        self.qdot = np.matmul (self.A[i,j], self.q[i,j]) + self.B[i,j] * y_non[j]
-        self.q[i,j] += h * self.qdot
-        self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
-        if log:
-          print ('  Q[{:d},{:d}] = {:s}'.format (i, j, str(self.q[i,j])))
+    nsteps = max(1, int(h / self.t_step))
+    for step in range(nsteps):
+      self.ysum[:] = 0.0
+      for i in range(self.nout):
+        for j in range(self.nout):
+          self.qdot = np.matmul (self.A[i,j], self.q[i,j]) + self.B[i,j] * y_non[j]
+          self.q[i,j] += self.t_step * self.qdot
+          self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+          if log:
+            print ('  Q[{:d},{:d}] = {:s}'.format (i, j, str(self.q[i,j])))
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
 
     Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])

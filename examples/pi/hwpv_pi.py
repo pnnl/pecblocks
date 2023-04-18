@@ -46,8 +46,8 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
   print ('  Training dt = {:.6f}s'.format (mdl.t_step))
   print ('  Running dt =  {:.6f}s to {:.4f}s for {:d} steps'.format (dt, tmax, n))
 #  mdl.start_simulation_z ()
-#  mdl.start_simulation_sfe ()
-  mdl.start_simulation_sbe (dt)
+  mdl.start_simulation_sfe ()
+#  mdl.start_simulation_sbe (dt)
   Id = 0.0
   Iq = 0.0
   vals = np.zeros((n,13)) # t, 8 inputs, 4 outputs
@@ -65,8 +65,8 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
     Vrms = Irms * R
     GVrms = G * Vrms
 #    Vdc, Idc, Id, Iq = mdl.step_simulation_z (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
-#    Vdc, Idc, Id, Iq = mdl.step_simulation_sfe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
-    Vdc, Idc, Id, Iq = mdl.step_simulation_sbe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+    Vdc, Idc, Id, Iq = mdl.step_simulation_sfe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+#    Vdc, Idc, Id, Iq = mdl.step_simulation_sbe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
     vals[i,:] = [t, G, T, Md, Mq, Fc, Ctl, Vrms, GVrms, Vdc, Idc, Id, Iq]
     i += 1
 
