@@ -32,7 +32,6 @@ def control_input(x, y, t):
   return y
 
 def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
-#  dt = 0.030
   n = int(tmax/dt) + 1
 
   fp = open (cfg_filename, 'r')
@@ -47,7 +46,8 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
   print ('  Training dt = {:.6f}s'.format (mdl.t_step))
   print ('  Running dt =  {:.6f}s to {:.4f}s for {:d} steps'.format (dt, tmax, n))
 #  mdl.start_simulation_z ()
-  mdl.start_simulation_s ()
+#  mdl.start_simulation_sfe ()
+  mdl.start_simulation_sbe (dt)
   Id = 0.0
   Iq = 0.0
   vals = np.zeros((n,13)) # t, 8 inputs, 4 outputs
@@ -65,7 +65,8 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
     Vrms = Irms * R
     GVrms = G * Vrms
 #    Vdc, Idc, Id, Iq = mdl.step_simulation_z (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
-    Vdc, Idc, Id, Iq = mdl.step_simulation_s (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+#    Vdc, Idc, Id, Iq = mdl.step_simulation_sfe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+    Vdc, Idc, Id, Iq = mdl.step_simulation_sbe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
     vals[i,:] = [t, G, T, Md, Mq, Fc, Ctl, Vrms, GVrms, Vdc, Idc, Id, Iq]
     i += 1
 
@@ -83,5 +84,5 @@ if __name__ == '__main__':
   cfg_filename = '../hwpv/big/balanced_fhf.json'
   hdf5_filename = 'hwpv_pi.hdf5'
 
-  evaluation_loop (cfg_filename, hdf5_filename, dt=0.001, tmax=8.0)
+  evaluation_loop (cfg_filename, hdf5_filename, dt=0.03, tmax=8.0)
 
