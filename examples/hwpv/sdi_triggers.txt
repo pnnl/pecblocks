@@ -1,0 +1,328 @@
+C:\src\pecblocks\examples\hwpv>python sdi_prep.py
+Writing HWPV training records c:/data/sdi.hdf5
+tdec 1.00000000 to 4.00000000 at dt=0.00100000
+
+Processing c:/data/max2/GL_58Hz_ud0.52_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2232,0.5494], trigger times = [2.1973,2.2164]
+    DC offsets in AC current = [0.0488,-0.0164,0.0179], Rc=[330.000,117.511], Vrms=191.840, Irms=1.1654
+  Trigger 1, Idc pre/post = [0.5498,0.8828], trigger times = [1.9313,1.9541]
+    DC offsets in AC current = [0.0572,-0.0151,0.0171], Rc=[117.511,71.483], Vrms=191.026, Irms=2.2649
+  Trigger 2, Idc pre/post = [0.8826,1.2099], trigger times = [1.9413,1.9612]
+    DC offsets in AC current = [0.0541,-0.0136,0.0164], Rc=[71.483,51.364], Vrms=190.770, Irms=3.3051
+  Trigger 3, Idc pre/post = [1.2094,1.5423], trigger times = [1.9374,1.9546]
+    DC offsets in AC current = [0.0541,-0.0097,0.0149], Rc=[51.364,40.083], Vrms=190.591, Irms=4.3480
+  Trigger 4, Idc pre/post = [1.5400,1.8722], trigger times = [1.9292,1.9527]
+    DC offsets in AC current = [0.0549,-0.0116,0.0169], Rc=[40.083,32.864], Vrms=190.401, Irms=5.3878
+  Trigger 5, Idc pre/post = [1.8709,2.2005], trigger times = [1.9460,1.9631]
+    DC offsets in AC current = [0.0538,-0.0069,0.0162], Rc=[32.864,27.849], Vrms=190.145, Irms=6.4196
+  Trigger 6, Idc pre/post = [2.1981,2.5281], trigger times = [1.9288,1.9460]
+    DC offsets in AC current = [0.0529,-0.0079,0.0156], Rc=[27.849,24.162], Vrms=189.841, Irms=7.4532
+  Trigger 7, Idc pre/post = [2.5289,2.8560], trigger times = [1.9361,1.9533]
+    DC offsets in AC current = [0.0508,-0.0053,0.0154], Rc=[24.162,21.337], Vrms=189.475, Irms=8.4754
+
+Processing c:/data/max2/GL_58Hz_ud0.56_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2489,0.5544], trigger times = [2.2277,2.2544]
+    DC offsets in AC current = [0.0526,-0.0188,0.0193], Rc=[330.000,128.949], Vrms=201.628, Irms=1.1242
+  Trigger 1, Idc pre/post = [0.5527,0.9064], trigger times = [1.9354,1.9544]
+    DC offsets in AC current = [0.0547,-0.0148,0.0203], Rc=[128.949,80.130], Vrms=201.904, Irms=2.1577
+  Trigger 2, Idc pre/post = [0.9092,1.2291], trigger times = [1.9432,1.9644]
+    DC offsets in AC current = [0.0575,-0.0138,0.0188], Rc=[80.130,58.125], Vrms=204.282, Irms=3.1349
+  Trigger 3, Idc pre/post = [1.2276,1.5692], trigger times = [1.9457,1.9624]
+    DC offsets in AC current = [0.0559,-0.0157,0.0161], Rc=[58.125,45.601], Vrms=204.312, Irms=4.1042
+  Trigger 4, Idc pre/post = [1.5669,1.8970], trigger times = [1.9256,1.9442]
+    DC offsets in AC current = [0.0563,-0.0107,0.0176], Rc=[45.601,37.518], Vrms=204.688, Irms=5.0809
+  Trigger 5, Idc pre/post = [1.8968,2.2265], trigger times = [1.9645,2.0011]
+    DC offsets in AC current = [0.0559,-0.0118,0.0157], Rc=[37.518,31.869], Vrms=204.484, Irms=6.0324
+  Trigger 6, Idc pre/post = [2.2264,2.5512], trigger times = [1.9299,1.9683]
+    DC offsets in AC current = [0.0522,-0.0111,0.0153], Rc=[31.869,27.698], Vrms=204.187, Irms=6.9950
+  Trigger 7, Idc pre/post = [2.5514,2.8806], trigger times = [1.9331,1.9546]
+    DC offsets in AC current = [0.0530,-0.0086,0.0154], Rc=[27.698,24.493], Vrms=203.806, Irms=7.9460
+
+Processing c:/data/max2/GL_58Hz_ud0.60_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2786,0.5968], trigger times = [2.2692,2.2958]
+    DC offsets in AC current = [0.0528,-0.0133,0.0177], Rc=[330.000,139.937], Vrms=219.520, Irms=1.1511
+  Trigger 1, Idc pre/post = [0.5964,0.9290], trigger times = [1.9460,1.9666]
+    DC offsets in AC current = [0.0647,-0.0136,0.0182], Rc=[139.937,88.796], Vrms=217.790, Irms=2.1026
+  Trigger 2, Idc pre/post = [0.9281,1.2602], trigger times = [1.9351,1.9591]
+    DC offsets in AC current = [0.0589,-0.0101,0.0174], Rc=[88.796,65.030], Vrms=218.384, Irms=3.0085
+  Trigger 3, Idc pre/post = [1.2604,1.5928], trigger times = [1.9200,1.9380]
+    DC offsets in AC current = [0.0609,-0.0127,0.0149], Rc=[65.030,51.300], Vrms=218.635, Irms=3.9145
+  Trigger 4, Idc pre/post = [1.5912,1.9383], trigger times = [1.9409,1.9591]
+    DC offsets in AC current = [0.0610,-0.0115,0.0148], Rc=[51.300,42.357], Vrms=219.833, Irms=4.8389
+  Trigger 5, Idc pre/post = [1.9395,2.2707], trigger times = [1.9706,1.9945]
+    DC offsets in AC current = [0.0564,-0.0098,0.0158], Rc=[42.357,36.069], Vrms=220.529, Irms=5.7537
+  Trigger 6, Idc pre/post = [2.2698,2.5998], trigger times = [1.9171,1.9360]
+    DC offsets in AC current = [0.0538,-0.0098,0.0203], Rc=[36.069,31.406], Vrms=220.281, Irms=6.6640
+  Trigger 7, Idc pre/post = [2.5968,2.9302], trigger times = [1.9273,1.9444]
+    DC offsets in AC current = [0.0509,-0.0079,0.0209], Rc=[31.406,27.812], Vrms=220.002, Irms=7.5593
+
+Processing c:/data/max2/GL_58Hz_ud0.64_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3129,0.5916], trigger times = [2.2115,2.2450]
+    DC offsets in AC current = [0.0539,-0.0197,0.0197], Rc=[330.000,150.429], Vrms=225.739, Irms=1.1189
+  Trigger 1, Idc pre/post = [0.5867,0.9420], trigger times = [1.9278,1.9482]
+    DC offsets in AC current = [0.0597,-0.0180,0.0205], Rc=[150.429,97.418], Vrms=224.164, Irms=1.9968
+  Trigger 2, Idc pre/post = [0.9423,1.2857], trigger times = [1.9701,1.9895]
+    DC offsets in AC current = [0.0595,-0.0202,0.0194], Rc=[97.418,72.034], Vrms=231.121, Irms=2.8805
+  Trigger 3, Idc pre/post = [1.2849,1.6334], trigger times = [1.9576,1.9772]
+    DC offsets in AC current = [0.0572,-0.0180,0.0225], Rc=[72.034,57.144], Vrms=234.024, Irms=3.7642
+  Trigger 4, Idc pre/post = [1.6328,1.9640], trigger times = [1.9341,1.9564]
+    DC offsets in AC current = [0.0570,-0.0178,0.0202], Rc=[57.144,47.355], Vrms=234.991, Irms=4.6311
+  Trigger 5, Idc pre/post = [1.9663,2.2983], trigger times = [1.9389,1.9602]
+    DC offsets in AC current = [0.0578,-0.0118,0.0193], Rc=[47.355,40.429], Vrms=234.790, Irms=5.4757
+  Trigger 6, Idc pre/post = [2.2974,2.6275], trigger times = [1.9360,1.9535]
+    DC offsets in AC current = [0.0540,-0.0117,0.0192], Rc=[40.429,35.271], Vrms=234.591, Irms=6.3206
+  Trigger 7, Idc pre/post = [2.6254,2.9566], trigger times = [1.9310,1.9482]
+    DC offsets in AC current = [0.0531,-0.0083,0.0180], Rc=[35.271,31.280], Vrms=234.320, Irms=7.1617
+
+Processing c:/data/max2/GL_58Hz_ud0.66_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3248,0.6152], trigger times = [2.2613,2.2969]
+    DC offsets in AC current = [0.0554,-0.0235,0.0205], Rc=[330.000,155.479], Vrms=235.210, Irms=1.1343
+  Trigger 1, Idc pre/post = [0.6181,0.9738], trigger times = [1.9461,1.9819]
+    DC offsets in AC current = [0.0622,-0.0163,0.0196], Rc=[155.479,101.696], Vrms=234.893, Irms=2.0051
+  Trigger 2, Idc pre/post = [0.9737,1.3212], trigger times = [1.9251,1.9607]
+    DC offsets in AC current = [0.0601,-0.0147,0.0206], Rc=[101.696,75.559], Vrms=241.891, Irms=2.8841
+  Trigger 3, Idc pre/post = [1.3199,1.6536], trigger times = [1.9453,1.9613]
+    DC offsets in AC current = [0.0558,-0.0144,0.0187], Rc=[75.559,60.110], Vrms=243.255, Irms=3.7231
+  Trigger 4, Idc pre/post = [1.6571,1.9789], trigger times = [1.9394,1.9621]
+    DC offsets in AC current = [0.0588,-0.0146,0.0181], Rc=[60.110,49.906], Vrms=242.502, Irms=4.5362
+  Trigger 5, Idc pre/post = [1.9793,2.3203], trigger times = [1.9454,1.9623]
+    DC offsets in AC current = [0.0559,-0.0131,0.0178], Rc=[49.906,42.664], Vrms=242.450, Irms=5.3609
+  Trigger 6, Idc pre/post = [2.3197,2.6485], trigger times = [1.9352,1.9531]
+    DC offsets in AC current = [0.0561,-0.0127,0.0182], Rc=[42.664,37.257], Vrms=242.660, Irms=6.1917
+  Trigger 7, Idc pre/post = [2.6492,2.9821], trigger times = [1.9388,1.9567]
+    DC offsets in AC current = [0.0565,-0.0128,0.0172], Rc=[37.257,33.067], Vrms=242.400, Irms=7.0090
+
+Processing c:/data/max2/GL_58Hz_ud0.68_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3444,0.6423], trigger times = [2.2299,2.2586]
+    DC offsets in AC current = [0.0539,-0.0205,0.0211], Rc=[330.000,160.395], Vrms=244.379, Irms=1.1619
+  Trigger 1, Idc pre/post = [0.6416,1.0027], trigger times = [1.9295,2.0027]
+    DC offsets in AC current = [0.0589,-0.0217,0.0220], Rc=[160.395,105.944], Vrms=245.335, Irms=2.0142
+  Trigger 2, Idc pre/post = [1.0039,1.3151], trigger times = [1.9187,1.9350]
+    DC offsets in AC current = [0.0599,-0.0179,0.0222], Rc=[105.944,79.094], Vrms=247.695, Irms=2.8229
+  Trigger 3, Idc pre/post = [1.3151,1.6658], trigger times = [1.9271,1.9491]
+    DC offsets in AC current = [0.0585,-0.0175,0.0210], Rc=[79.094,63.101], Vrms=248.208, Irms=3.6273
+  Trigger 4, Idc pre/post = [1.6636,1.9952], trigger times = [1.9471,1.9643]
+    DC offsets in AC current = [0.0579,-0.0160,0.0248], Rc=[63.101,52.488], Vrms=249.351, Irms=4.4376
+  Trigger 5, Idc pre/post = [1.9929,2.3219], trigger times = [1.9759,1.9933]
+    DC offsets in AC current = [0.0561,-0.0138,0.0227], Rc=[52.488,44.931], Vrms=249.159, Irms=5.2281
+  Trigger 6, Idc pre/post = [2.3229,2.6537], trigger times = [1.9345,1.9519]
+    DC offsets in AC current = [0.0530,-0.0121,0.0221], Rc=[44.931,39.277], Vrms=248.943, Irms=6.0278
+  Trigger 7, Idc pre/post = [2.6560,2.9819], trigger times = [1.9226,1.9402]
+    DC offsets in AC current = [0.0534,-0.0112,0.0192], Rc=[39.277,34.886], Vrms=248.640, Irms=6.8190
+
+Processing c:/data/max2/GL_60Hz_ud0.52_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2230,0.5487], trigger times = [2.1881,2.2162]
+    DC offsets in AC current = [0.0516,-0.0076,0.0190], Rc=[330.000,117.511], Vrms=191.486, Irms=1.1646
+  Trigger 1, Idc pre/post = [0.5492,0.8834], trigger times = [1.9615,1.9897]
+    DC offsets in AC current = [0.0564,-0.0070,0.0210], Rc=[117.511,71.483], Vrms=190.846, Irms=2.2559
+  Trigger 2, Idc pre/post = [0.8839,1.2152], trigger times = [1.9303,1.9518]
+    DC offsets in AC current = [0.0562,-0.0094,0.0190], Rc=[71.483,51.364], Vrms=190.631, Irms=3.3049
+  Trigger 3, Idc pre/post = [1.2148,1.5455], trigger times = [1.9350,1.9541]
+    DC offsets in AC current = [0.0537,-0.0094,0.0197], Rc=[51.364,40.083], Vrms=190.510, Irms=4.3464
+  Trigger 4, Idc pre/post = [1.5431,1.8744], trigger times = [1.9354,1.9483]
+    DC offsets in AC current = [0.0517,-0.0063,0.0215], Rc=[40.083,32.864], Vrms=190.407, Irms=5.3878
+  Trigger 5, Idc pre/post = [1.8764,2.2052], trigger times = [1.9395,1.9567]
+    DC offsets in AC current = [0.0535,-0.0089,0.0177], Rc=[32.864,27.849], Vrms=190.126, Irms=6.4203
+  Trigger 6, Idc pre/post = [2.2030,2.5287], trigger times = [1.9382,1.9550]
+    DC offsets in AC current = [0.0492,-0.0055,0.0179], Rc=[27.849,24.162], Vrms=189.796, Irms=7.4494
+  Trigger 7, Idc pre/post = [2.5313,2.8596], trigger times = [1.9434,1.9604]
+    DC offsets in AC current = [0.0491,-0.0032,0.0167], Rc=[24.162,21.337], Vrms=189.417, Irms=8.4714
+
+Processing c:/data/max2/GL_60Hz_ud0.56_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2541,0.5586], trigger times = [2.2222,2.2445]
+    DC offsets in AC current = [0.0518,-0.0084,0.0198], Rc=[330.000,128.949], Vrms=201.599, Irms=1.1257
+  Trigger 1, Idc pre/post = [0.5588,0.9115], trigger times = [1.9369,1.9528]
+    DC offsets in AC current = [0.0578,-0.0078,0.0208], Rc=[128.949,80.130], Vrms=201.949, Irms=2.1581
+  Trigger 2, Idc pre/post = [0.9113,1.2291], trigger times = [1.9353,1.9528]
+    DC offsets in AC current = [0.0593,-0.0051,0.0167], Rc=[80.130,58.125], Vrms=203.835, Irms=3.1294
+  Trigger 3, Idc pre/post = [1.2282,1.5729], trigger times = [1.9516,1.9648]
+    DC offsets in AC current = [0.0572,-0.0042,0.0159], Rc=[58.125,45.601], Vrms=204.056, Irms=4.0991
+  Trigger 4, Idc pre/post = [1.5687,1.8984], trigger times = [1.9260,1.9436]
+    DC offsets in AC current = [0.0578,-0.0034,0.0183], Rc=[45.601,37.518], Vrms=204.713, Irms=5.0815
+  Trigger 5, Idc pre/post = [1.8973,2.2286], trigger times = [1.9231,1.9432]
+    DC offsets in AC current = [0.0564,-0.0036,0.0182], Rc=[37.518,31.869], Vrms=204.465, Irms=6.0417
+  Trigger 6, Idc pre/post = [2.2279,2.5566], trigger times = [1.9359,1.9529]
+    DC offsets in AC current = [0.0572,-0.0004,0.0186], Rc=[31.869,27.698], Vrms=204.182, Irms=6.9959
+  Trigger 7, Idc pre/post = [2.5595,2.8833], trigger times = [1.9562,1.9735]
+    DC offsets in AC current = [0.0498,0.0047,0.0164], Rc=[27.698,24.493], Vrms=203.806, Irms=7.9418
+
+Processing c:/data/max2/GL_60Hz_ud0.60_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2815,0.6066], trigger times = [2.1900,2.2189]
+    DC offsets in AC current = [0.0474,-0.0092,0.0188], Rc=[330.000,139.937], Vrms=219.915, Irms=1.1689
+  Trigger 1, Idc pre/post = [0.6063,0.9398], trigger times = [1.9383,1.9575]
+    DC offsets in AC current = [0.0565,-0.0069,0.0182], Rc=[139.937,88.796], Vrms=218.933, Irms=2.1148
+  Trigger 2, Idc pre/post = [0.9373,1.2699], trigger times = [1.9320,1.9542]
+    DC offsets in AC current = [0.0541,-0.0051,0.0208], Rc=[88.796,65.030], Vrms=219.292, Irms=3.0216
+  Trigger 3, Idc pre/post = [1.2703,1.6024], trigger times = [1.9394,1.9607]
+    DC offsets in AC current = [0.0557,-0.0013,0.0165], Rc=[65.030,51.300], Vrms=219.394, Irms=3.9241
+  Trigger 4, Idc pre/post = [1.6001,1.9444], trigger times = [1.9437,2.0163]
+    DC offsets in AC current = [0.0572,-0.0052,0.0175], Rc=[51.300,42.357], Vrms=220.126, Irms=4.8389
+  Trigger 5, Idc pre/post = [1.9445,2.2781], trigger times = [1.9278,1.9554]
+    DC offsets in AC current = [0.0527,-0.0043,0.0173], Rc=[42.357,36.069], Vrms=220.522, Irms=5.7610
+  Trigger 6, Idc pre/post = [2.2770,2.6050], trigger times = [1.9397,1.9570]
+    DC offsets in AC current = [0.0535,-0.0055,0.0163], Rc=[36.069,31.406], Vrms=220.302, Irms=6.6606
+  Trigger 7, Idc pre/post = [2.6066,2.9364], trigger times = [1.9383,1.9720]
+    DC offsets in AC current = [0.0515,-0.0037,0.0187], Rc=[31.406,27.812], Vrms=220.019, Irms=7.5563
+
+Processing c:/data/max2/GL_60Hz_ud0.64_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3158,0.5984], trigger times = [2.7379,2.7583]
+    DC offsets in AC current = [0.0472,-0.0114,0.0230], Rc=[330.000,150.429], Vrms=227.774, Irms=1.0406
+  Trigger 1, Idc pre/post = [0.5965,0.9498], trigger times = [1.9303,1.9500]
+    DC offsets in AC current = [0.0562,-0.0132,0.0222], Rc=[150.429,97.418], Vrms=223.987, Irms=1.9952
+  Trigger 2, Idc pre/post = [0.9483,1.2944], trigger times = [1.9267,1.9461]
+    DC offsets in AC current = [0.0579,-0.0101,0.0201], Rc=[97.418,72.034], Vrms=231.026, Irms=2.8866
+  Trigger 3, Idc pre/post = [1.2937,1.6398], trigger times = [1.9266,1.9484]
+    DC offsets in AC current = [0.0564,-0.0076,0.0195], Rc=[72.034,57.144], Vrms=234.007, Irms=3.7690
+  Trigger 4, Idc pre/post = [1.6393,1.9707], trigger times = [1.9432,1.9620]
+    DC offsets in AC current = [0.0567,-0.0077,0.0186], Rc=[57.144,47.355], Vrms=234.999, Irms=4.6301
+  Trigger 5, Idc pre/post = [1.9664,2.3010], trigger times = [1.9454,1.9623]
+    DC offsets in AC current = [0.0522,-0.0048,0.0172], Rc=[47.355,40.429], Vrms=234.836, Irms=5.4761
+  Trigger 6, Idc pre/post = [2.3004,2.6312], trigger times = [1.9437,1.9643]
+    DC offsets in AC current = [0.0505,-0.0011,0.0161], Rc=[40.429,35.271], Vrms=234.589, Irms=6.3189
+  Trigger 7, Idc pre/post = [2.6317,2.9609], trigger times = [1.9335,1.9512]
+    DC offsets in AC current = [0.0477,-0.0003,0.0182], Rc=[35.271,31.280], Vrms=234.321, Irms=7.1612
+
+Processing c:/data/max2/GL_60Hz_ud0.66_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3340,0.6213], trigger times = [2.4987,2.7004]
+    DC offsets in AC current = [0.0468,-0.0075,0.0198], Rc=[330.000,155.479], Vrms=238.302, Irms=1.0901
+  Trigger 1, Idc pre/post = [0.6240,0.9843], trigger times = [1.9397,1.9596]
+    DC offsets in AC current = [0.0539,-0.0074,0.0161], Rc=[155.479,101.696], Vrms=234.797, Irms=2.0077
+  Trigger 2, Idc pre/post = [0.9834,1.3288], trigger times = [1.9277,1.9505]
+    DC offsets in AC current = [0.0525,-0.0062,0.0198], Rc=[101.696,75.559], Vrms=241.889, Irms=2.8847
+  Trigger 3, Idc pre/post = [1.3320,1.6633], trigger times = [1.9360,1.9558]
+    DC offsets in AC current = [0.0520,-0.0041,0.0183], Rc=[75.559,60.110], Vrms=243.177, Irms=3.7231
+  Trigger 4, Idc pre/post = [1.6619,1.9933], trigger times = [1.9586,1.9774]
+    DC offsets in AC current = [0.0512,-0.0047,0.0210], Rc=[60.110,49.906], Vrms=242.938, Irms=4.5422
+  Trigger 5, Idc pre/post = [1.9953,2.3255], trigger times = [1.9421,1.9602]
+    DC offsets in AC current = [0.0514,-0.0044,0.0181], Rc=[49.906,42.664], Vrms=242.788, Irms=5.3680
+  Trigger 6, Idc pre/post = [2.3248,2.6566], trigger times = [1.9303,1.9503]
+    DC offsets in AC current = [0.0494,-0.0040,0.0205], Rc=[42.664,37.257], Vrms=242.562, Irms=6.1898
+  Trigger 7, Idc pre/post = [2.6554,2.9852], trigger times = [1.9599,1.9944]
+    DC offsets in AC current = [0.0470,-0.0030,0.0186], Rc=[37.257,33.067], Vrms=242.338, Irms=7.0023
+
+Processing c:/data/max2/GL_60Hz_ud0.68_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3484,0.6491], trigger times = [2.2105,2.2393]
+    DC offsets in AC current = [0.0486,-0.0089,0.0222], Rc=[330.000,160.395], Vrms=244.199, Irms=1.1642
+  Trigger 1, Idc pre/post = [0.6490,1.0105], trigger times = [1.9225,1.9460]
+    DC offsets in AC current = [0.0548,-0.0067,0.0238], Rc=[160.395,105.944], Vrms=245.343, Irms=2.0198
+  Trigger 2, Idc pre/post = [1.0097,1.3159], trigger times = [1.9470,1.9625]
+    DC offsets in AC current = [0.0531,-0.0069,0.0241], Rc=[105.944,79.094], Vrms=247.228, Irms=2.8126
+  Trigger 3, Idc pre/post = [1.3153,1.6708], trigger times = [1.9445,1.9621]
+    DC offsets in AC current = [0.0523,-0.0067,0.0226], Rc=[79.094,63.101], Vrms=247.883, Irms=3.6207
+  Trigger 4, Idc pre/post = [1.6705,2.0021], trigger times = [1.9837,2.0002]
+    DC offsets in AC current = [0.0500,-0.0061,0.0220], Rc=[63.101,52.488], Vrms=249.309, Irms=4.4311
+  Trigger 5, Idc pre/post = [1.9979,2.3279], trigger times = [1.9754,2.0268]
+    DC offsets in AC current = [0.0492,-0.0023,0.0235], Rc=[52.488,44.931], Vrms=249.199, Irms=5.2260
+  Trigger 6, Idc pre/post = [2.3303,2.6616], trigger times = [1.9405,1.9574]
+    DC offsets in AC current = [0.0469,-0.0021,0.0201], Rc=[44.931,39.277], Vrms=248.948, Irms=6.0270
+  Trigger 7, Idc pre/post = [2.6600,2.9851], trigger times = [1.9557,2.0064]
+    DC offsets in AC current = [0.0463,-0.0009,0.0224], Rc=[39.277,34.886], Vrms=248.612, Irms=6.8101
+
+Processing c:/data/max2/GL_62Hz_ud0.52_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2207,0.5485], trigger times = [2.1907,2.2134]
+    DC offsets in AC current = [0.0472,-0.0213,0.0215], Rc=[330.000,117.511], Vrms=191.694, Irms=1.1656
+  Trigger 1, Idc pre/post = [0.5471,0.8812], trigger times = [1.9372,1.9615]
+    DC offsets in AC current = [0.0551,-0.0152,0.0188], Rc=[117.511,71.483], Vrms=190.974, Irms=2.2628
+  Trigger 2, Idc pre/post = [0.8811,1.2108], trigger times = [1.9444,1.9626]
+    DC offsets in AC current = [0.0524,-0.0170,0.0172], Rc=[71.483,51.364], Vrms=190.733, Irms=3.3040
+  Trigger 3, Idc pre/post = [1.2108,1.5446], trigger times = [1.9445,1.9613]
+    DC offsets in AC current = [0.0535,-0.0144,0.0199], Rc=[51.364,40.083], Vrms=190.572, Irms=4.3461
+  Trigger 4, Idc pre/post = [1.5418,1.8742], trigger times = [1.9285,1.9625]
+    DC offsets in AC current = [0.0531,-0.0134,0.0190], Rc=[40.083,32.864], Vrms=190.428, Irms=5.3875
+  Trigger 5, Idc pre/post = [1.8737,2.2028], trigger times = [1.9425,1.9589]
+    DC offsets in AC current = [0.0522,-0.0116,0.0182], Rc=[32.864,27.849], Vrms=190.135, Irms=6.4201
+  Trigger 6, Idc pre/post = [2.2012,2.5275], trigger times = [1.9261,1.9420]
+    DC offsets in AC current = [0.0517,-0.0121,0.0190], Rc=[27.849,24.162], Vrms=189.821, Irms=7.4531
+  Trigger 7, Idc pre/post = [2.5287,2.8566], trigger times = [1.9624,1.9968]
+    DC offsets in AC current = [0.0495,-0.0089,0.0144], Rc=[24.162,21.337], Vrms=189.451, Irms=8.4670
+
+Processing c:/data/max2/GL_62Hz_ud0.56_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2364,0.5272], trigger times = [2.2038,2.2274]
+    DC offsets in AC current = [0.0481,-0.0222,0.0201], Rc=[330.000,128.949], Vrms=196.272, Irms=1.1028
+  Trigger 1, Idc pre/post = [0.5228,0.8454], trigger times = [1.9385,1.9674]
+    DC offsets in AC current = [0.0584,-0.0183,0.0223], Rc=[128.949,80.130], Vrms=195.939, Irms=2.0884
+  Trigger 2, Idc pre/post = [0.8433,1.1500], trigger times = [1.9364,1.9553]
+    DC offsets in AC current = [0.0554,-0.0167,0.0194], Rc=[80.130,58.125], Vrms=197.664, Irms=3.0364
+  Trigger 3, Idc pre/post = [1.1493,1.4573], trigger times = [1.9298,1.9510]
+    DC offsets in AC current = [0.0568,-0.0149,0.0161], Rc=[58.125,45.601], Vrms=197.535, Irms=3.9693
+  Trigger 4, Idc pre/post = [1.4606,1.7647], trigger times = [1.9423,1.9591]
+    DC offsets in AC current = [0.0547,-0.0143,0.0138], Rc=[45.601,37.518], Vrms=197.424, Irms=4.8976
+  Trigger 5, Idc pre/post = [1.7657,2.0705], trigger times = [1.9860,2.0028]
+    DC offsets in AC current = [0.0521,-0.0158,0.0149], Rc=[37.518,31.869], Vrms=197.194, Irms=5.8155
+  Trigger 6, Idc pre/post = [2.0696,2.3744], trigger times = [1.9500,1.9831]
+    DC offsets in AC current = [0.0558,-0.0134,0.0144], Rc=[31.869,27.698], Vrms=196.911, Irms=6.7425
+  Trigger 7, Idc pre/post = [2.3767,2.6822], trigger times = [1.9318,1.9488]
+    DC offsets in AC current = [0.0522,-0.0137,0.0172], Rc=[27.698,24.493], Vrms=196.581, Irms=7.6649
+
+Processing c:/data/max2/GL_62Hz_ud0.60_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.2838,0.6001], trigger times = [2.1062,2.1315]
+    DC offsets in AC current = [0.0475,-0.0218,0.0199], Rc=[330.000,139.937], Vrms=219.357, Irms=1.1798
+  Trigger 1, Idc pre/post = [0.6011,0.9286], trigger times = [1.9446,1.9620]
+    DC offsets in AC current = [0.0535,-0.0194,0.0182], Rc=[139.937,88.796], Vrms=217.707, Irms=2.1023
+  Trigger 2, Idc pre/post = [0.9296,1.2590], trigger times = [1.9266,1.9453]
+    DC offsets in AC current = [0.0570,-0.0157,0.0163], Rc=[88.796,65.030], Vrms=218.254, Irms=3.0088
+  Trigger 3, Idc pre/post = [1.2600,1.5882], trigger times = [1.9441,1.9632]
+    DC offsets in AC current = [0.0555,-0.0165,0.0139], Rc=[65.030,51.300], Vrms=218.481, Irms=3.9074
+  Trigger 4, Idc pre/post = [1.5889,1.9374], trigger times = [1.9541,1.9704]
+    DC offsets in AC current = [0.0544,-0.0173,0.0170], Rc=[51.300,42.357], Vrms=219.798, Irms=4.8361
+  Trigger 5, Idc pre/post = [1.9377,2.2694], trigger times = [1.9358,1.9526]
+    DC offsets in AC current = [0.0563,-0.0135,0.0157], Rc=[42.357,36.069], Vrms=220.577, Irms=5.7620
+  Trigger 6, Idc pre/post = [2.2687,2.5988], trigger times = [1.9379,1.9546]
+    DC offsets in AC current = [0.0518,-0.0109,0.0187], Rc=[36.069,31.406], Vrms=220.300, Irms=6.6610
+  Trigger 7, Idc pre/post = [2.6005,2.9312], trigger times = [1.9477,1.9646]
+    DC offsets in AC current = [0.0532,-0.0089,0.0176], Rc=[31.406,27.812], Vrms=219.996, Irms=7.5555
+
+Processing c:/data/max2/GL_62Hz_ud0.64_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3106,0.5900], trigger times = [2.2130,2.2388]
+    DC offsets in AC current = [0.0468,-0.0201,0.0208], Rc=[330.000,150.429], Vrms=225.753, Irms=1.1192
+  Trigger 1, Idc pre/post = [0.5903,0.9444], trigger times = [1.9435,1.9614]
+    DC offsets in AC current = [0.0523,-0.0181,0.0208], Rc=[150.429,97.418], Vrms=224.028, Irms=1.9934
+  Trigger 2, Idc pre/post = [0.9451,1.2881], trigger times = [1.9398,1.9547]
+    DC offsets in AC current = [0.0500,-0.0167,0.0217], Rc=[97.418,72.034], Vrms=231.039, Irms=2.8850
+  Trigger 3, Idc pre/post = [1.2852,1.6286], trigger times = [1.9560,1.9810]
+    DC offsets in AC current = [0.0511,-0.0174,0.0198], Rc=[72.034,57.144], Vrms=233.438, Irms=3.7539
+  Trigger 4, Idc pre/post = [1.6252,1.9661], trigger times = [1.9426,1.9600]
+    DC offsets in AC current = [0.0527,-0.0151,0.0180], Rc=[57.144,47.355], Vrms=234.622, Irms=4.6238
+  Trigger 5, Idc pre/post = [1.9649,2.2971], trigger times = [1.9391,1.9561]
+    DC offsets in AC current = [0.0509,-0.0140,0.0213], Rc=[47.355,40.429], Vrms=234.887, Irms=5.4783
+  Trigger 6, Idc pre/post = [2.2941,2.6250], trigger times = [1.9356,1.9543]
+    DC offsets in AC current = [0.0505,-0.0128,0.0197], Rc=[40.429,35.271], Vrms=234.637, Irms=6.3217
+  Trigger 7, Idc pre/post = [2.6249,2.9549], trigger times = [1.9318,1.9488]
+    DC offsets in AC current = [0.0475,-0.0123,0.0205], Rc=[35.271,31.280], Vrms=234.366, Irms=7.1630
+
+Processing c:/data/max2/GL_62Hz_ud0.66_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3291,0.6181], trigger times = [2.1949,2.2259]
+    DC offsets in AC current = [0.0523,-0.0242,0.0204], Rc=[330.000,155.479], Vrms=234.967, Irms=1.1441
+  Trigger 1, Idc pre/post = [0.6129,0.9745], trigger times = [1.9281,1.9488]
+    DC offsets in AC current = [0.0570,-0.0218,0.0216], Rc=[155.479,101.696], Vrms=234.843, Irms=2.0091
+  Trigger 2, Idc pre/post = [0.9746,1.3250], trigger times = [1.9415,2.0065]
+    DC offsets in AC current = [0.0529,-0.0204,0.0210], Rc=[101.696,75.559], Vrms=241.772, Irms=2.8775
+  Trigger 3, Idc pre/post = [1.3225,1.6526], trigger times = [1.9305,1.9469]
+    DC offsets in AC current = [0.0544,-0.0210,0.0206], Rc=[75.559,60.110], Vrms=243.293, Irms=3.7261
+  Trigger 4, Idc pre/post = [1.6526,1.9758], trigger times = [1.9366,1.9534]
+    DC offsets in AC current = [0.0549,-0.0213,0.0205], Rc=[60.110,49.906], Vrms=242.500, Irms=4.5371
+  Trigger 5, Idc pre/post = [1.9750,2.3171], trigger times = [1.9362,1.9564]
+    DC offsets in AC current = [0.0493,-0.0179,0.0200], Rc=[49.906,42.664], Vrms=242.420, Irms=5.3616
+  Trigger 6, Idc pre/post = [2.3182,2.6475], trigger times = [1.9294,1.9459]
+    DC offsets in AC current = [0.0519,-0.0151,0.0174], Rc=[42.664,37.257], Vrms=242.659, Irms=6.1928
+  Trigger 7, Idc pre/post = [2.6492,2.9757], trigger times = [1.9637,1.9806]
+    DC offsets in AC current = [0.0507,-0.0156,0.0166], Rc=[37.257,33.067], Vrms=242.452, Irms=7.0065
+
+Processing c:/data/max2/GL_62Hz_ud0.68_PNNL.hdf5
+  Trigger 0, Idc pre/post = [0.3431,0.6429], trigger times = [2.1927,2.2279]
+    DC offsets in AC current = [0.0547,-0.0209,0.0191], Rc=[330.000,160.395], Vrms=244.293, Irms=1.1669
+  Trigger 1, Idc pre/post = [0.6425,1.0042], trigger times = [1.9339,1.9849]
+    DC offsets in AC current = [0.0594,-0.0170,0.0177], Rc=[160.395,105.944], Vrms=245.192, Irms=2.0145
+  Trigger 2, Idc pre/post = [1.0045,1.3125], trigger times = [1.9400,1.9546]
+    DC offsets in AC current = [0.0579,-0.0190,0.0163], Rc=[105.944,79.094], Vrms=247.266, Irms=2.8142
+  Trigger 3, Idc pre/post = [1.3110,1.6637], trigger times = [1.9363,1.9543]
+    DC offsets in AC current = [0.0586,-0.0203,0.0191], Rc=[79.094,63.101], Vrms=247.937, Irms=3.6228
+  Trigger 4, Idc pre/post = [1.6633,1.9961], trigger times = [1.9404,1.9576]
+    DC offsets in AC current = [0.0584,-0.0184,0.0197], Rc=[63.101,52.488], Vrms=249.401, Irms=4.4396
+  Trigger 5, Idc pre/post = [1.9963,2.3256], trigger times = [1.9375,1.9528]
+    DC offsets in AC current = [0.0547,-0.0178,0.0177], Rc=[52.488,44.931], Vrms=249.232, Irms=5.2359
+  Trigger 6, Idc pre/post = [2.3270,2.6563], trigger times = [1.9365,1.9530]
+    DC offsets in AC current = [0.0553,-0.0169,0.0187], Rc=[44.931,39.277], Vrms=249.005, Irms=6.0290
+  Trigger 7, Idc pre/post = [2.6560,2.9817], trigger times = [1.9287,1.9485]
+    DC offsets in AC current = [0.0532,-0.0144,0.0157], Rc=[39.277,34.886], Vrms=248.657, Irms=6.8183
+
