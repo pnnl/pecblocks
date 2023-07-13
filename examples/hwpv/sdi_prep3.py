@@ -9,6 +9,7 @@ import h5py
 import glob
 
 SHOW_PLOTS = False
+USE_RGRID = False
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 idc_b, idc_a = signal.butter (2, 1.0 / 64.0, btype='lowpass', analog=False)
@@ -25,8 +26,8 @@ SCALE_AMPS = 10.0
 tticks = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 #tticks = [0.0, 0.05, 0.10]
 
-input_path = 'c:/data/max2/'
-output_path = 'c:/data/sdi.hdf5'
+input_path = 'c:/data/max3/'
+output_path = 'c:/data/sdi3.hdf5'
 
 dec_b, dec_a = signal.butter (2, 1.0 / 256.0, btype='lowpass', analog=False)
 
@@ -56,6 +57,24 @@ def getRgrid (vll, pstep):
   Rstep = vll * vll / pstep
   return 1.0 / (1.0/Rstep + 1.0/SDI_RPAR)
 
+def get_channel_parameters (col):
+  if col == 'DC_VOLT':
+    return 'Vdc', 1.0
+  elif col == 'PhaseA_VOLT':
+    return 'Va', 1.0
+  elif col == 'PhaseB_VOLT':
+    return 'Vc', 1.0
+  elif col == 'PhaseC_VOLT':
+    return 'Vb', 1.0
+  elif col == 'DC_CURR':
+    return 'Idc', SCALE_AMPS
+  elif col == 'PhaseA_CURR':
+    return 'Ia', SCALE_AMPS
+  elif col == 'PhaseB_CURR':
+    return 'Ic', SCALE_AMPS
+  elif col == 'PhaseC_CURR':
+    return 'Ib', SCALE_AMPS
+
 def get_npframes (filename):
   dfs = {}
   store = pd.HDFStore(filename)
@@ -69,10 +88,9 @@ def get_npframes (filename):
     tbase = np.linspace (0.0, tmax, n)
     dfs[key] = {}
     dfs[key]['t'] = tbase
-    dfs[key]['Idc'] = SCALE_AMPS * df1['DC_CURR'].to_numpy()
-    dfs[key]['Ia'] = -SCALE_AMPS * df1['PhaseA_CURR'].to_numpy() # probe was reversed
-    dfs[key]['Ic'] = SCALE_AMPS * df1['PhaseB_CURR'].to_numpy() # probe swapped with C
-    dfs[key]['Ib'] = SCALE_AMPS * df1['PhaseC_CURR'].to_numpy()
+    for col in df1.columns:
+      tag, scale = get_channel_parameters (col)
+      dfs[key][tag] = scale * df1[col].to_numpy()
   store.close()
   return dfs
 
@@ -143,13 +161,20 @@ if __name__ == '__main__':
 
   for freq in [58, 60, 62]:
     for ud in [0.52, 0.56, 0.60, 0.64, 0.66, 0.68]:
-      filename = 'GL_{:d}Hz_ud{:4.2f}_PNNL.hdf5'.format (int(freq), ud)
+      casename = 'GL_{:d}Hz_ud{:4.2f}'.format (int(freq), ud)
+
+      filename = '{:s}_PNNL_scope1.hdf5'.format (casename)
       print ('\nProcessing {:s}'.format(input_path+filename))
-      dfs = get_npframes (input_path+filename)
-      for key, df in dfs.items():
-        t = df['t']
+      dfs1 = get_npframes (input_path+filename)
+
+      filename = '{:s}_PNNL_scope2.hdf5'.format (casename)
+      print ('\nProcessing {:s}'.format(input_path+filename))
+      dfs2 = get_npframes (input_path+filename)
+
+      for key, df1 in dfs1.items():
+        t = df1['t']
         # smooth the DC current and locate the trigger; in the first test set, Idc always steps up
-        idc_flt = signal.filtfilt (idc_b, idc_a, df['Idc'])[::1]
+        idc_flt = signal.filtfilt (idc_b, idc_a, df1['Idc'])[::1]
         idc_pre = np.mean(idc_flt[:30000])
         idc_post = np.mean(idc_flt[-30000:])
         ntrig1 = int(np.argwhere (idc_flt < idc_pre)[-1])
@@ -157,22 +182,29 @@ if __name__ == '__main__':
         ttrig1 = t[ntrig1]
         ttrig2 = t[ntrig2]
         # remove DC offsets from AC quantities, generate the dq components
-        ia_0 = np.mean(df['Ia'])
-        ib_0 = np.mean(df['Ib'])
-        ic_0 = np.mean(df['Ic'])
+        ia_0 = np.mean(df1['Ia'])
+        ib_0 = np.mean(df1['Ib'])
+        ic_0 = np.mean(df1['Ic'])
         fc, udc, uqc, rc, vdc = control_signals (ud, 0.0, freq, key, ttrig1, ttrig2, t)
-        df['Ia'] -= ia_0
-        df['Ib'] -= ib_0
-        df['Ic'] -= ic_0
-        va = df['Ia'] * rc
-        vb = df['Ib'] * rc
-        vc = df['Ic'] * rc
+        df1['Ia'] -= ia_0
+        df1['Ib'] -= ib_0
+        df1['Ic'] -= ic_0
+        if USE_RGRID:
+          va = df1['Ia'] * rc
+          vb = df1['Ib'] * rc
+          vc = df1['Ic'] * rc
+        else:
+          df2 = dfs2[key]
+          vdc = df2['Vdc']
+          va = df2['Va']
+          vb = df2['Vb']
+          vc = df2['Vc']
         wc = OMEGA * fc
-        Vd, Vq, Vrms, Id, Iq, Irms = simulate_pll (t, wc, va, vb, vc, df['Ia'], df['Ib'], df['Ic'])
+        Vd, Vq, Vrms, Id, Iq, Irms = simulate_pll (t, wc, va, vb, vc, df1['Ia'], df1['Ib'], df1['Ic'])
 
         # create downsampled channels for HWPV training
         Vdc_dec = np.interp(tdec, t, vdc.copy())
-        Idc_dec = my_decimate (df['Idc'], 20)[1000:4001] # np.interp(tdec, t, df['Idc'].copy())
+        Idc_dec = my_decimate (df1['Idc'], 20)[1000:4001] # np.interp(tdec, t, df['Idc'].copy())
         Vrms_dec = my_decimate (Vrms, 20)[1000:4001] # np.interp(tdec, t, Vrms.copy())
         Irms_dec = my_decimate (Irms, 20)[1000:4001] # np.interp(tdec, t, Irms.copy())
         Fc_dec = np.interp(tdec, t, fc.copy())
@@ -204,8 +236,8 @@ if __name__ == '__main__':
 
         if SHOW_PLOTS:
           fig, ax = plt.subplots (5, 3, sharex = 'col', figsize=(16,10), constrained_layout=True)
-          fig.suptitle ('{:s} {:s}'.format(filename, key))
-          ax[0,0].plot (t, df['Idc'], label='inst')
+          fig.suptitle ('{:s} {:s} Use Rgrid={:s}'.format(casename, key, str(USE_RGRID)))
+          ax[0,0].plot (t, df1['Idc'], label='inst')
           ax[0,0].plot (t, idc_flt, label='filtered', color='magenta')
           ax[0,0].plot ([ttrig1, ttrig2], [idc_pre, idc_post], marker='o', color='orange', linestyle='dotted', label='trigger')
           ax[0,0].plot (tdec, Idc_dec, label='decimated', color='red')
@@ -220,19 +252,19 @@ if __name__ == '__main__':
           ax[1,1].plot (t, fc, label='inst')
           ax[1,1].plot (tdec, Fc_dec, color='red', label='dec')
           ax[1,1].set_ylabel ('Fc')
-          ax[2,0].plot (t, df['Ib'], color='red', label='Ib')
-          ax[2,0].plot (t, df['Ic'], color='blue', label='Ic')
-          ax[2,0].plot (t, df['Ia'], color='black', label='Ia') # black on top
+          ax[2,0].plot (t, df1['Ib'], color='red', label='Ib')
+          ax[2,0].plot (t, df1['Ic'], color='blue', label='Ic')
+          ax[2,0].plot (t, df1['Ia'], color='black', label='Ia') # black on top
           ax[2,0].set_ylabel ('Ia')
           ax[2,1].plot (t, vb, color='red', label='Vb')
           ax[2,1].plot (t, vc, color='blue', label='Vc')
           ax[2,1].plot (t, va, color='black', label='Va') # black on top
           ax[2,1].set_ylabel ('Va')
-          ax[3,0].plot (t, df['Ib'], color='red', label='Ib')
+          ax[3,0].plot (t, df1['Ib'], color='red', label='Ib')
           ax[3,0].set_ylabel ('Ib')
           ax[3,1].plot (t, vb, color='red', label='Vb')
           ax[3,1].set_ylabel ('Vb')
-          ax[4,0].plot (t, df['Ic'], color='blue', label='Ic')
+          ax[4,0].plot (t, df1['Ic'], color='blue', label='Ic')
           ax[4,0].set_ylabel ('Ic')
           ax[4,1].plot (t, vc, color='blue', label='Vc')
           ax[4,1].set_ylabel ('Vc')
