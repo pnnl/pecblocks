@@ -66,7 +66,7 @@ def finish_plot(ax, plot_file = None):
     plt.savefig(plot_file)
   plt.show()
 
-filename = 'c:/data/sdi3.hdf5'
+filename = 'c:/data/sdi3merged.hdf5'
 ax = start_plot (filename)
 with h5py.File(filename, 'r') as f:
   for grp_name, grp in f.items():

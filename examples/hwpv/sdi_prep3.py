@@ -8,8 +8,8 @@ from scipy import signal
 import h5py
 import glob
 
-SHOW_PLOTS = False
-USE_RGRID = False
+SHOW_PLOTS = True
+USE_RGRID = True
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 idc_b, idc_a = signal.butter (2, 1.0 / 64.0, btype='lowpass', analog=False)
@@ -27,7 +27,9 @@ tticks = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 #tticks = [0.0, 0.05, 0.10]
 
 input_path = 'c:/data/max3/'
-output_path = 'c:/data/sdi3.hdf5'
+output_path = 'c:/data/sdi3rc.hdf5'
+
+output_path = 'c:/data/sdi3uq.hdf5'
 
 dec_b, dec_a = signal.butter (2, 1.0 / 256.0, btype='lowpass', analog=False)
 
@@ -159,8 +161,14 @@ if __name__ == '__main__':
   print ('tdec {:.8f} to {:.8f} at dt={:.8f}'.format (tdec[0], tdec[-1], dt))
   idx = 0
 
-  for freq in [58, 60, 62]:
-    for ud in [0.52, 0.56, 0.60, 0.64, 0.66, 0.68]:
+# Balanced test, Uq=0, 144 records
+#  fixed_uq = 0.0
+#  for freq in [58, 60, 62]:
+#    for ud in [0.52, 0.56, 0.60, 0.64, 0.66, 0.68]:
+# Balanced test, Uq=0.47, 8 records
+  fixed_uq = 0.47
+  for freq in [60]:
+    for ud in [0.47]:
       casename = 'GL_{:d}Hz_ud{:4.2f}'.format (int(freq), ud)
 
       filename = '{:s}_PNNL_scope1.hdf5'.format (casename)
@@ -185,7 +193,7 @@ if __name__ == '__main__':
         ia_0 = np.mean(df1['Ia'])
         ib_0 = np.mean(df1['Ib'])
         ic_0 = np.mean(df1['Ic'])
-        fc, udc, uqc, rc, vdc = control_signals (ud, 0.0, freq, key, ttrig1, ttrig2, t)
+        fc, udc, uqc, rc, vdc = control_signals (ud, fixed_uq, freq, key, ttrig1, ttrig2, t)
         df1['Ia'] -= ia_0
         df1['Ib'] -= ib_0
         df1['Ic'] -= ic_0
@@ -243,9 +251,10 @@ if __name__ == '__main__':
           ax[0,0].plot (tdec, Idc_dec, label='decimated', color='red')
           ax[0,0].set_ylabel ('Idc')
 
-          ax[0,1].plot (t, udc, label='inst')
-          ax[0,1].plot (tdec, Ud_dec, color='red', label='dec')
-          ax[0,1].set_ylabel ('Ud')
+          ax[0,1].plot (t, udc, label='Ud inst')
+          ax[0,1].plot (tdec, Ud_dec, color='red', label='Ud dec')
+          ax[0,1].plot (tdec, Uq_dec, color='blue', label='Uq dec')
+          ax[0,1].set_ylabel ('Ud/Uq')
           ax[1,0].plot (t, rc, label='inst')
           ax[1,0].plot (tdec, Rc_dec, color='red', label='dec')
           ax[1,0].set_ylabel ('Rc')
