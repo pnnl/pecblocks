@@ -1,4 +1,4 @@
-# copyright 2021-2022 Battelle Memorial Institute
+# copyright 2021-2023 Battelle Memorial Institute
 # HW model training and simulation code for 3-phase inverters
 
 import pandas as pd
@@ -29,6 +29,7 @@ class pv3():
       self.load_sim_config (sim_config)
 
   def init_to_none(self):
+    self.eps = 1e-4
     self.lr = None
     self.num_iter = None
     self.continue_iterations = False
@@ -418,7 +419,7 @@ class pv3():
       {'params': self.F1.parameters(), 'lr': self.lr},
       {'params': self.H1.parameters(), 'lr': self.lr},
       {'params': self.F2.parameters(), 'lr': self.lr},
-    ], lr=self.lr)
+    ], lr=self.lr, eps=self.eps)
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
 
