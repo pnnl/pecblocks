@@ -13,6 +13,14 @@ but also the photovoltaic (PV) array, maximum power point tracking (MPPT), phase
 circuits, battery storage if present, etc. The applications include but may not be limited to solar power inverters, energy
 storage converters, motor drives, and other power electronics equipment.
 
+## Installation
+
+Python 3.7.6 and later have been used for testing. From a command prompt in this directory,
+Install the necessary Python modules with:
+
+- ```pip install -r requirements.txt```
+- ```pip install -e .```
+
 ## Panels-to-Grid MIMO Test Case
 
 In the directory _examples/hwpv_, a multiple-input, multiple-output HW model has been
