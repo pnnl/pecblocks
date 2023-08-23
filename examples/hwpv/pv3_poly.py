@@ -29,7 +29,7 @@ class pv3():
       self.load_sim_config (sim_config)
 
   def init_to_none(self):
-    self.eps = 1e-4
+    self.eps = 1e-8
     self.lr = None
     self.num_iter = None
     self.continue_iterations = False
@@ -71,6 +71,8 @@ class pv3():
     fp.close()
     self.model_folder = os.path.split(filename)[0]
     self.lr = config['lr']
+    if 'eps' in config:
+      self.eps = config['eps']
     self.num_iter = config['num_iter']
     if 'continue_iterations' in config:
       self.continue_iterations = config['continue_iterations']
@@ -569,6 +571,7 @@ class pv3():
     for key, val in self.normfacs.items():
       config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset']}
     config['lr'] = self.lr
+    config['eps'] = self.eps
     config['h5grp_prefix'] = self.h5grp_prefix
     config['num_iter'] = self.num_iter
     config['continue_iterations'] = self.continue_iterations

@@ -1,0 +1,35 @@
+Epoch 1360 of 2000 | Training Loss     0.003695 | Validation Loss     0.005162
+Epoch 1380 of 2000 | Training Loss     0.004975 | Validation Loss     0.005459
+Epoch 1400 of 2000 | Training Loss     0.003270 | Validation Loss     0.004785
+Epoch 1420 of 2000 | Training Loss     0.002948 | Validation Loss     0.004429
+Epoch 1440 of 2000 | Training Loss     0.006710 | Validation Loss     0.005093
+Epoch 1460 of 2000 | Training Loss     0.003356 | Validation Loss     0.005192
+Epoch 1480 of 2000 | Training Loss     0.003172 | Validation Loss     0.006980
+Epoch 1500 of 2000 | Training Loss     0.006983 | Validation Loss     0.010858
+Epoch 1520 of 2000 | Training Loss     0.003209 | Validation Loss     0.004582
+Epoch 1540 of 2000 | Training Loss     0.005824 | Validation Loss     0.008358
+Epoch 1560 of 2000 | Training Loss     0.005018 | Validation Loss     0.008564
+Epoch 1580 of 2000 | Training Loss     0.003398 | Validation Loss     0.004438
+Epoch 1600 of 2000 | Training Loss     0.002955 | Validation Loss     0.004770
+Epoch 1620 of 2000 | Training Loss     0.002866 | Validation Loss     0.004731
+Epoch 1640 of 2000 | Training Loss     0.002887 | Validation Loss     0.005000
+Epoch 1660 of 2000 | Training Loss     0.003564 | Validation Loss     0.005660
+Epoch 1680 of 2000 | Training Loss     0.008075 | Validation Loss     0.008180
+Epoch 1700 of 2000 | Training Loss     0.004487 | Validation Loss     0.004709
+Epoch 1720 of 2000 | Training Loss     0.003112 | Validation Loss     0.006465
+Epoch 1740 of 2000 | Training Loss     0.002624 | Validation Loss     0.005502
+Epoch 1760 of 2000 | Training Loss     0.002998 | Validation Loss     0.004278
+Epoch 1780 of 2000 | Training Loss     0.003867 | Validation Loss     0.010725
+Epoch 1800 of 2000 | Training Loss     0.003887 | Validation Loss     0.004664
+Epoch 1820 of 2000 | Training Loss     0.004216 | Validation Loss     0.004297
+Epoch 1840 of 2000 | Training Loss     0.002931 | Validation Loss     0.004623
+Epoch 1860 of 2000 | Training Loss     0.003182 | Validation Loss     0.004332
+Epoch 1880 of 2000 | Training Loss     0.004139 | Validation Loss     0.010378
+Epoch 1900 of 2000 | Training Loss     0.002892 | Validation Loss     0.005016
+Epoch 1920 of 2000 | Training Loss     0.003376 | Validation Loss     0.004679
+Epoch 1940 of 2000 | Training Loss     0.002995 | Validation Loss     0.004787
+Epoch 1960 of 2000 | Training Loss     0.003404 | Validation Loss     0.004829
+Epoch 1980 of 2000 | Training Loss     0.002607 | Validation Loss     0.004469
+COL_Y ['Idc', 'Id', 'Iq']
+Train time: 497.50, Recent loss: 0.003154, RMS Errors: 0.0362 0.0324 0.0238
+                          MAE Errors: 0.0235 0.0225 0.0181

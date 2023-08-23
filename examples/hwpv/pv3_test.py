@@ -60,6 +60,10 @@ model_path = './ucf2ac/ucf2ac_config.json'
 data_path = 'c:/data/sdi.hdf5'
 model_path = './sdi/sdi_config.json'
 
+data_path = 'd:/data/sdi4.hdf5'
+model_path = './sdi4/sdi4_config.json'
+model_path = './sdi4v/sdi4v_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
