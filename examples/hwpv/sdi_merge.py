@@ -3,15 +3,15 @@ import h5py
 PREFIX = 'scope'
 input_path = 'c:/data/'
 output_path = 'c:/data/sdi3rc.hdf5'
-
 output_path = 'c:/data/sdi3merged.hdf5'
+output_path = 'c:/data/sdi5.hdf5'
 
 if __name__ == '__main__':
   print ('Merging HWPV training records {:s}'.format (output_path))
   f_out = h5py.File (output_path, 'w')
   idx = 0
 
-  for root in ['sdi3', 'sdi3rc', 'sdi3uq']:
+  for root in ['sdi5a', 'sdi5b']: # ['sdi3', 'sdi3rc', 'sdi3uq']:
     filename = '{:s}{:s}.hdf5'.format (input_path, root)
     print ('Reading', filename)
     with h5py.File(filename, 'r') as f_in:

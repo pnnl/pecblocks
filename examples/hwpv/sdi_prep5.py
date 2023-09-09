@@ -25,14 +25,16 @@ SCALE_AMPS = 10.0
 
 SCOPE_IAC = 1
 SCOPE_VAC = 2
-SCOPE_IDC = 3
-SCOPE_VDC = 4
+SCOPE_DC = 3
 
 tticks = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 #tticks = [0.0, 0.05, 0.10]
 
-input_path = 'c:/data/ken/'
-output_path = 'c:/data/sdi4.hdf5'
+input_path = 'c:/data/ken2/'
+output_path = 'c:/data/sdi5a.hdf5'
+
+input_path = 'c:/data/ken2/power_factor/'
+output_path = 'c:/data/sdi5b.hdf5'
 
 dec_b, dec_a = signal.butter (2, 1.0 / 256.0, btype='lowpass', analog=False)
 
@@ -177,19 +179,18 @@ if __name__ == '__main__':
       casename = 'GL_{:d}Hz_ud{:4.2f}'.format (int(freq), ud)
 
       dfs = {}
-      for scope in [1, 2, 3, 4]: # AC current, AC voltage, DC current, DC voltage scopes.
+      for scope in [1, 2, 3]: # AC current, AC voltage, DC scopes.
         filename = '{:s}_PNNL_scope{:d}.hdf5'.format (casename, scope)
         print ('\nProcessing {:s}'.format(input_path+filename))
         dfs[scope] = get_npframes (input_path+filename)
 
       for key, df_iac in dfs[SCOPE_IAC].items(): # triggered events 0..7
         df_vac = dfs[SCOPE_VAC][key]
-        df_idc = dfs[SCOPE_IDC][key]
-        df_vdc = dfs[SCOPE_VDC][key]
-        t = df_idc['t']
+        df_dc = dfs[SCOPE_DC][key]
+        t = df_dc['t']
 
         # smooth the DC current, estimate a functional trigger location for Rc
-        idc_flt = signal.filtfilt (idc_b, idc_a, df_idc['Idc'])[::1]
+        idc_flt = signal.filtfilt (idc_b, idc_a, df_dc['Idc'])[::1]
         idc_pre = np.mean(idc_flt[:30000])
         idc_post = np.mean(idc_flt[-30000:])
         ntrig1 = int(np.argwhere (idc_flt < idc_pre)[-1])
@@ -206,7 +207,7 @@ if __name__ == '__main__':
         df_iac['Ia'] -= ia_0
         df_iac['Ib'] -= ib_0
         df_iac['Ic'] -= ic_0
-        vdc = df_vdc['Vdc']
+        vdc = df_dc['Vdc']
         if USE_RGRID:
           va = df_iac['Ia'] * rc
           vb = df_iac['Ib'] * rc
@@ -217,10 +218,14 @@ if __name__ == '__main__':
           vc = df_vac['Vc']
         wc = OMEGA * fc
         Vd, Vq, Vrms, Id, Iq, Irms = simulate_pll (t, wc, va, vb, vc, df_iac['Ia'], df_iac['Ib'], df_iac['Ic'])
+        # generate AC and DC power signals
+        ac_pwr = df_iac['Ia']*df_vac['Va'] + df_iac['Ib']*df_vac['Vb'] + df_iac['Ic']*df_vac['Vc']
+        dc_pwr = df_dc['Idc']*df_dc['Vdc']
+        dc_flt_pwr = idc_flt*df_dc['Vdc']
 
         # create downsampled channels for HWPV training
         Vdc_dec = my_decimate (vdc, 20)[1000:4001] # np.interp(tdec, t, vdc.copy())
-        Idc_dec = my_decimate (df_idc['Idc'], 20)[1000:4001] # np.interp(tdec, t, df['Idc'].copy())
+        Idc_dec = my_decimate (df_dc['Idc'], 20)[1000:4001] # np.interp(tdec, t, df['Idc'].copy())
         Vrms_dec = my_decimate (Vrms, 20)[1000:4001] # np.interp(tdec, t, Vrms.copy())
         Irms_dec = my_decimate (Irms, 20)[1000:4001] # np.interp(tdec, t, Irms.copy())
         Fc_dec = np.interp(tdec, t, fc.copy())
