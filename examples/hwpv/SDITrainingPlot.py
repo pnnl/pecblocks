@@ -66,14 +66,14 @@ def finish_plot(ax, plot_file = None):
     plt.savefig(plot_file)
   plt.show()
 
-filename = 'c:/data/sdi3merged.hdf5'
-filename = 'c:/data/sdi4.hdf5'
-filename = 'c:/data/sdi5a.hdf5'
-filename = 'c:/data/sdi5b.hdf5'
-filename = 'c:/data/sdi5.hdf5'
 
-ax = start_plot (filename)
-with h5py.File(filename, 'r') as f:
-  for grp_name, grp in f.items():
-    plot_group (ax, grp)
-finish_plot (ax)
+pathname = 'c:/data/'
+
+for root in ['sdi5', 'sdi5a', 'sdi5b']:
+  filename = '{:s}{:s}.hdf5'.format (pathname, root)
+  pngname = '{:s}_Training_Set.png'.format (root)
+  ax = start_plot (filename)
+  with h5py.File(filename, 'r') as f:
+    for grp_name, grp in f.items():
+      plot_group (ax, grp)
+  finish_plot (ax, pngname)
