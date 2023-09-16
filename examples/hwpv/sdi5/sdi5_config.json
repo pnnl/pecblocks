@@ -6,7 +6,7 @@
   "lr": 1.0e-3,
   "eps": 1.0e-6,
   "t_step": 0.001,
-  "num_iter": 2000,
+  "num_iter": 5000,
   "continue_iterations": false,
   "print_freq": 20,
   "batch_size": 18,
@@ -22,6 +22,6 @@
   "nb": 4,
   "nk": 0,
   "activation": "tanh",
-  "nh1": 40,
-  "nh2": 30
+  "nh1": 60,
+  "nh2": 40
 }
