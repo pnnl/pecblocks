@@ -3,4 +3,3 @@ sphinx-autobuild
 sphinx-rtd-theme
 sphinx-jsonschema
 recommonmark
-pecblocks
