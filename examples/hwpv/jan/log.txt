@@ -1,0 +1,288 @@
+C:\src\pecblocks\examples\hwpv>python pv3_training.py ./jan/jan_config.json d:/data/jan.hdf5
+model_folder = ./jan
+model_root = ja
+data_path = d:/data/jan.hdf5
+idx_in [0, 1, 2, 3, 4, 5]
+idx_out [6, 7, 8]
+read 204 dataframes
+dt=0.001000 data_len=3000 n_io=9 n_case=204
+['Fc', 'Ud', 'Uq', 'Vd', 'Vq', 'Vdc'] ['Idc', 'Id', 'Iq'] (204, 3000, 9)
+shapes of t (3000,) data_train (204, 3000, 9) n_in=6, n_out=3
+t range 0.000000 to 2.999000
+Before Scaling:
+Column       Min       Max      Mean     Range
+Fc        60.000    60.000    60.000     1.000
+Ud         0.520     0.680     0.610     0.160
+Uq         0.000     0.000     0.000     1.000
+Vd      -250.398  -181.381  -219.857    69.017
+Vq        -0.744     1.035     0.135     1.779
+Vdc      566.911   618.918   608.611    52.007
+Idc       -0.313     3.478     1.710     3.791
+Id        -1.634    -0.106    -0.845     1.528
+Iq        -2.967     1.406    -1.539     4.373
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+Fc         0.000     0.000     0.000     1.000     1.000    60.000
+Ud        -0.563     0.437    -0.000     1.000     0.160     0.610
+Uq         0.000     0.000     0.000     1.000     1.000     0.000
+Vd        -0.443     0.557    -0.000     1.000    69.017  -219.857
+Vq        -0.494     0.506     0.000     1.000     1.779     0.135
+Vdc       -0.802     0.198     0.000     1.000    52.007   608.611
+Idc       -0.534     0.466    -0.000     1.000     3.791     1.710
+Id        -0.516     0.484    -0.000     1.000     1.528    -0.845
+Iq        -0.326     0.674     0.000     1.000     4.373    -1.539
+make_mimo_block iir
+Dataset split: 204 170 34 validation_scale=5.000
+Epoch    0 of 5000 | Training Loss     0.562050 | Validation Loss     0.441669
+Epoch   20 of 5000 | Training Loss     0.138582 | Validation Loss     0.106239
+Epoch   40 of 5000 | Training Loss     0.104507 | Validation Loss     0.091194
+Epoch   60 of 5000 | Training Loss     0.102768 | Validation Loss     0.095216
+Epoch   80 of 5000 | Training Loss     0.099936 | Validation Loss     0.096452
+Epoch  100 of 5000 | Training Loss     0.097703 | Validation Loss     0.096578
+Epoch  120 of 5000 | Training Loss     0.097137 | Validation Loss     0.090857
+Epoch  140 of 5000 | Training Loss     0.099830 | Validation Loss     0.092865
+Epoch  160 of 5000 | Training Loss     0.092225 | Validation Loss     0.095521
+Epoch  180 of 5000 | Training Loss     0.085349 | Validation Loss     0.088260
+Epoch  200 of 5000 | Training Loss     0.088763 | Validation Loss     0.084345
+Epoch  220 of 5000 | Training Loss     0.078312 | Validation Loss     0.079842
+Epoch  240 of 5000 | Training Loss     0.067513 | Validation Loss     0.082757
+Epoch  260 of 5000 | Training Loss     0.065319 | Validation Loss     0.084438
+Epoch  280 of 5000 | Training Loss     0.054593 | Validation Loss     0.082451
+Epoch  300 of 5000 | Training Loss     0.053530 | Validation Loss     0.077505
+Epoch  320 of 5000 | Training Loss     0.047628 | Validation Loss     0.048005
+Epoch  340 of 5000 | Training Loss     0.045670 | Validation Loss     0.045353
+Epoch  360 of 5000 | Training Loss     0.042494 | Validation Loss     0.062273
+Epoch  380 of 5000 | Training Loss     0.041333 | Validation Loss     0.042108
+Epoch  400 of 5000 | Training Loss     0.042939 | Validation Loss     0.050846
+Epoch  420 of 5000 | Training Loss     0.038629 | Validation Loss     0.040860
+Epoch  440 of 5000 | Training Loss     0.042997 | Validation Loss     0.036317
+Epoch  460 of 5000 | Training Loss     0.040549 | Validation Loss     0.031568
+Epoch  480 of 5000 | Training Loss     0.053581 | Validation Loss     0.063542
+Epoch  500 of 5000 | Training Loss     0.032946 | Validation Loss     0.029248
+Epoch  520 of 5000 | Training Loss     0.042873 | Validation Loss     0.038943
+Epoch  540 of 5000 | Training Loss     0.032872 | Validation Loss     0.026185
+Epoch  560 of 5000 | Training Loss     0.033390 | Validation Loss     0.026689
+Epoch  580 of 5000 | Training Loss     0.029348 | Validation Loss     0.020056
+Epoch  600 of 5000 | Training Loss     0.040507 | Validation Loss     0.034532
+Epoch  620 of 5000 | Training Loss     0.026774 | Validation Loss     0.018532
+Epoch  640 of 5000 | Training Loss     0.031349 | Validation Loss     0.020517
+Epoch  660 of 5000 | Training Loss     0.033418 | Validation Loss     0.017638
+Epoch  680 of 5000 | Training Loss     0.025127 | Validation Loss     0.014848
+Epoch  700 of 5000 | Training Loss     0.025761 | Validation Loss     0.017065
+Epoch  720 of 5000 | Training Loss     0.040998 | Validation Loss     0.046575
+Epoch  740 of 5000 | Training Loss     0.036669 | Validation Loss     0.017999
+Epoch  760 of 5000 | Training Loss     0.030910 | Validation Loss     0.017305
+Epoch  780 of 5000 | Training Loss     0.023140 | Validation Loss     0.014309
+Epoch  800 of 5000 | Training Loss     0.024852 | Validation Loss     0.012749
+Epoch  820 of 5000 | Training Loss     0.029739 | Validation Loss     0.012477
+Epoch  840 of 5000 | Training Loss     0.024310 | Validation Loss     0.030164
+Epoch  860 of 5000 | Training Loss     0.022548 | Validation Loss     0.012655
+Epoch  880 of 5000 | Training Loss     0.027131 | Validation Loss     0.019907
+Epoch  900 of 5000 | Training Loss     0.025020 | Validation Loss     0.014299
+Epoch  920 of 5000 | Training Loss     0.026423 | Validation Loss     0.014219
+Epoch  940 of 5000 | Training Loss     0.022441 | Validation Loss     0.014593
+Epoch  960 of 5000 | Training Loss     0.023572 | Validation Loss     0.010795
+Epoch  980 of 5000 | Training Loss     0.021342 | Validation Loss     0.013672
+Epoch 1000 of 5000 | Training Loss     0.023917 | Validation Loss     0.014950
+Epoch 1020 of 5000 | Training Loss     0.023021 | Validation Loss     0.012673
+Epoch 1040 of 5000 | Training Loss     0.021552 | Validation Loss     0.010964
+Epoch 1060 of 5000 | Training Loss     0.021218 | Validation Loss     0.011188
+Epoch 1080 of 5000 | Training Loss     0.022415 | Validation Loss     0.019215
+Epoch 1100 of 5000 | Training Loss     0.022300 | Validation Loss     0.010035
+Epoch 1120 of 5000 | Training Loss     0.025231 | Validation Loss     0.012769
+Epoch 1140 of 5000 | Training Loss     0.024340 | Validation Loss     0.022320
+Epoch 1160 of 5000 | Training Loss     0.020524 | Validation Loss     0.009614
+Epoch 1180 of 5000 | Training Loss     0.023157 | Validation Loss     0.017419
+Epoch 1200 of 5000 | Training Loss     0.023812 | Validation Loss     0.011160
+Epoch 1220 of 5000 | Training Loss     0.023871 | Validation Loss     0.019588
+Epoch 1240 of 5000 | Training Loss     0.023973 | Validation Loss     0.016492
+Epoch 1260 of 5000 | Training Loss     0.019850 | Validation Loss     0.012019
+Epoch 1280 of 5000 | Training Loss     0.021441 | Validation Loss     0.013064
+Epoch 1300 of 5000 | Training Loss     0.024858 | Validation Loss     0.011614
+Epoch 1320 of 5000 | Training Loss     0.025409 | Validation Loss     0.014427
+Epoch 1340 of 5000 | Training Loss     0.021439 | Validation Loss     0.014295
+Epoch 1360 of 5000 | Training Loss     0.021766 | Validation Loss     0.013323
+Epoch 1380 of 5000 | Training Loss     0.019416 | Validation Loss     0.011080
+Epoch 1400 of 5000 | Training Loss     0.018846 | Validation Loss     0.010977
+Epoch 1420 of 5000 | Training Loss     0.026714 | Validation Loss     0.031868
+Epoch 1440 of 5000 | Training Loss     0.022065 | Validation Loss     0.009166
+Epoch 1460 of 5000 | Training Loss     0.023951 | Validation Loss     0.009681
+Epoch 1480 of 5000 | Training Loss     0.025492 | Validation Loss     0.020777
+Epoch 1500 of 5000 | Training Loss     0.019725 | Validation Loss     0.010331
+Epoch 1520 of 5000 | Training Loss     0.018714 | Validation Loss     0.010023
+Epoch 1540 of 5000 | Training Loss     0.022411 | Validation Loss     0.009772
+Epoch 1560 of 5000 | Training Loss     0.020301 | Validation Loss     0.010348
+Epoch 1580 of 5000 | Training Loss     0.018086 | Validation Loss     0.012107
+Epoch 1600 of 5000 | Training Loss     0.021365 | Validation Loss     0.014676
+Epoch 1620 of 5000 | Training Loss     0.023402 | Validation Loss     0.017906
+Epoch 1640 of 5000 | Training Loss     0.017952 | Validation Loss     0.009995
+Epoch 1660 of 5000 | Training Loss     0.019678 | Validation Loss     0.019908
+Epoch 1680 of 5000 | Training Loss     0.022158 | Validation Loss     0.010032
+Epoch 1700 of 5000 | Training Loss     0.023374 | Validation Loss     0.022501
+Epoch 1720 of 5000 | Training Loss     0.022005 | Validation Loss     0.010039
+Epoch 1740 of 5000 | Training Loss     0.018939 | Validation Loss     0.017383
+Epoch 1760 of 5000 | Training Loss     0.020501 | Validation Loss     0.014245
+Epoch 1780 of 5000 | Training Loss     0.019900 | Validation Loss     0.012188
+Epoch 1800 of 5000 | Training Loss     0.018625 | Validation Loss     0.009468
+Epoch 1820 of 5000 | Training Loss     0.020408 | Validation Loss     0.010730
+Epoch 1840 of 5000 | Training Loss     0.018468 | Validation Loss     0.009513
+Epoch 1860 of 5000 | Training Loss     0.019678 | Validation Loss     0.015127
+Epoch 1880 of 5000 | Training Loss     0.018229 | Validation Loss     0.010618
+Epoch 1900 of 5000 | Training Loss     0.021150 | Validation Loss     0.017630
+Epoch 1920 of 5000 | Training Loss     0.020244 | Validation Loss     0.009885
+Epoch 1940 of 5000 | Training Loss     0.019181 | Validation Loss     0.009727
+Epoch 1960 of 5000 | Training Loss     0.023092 | Validation Loss     0.021271
+Epoch 1980 of 5000 | Training Loss     0.018054 | Validation Loss     0.009669
+Epoch 2000 of 5000 | Training Loss     0.017371 | Validation Loss     0.011080
+Epoch 2020 of 5000 | Training Loss     0.021825 | Validation Loss     0.008471
+Epoch 2040 of 5000 | Training Loss     0.016855 | Validation Loss     0.008263
+Epoch 2060 of 5000 | Training Loss     0.019699 | Validation Loss     0.008886
+Epoch 2080 of 5000 | Training Loss     0.023751 | Validation Loss     0.025813
+Epoch 2100 of 5000 | Training Loss     0.019530 | Validation Loss     0.009263
+Epoch 2120 of 5000 | Training Loss     0.020487 | Validation Loss     0.011791
+Epoch 2140 of 5000 | Training Loss     0.021561 | Validation Loss     0.013943
+Epoch 2160 of 5000 | Training Loss     0.017826 | Validation Loss     0.012215
+Epoch 2180 of 5000 | Training Loss     0.019330 | Validation Loss     0.017152
+Epoch 2200 of 5000 | Training Loss     0.016549 | Validation Loss     0.014772
+Epoch 2220 of 5000 | Training Loss     0.017398 | Validation Loss     0.017294
+Epoch 2240 of 5000 | Training Loss     0.019013 | Validation Loss     0.008776
+Epoch 2260 of 5000 | Training Loss     0.019771 | Validation Loss     0.008964
+Epoch 2280 of 5000 | Training Loss     0.017417 | Validation Loss     0.010388
+Epoch 2300 of 5000 | Training Loss     0.020393 | Validation Loss     0.009772
+Epoch 2320 of 5000 | Training Loss     0.017247 | Validation Loss     0.011848
+Epoch 2340 of 5000 | Training Loss     0.020958 | Validation Loss     0.009117
+Epoch 2360 of 5000 | Training Loss     0.024221 | Validation Loss     0.011752
+Epoch 2380 of 5000 | Training Loss     0.017024 | Validation Loss     0.009153
+Epoch 2400 of 5000 | Training Loss     0.017640 | Validation Loss     0.011177
+Epoch 2420 of 5000 | Training Loss     0.019293 | Validation Loss     0.013243
+Epoch 2440 of 5000 | Training Loss     0.018920 | Validation Loss     0.015343
+Epoch 2460 of 5000 | Training Loss     0.017450 | Validation Loss     0.010374
+Epoch 2480 of 5000 | Training Loss     0.018374 | Validation Loss     0.010188
+Epoch 2500 of 5000 | Training Loss     0.019672 | Validation Loss     0.012112
+Epoch 2520 of 5000 | Training Loss     0.020157 | Validation Loss     0.012671
+Epoch 2540 of 5000 | Training Loss     0.018556 | Validation Loss     0.009693
+Epoch 2560 of 5000 | Training Loss     0.022212 | Validation Loss     0.010441
+Epoch 2580 of 5000 | Training Loss     0.016480 | Validation Loss     0.010018
+Epoch 2600 of 5000 | Training Loss     0.017274 | Validation Loss     0.011348
+Epoch 2620 of 5000 | Training Loss     0.016723 | Validation Loss     0.009361
+Epoch 2640 of 5000 | Training Loss     0.017300 | Validation Loss     0.009594
+Epoch 2660 of 5000 | Training Loss     0.017309 | Validation Loss     0.007927
+Epoch 2680 of 5000 | Training Loss     0.017665 | Validation Loss     0.010144
+Epoch 2700 of 5000 | Training Loss     0.017226 | Validation Loss     0.010429
+Epoch 2720 of 5000 | Training Loss     0.021035 | Validation Loss     0.019158
+Epoch 2740 of 5000 | Training Loss     0.023175 | Validation Loss     0.015253
+Epoch 2760 of 5000 | Training Loss     0.027337 | Validation Loss     0.010868
+Epoch 2780 of 5000 | Training Loss     0.016649 | Validation Loss     0.008242
+Epoch 2800 of 5000 | Training Loss     0.020093 | Validation Loss     0.015391
+Epoch 2820 of 5000 | Training Loss     0.016192 | Validation Loss     0.009254
+Epoch 2840 of 5000 | Training Loss     0.019559 | Validation Loss     0.008926
+Epoch 2860 of 5000 | Training Loss     0.016293 | Validation Loss     0.012031
+Epoch 2880 of 5000 | Training Loss     0.018095 | Validation Loss     0.011964
+Epoch 2900 of 5000 | Training Loss     0.020036 | Validation Loss     0.009468
+Epoch 2920 of 5000 | Training Loss     0.017526 | Validation Loss     0.009083
+Epoch 2940 of 5000 | Training Loss     0.015730 | Validation Loss     0.010092
+Epoch 2960 of 5000 | Training Loss     0.018074 | Validation Loss     0.010750
+Epoch 2980 of 5000 | Training Loss     0.017444 | Validation Loss     0.012732
+Epoch 3000 of 5000 | Training Loss     0.019312 | Validation Loss     0.012589
+Epoch 3020 of 5000 | Training Loss     0.018060 | Validation Loss     0.009385
+Epoch 3040 of 5000 | Training Loss     0.018373 | Validation Loss     0.012382
+Epoch 3060 of 5000 | Training Loss     0.016012 | Validation Loss     0.009329
+Epoch 3080 of 5000 | Training Loss     0.017530 | Validation Loss     0.013962
+Epoch 3100 of 5000 | Training Loss     0.017886 | Validation Loss     0.011096
+Epoch 3120 of 5000 | Training Loss     0.017218 | Validation Loss     0.008371
+Epoch 3140 of 5000 | Training Loss     0.016002 | Validation Loss     0.011380
+Epoch 3160 of 5000 | Training Loss     0.016410 | Validation Loss     0.008425
+Epoch 3180 of 5000 | Training Loss     0.018602 | Validation Loss     0.007820
+Epoch 3200 of 5000 | Training Loss     0.015443 | Validation Loss     0.008415
+Epoch 3220 of 5000 | Training Loss     0.016851 | Validation Loss     0.009330
+Epoch 3240 of 5000 | Training Loss     0.022589 | Validation Loss     0.014100
+Epoch 3260 of 5000 | Training Loss     0.016200 | Validation Loss     0.008439
+Epoch 3280 of 5000 | Training Loss     0.019973 | Validation Loss     0.012267
+Epoch 3300 of 5000 | Training Loss     0.024614 | Validation Loss     0.016677
+Epoch 3320 of 5000 | Training Loss     0.019599 | Validation Loss     0.010622
+Epoch 3340 of 5000 | Training Loss     0.017433 | Validation Loss     0.012003
+Epoch 3360 of 5000 | Training Loss     0.018334 | Validation Loss     0.008674
+Epoch 3380 of 5000 | Training Loss     0.019730 | Validation Loss     0.010728
+Epoch 3400 of 5000 | Training Loss     0.019999 | Validation Loss     0.008367
+Epoch 3420 of 5000 | Training Loss     0.017770 | Validation Loss     0.009881
+Epoch 3440 of 5000 | Training Loss     0.015684 | Validation Loss     0.009249
+Epoch 3460 of 5000 | Training Loss     0.016256 | Validation Loss     0.012310
+Epoch 3480 of 5000 | Training Loss     0.019294 | Validation Loss     0.013352
+Epoch 3500 of 5000 | Training Loss     0.015643 | Validation Loss     0.009754
+Epoch 3520 of 5000 | Training Loss     0.016815 | Validation Loss     0.009944
+Epoch 3540 of 5000 | Training Loss     0.021752 | Validation Loss     0.008950
+Epoch 3560 of 5000 | Training Loss     0.021003 | Validation Loss     0.017589
+Epoch 3580 of 5000 | Training Loss     0.018365 | Validation Loss     0.012631
+Epoch 3600 of 5000 | Training Loss     0.021345 | Validation Loss     0.008634
+Epoch 3620 of 5000 | Training Loss     0.023849 | Validation Loss     0.025854
+Epoch 3640 of 5000 | Training Loss     0.015806 | Validation Loss     0.008242
+Epoch 3660 of 5000 | Training Loss     0.015938 | Validation Loss     0.007293
+Epoch 3680 of 5000 | Training Loss     0.016720 | Validation Loss     0.012063
+Epoch 3700 of 5000 | Training Loss     0.015528 | Validation Loss     0.008676
+Epoch 3720 of 5000 | Training Loss     0.016547 | Validation Loss     0.009187
+Epoch 3740 of 5000 | Training Loss     0.017348 | Validation Loss     0.013174
+Epoch 3760 of 5000 | Training Loss     0.015359 | Validation Loss     0.008418
+Epoch 3780 of 5000 | Training Loss     0.025678 | Validation Loss     0.019519
+Epoch 3800 of 5000 | Training Loss     0.018397 | Validation Loss     0.007689
+Epoch 3820 of 5000 | Training Loss     0.017264 | Validation Loss     0.012607
+Epoch 3840 of 5000 | Training Loss     0.017140 | Validation Loss     0.013329
+Epoch 3860 of 5000 | Training Loss     0.017420 | Validation Loss     0.011824
+Epoch 3880 of 5000 | Training Loss     0.016213 | Validation Loss     0.011301
+Epoch 3900 of 5000 | Training Loss     0.019883 | Validation Loss     0.012301
+Epoch 3920 of 5000 | Training Loss     0.018384 | Validation Loss     0.008734
+Epoch 3940 of 5000 | Training Loss     0.015548 | Validation Loss     0.008871
+Epoch 3960 of 5000 | Training Loss     0.019472 | Validation Loss     0.009292
+Epoch 3980 of 5000 | Training Loss     0.015544 | Validation Loss     0.007334
+Epoch 4000 of 5000 | Training Loss     0.016706 | Validation Loss     0.009673
+Epoch 4020 of 5000 | Training Loss     0.015786 | Validation Loss     0.008082
+Epoch 4040 of 5000 | Training Loss     0.016679 | Validation Loss     0.011253
+Epoch 4060 of 5000 | Training Loss     0.016295 | Validation Loss     0.009713
+Epoch 4080 of 5000 | Training Loss     0.017788 | Validation Loss     0.009103
+Epoch 4100 of 5000 | Training Loss     0.015639 | Validation Loss     0.009862
+Epoch 4120 of 5000 | Training Loss     0.016108 | Validation Loss     0.008801
+Epoch 4140 of 5000 | Training Loss     0.015742 | Validation Loss     0.011131
+Epoch 4160 of 5000 | Training Loss     0.017480 | Validation Loss     0.008270
+Epoch 4180 of 5000 | Training Loss     0.017146 | Validation Loss     0.009987
+Epoch 4200 of 5000 | Training Loss     0.018699 | Validation Loss     0.012379
+Epoch 4220 of 5000 | Training Loss     0.015244 | Validation Loss     0.008804
+Epoch 4240 of 5000 | Training Loss     0.019182 | Validation Loss     0.017896
+Epoch 4260 of 5000 | Training Loss     0.017426 | Validation Loss     0.008660
+Epoch 4280 of 5000 | Training Loss     0.016325 | Validation Loss     0.014655
+Epoch 4300 of 5000 | Training Loss     0.017241 | Validation Loss     0.008465
+Epoch 4320 of 5000 | Training Loss     0.016571 | Validation Loss     0.008200
+Epoch 4340 of 5000 | Training Loss     0.019012 | Validation Loss     0.012617
+Epoch 4360 of 5000 | Training Loss     0.017176 | Validation Loss     0.010815
+Epoch 4380 of 5000 | Training Loss     0.018508 | Validation Loss     0.009781
+Epoch 4400 of 5000 | Training Loss     0.015902 | Validation Loss     0.009080
+Epoch 4420 of 5000 | Training Loss     0.018751 | Validation Loss     0.007409
+Epoch 4440 of 5000 | Training Loss     0.016343 | Validation Loss     0.008427
+Epoch 4460 of 5000 | Training Loss     0.016126 | Validation Loss     0.010359
+Epoch 4480 of 5000 | Training Loss     0.019550 | Validation Loss     0.008991
+Epoch 4500 of 5000 | Training Loss     0.017899 | Validation Loss     0.010793
+Epoch 4520 of 5000 | Training Loss     0.018056 | Validation Loss     0.011689
+Epoch 4540 of 5000 | Training Loss     0.016095 | Validation Loss     0.010299
+Epoch 4560 of 5000 | Training Loss     0.015482 | Validation Loss     0.007517
+Epoch 4580 of 5000 | Training Loss     0.033116 | Validation Loss     0.024354
+Epoch 4600 of 5000 | Training Loss     0.015761 | Validation Loss     0.009199
+Epoch 4620 of 5000 | Training Loss     0.016610 | Validation Loss     0.009307
+Epoch 4640 of 5000 | Training Loss     0.015547 | Validation Loss     0.010284
+Epoch 4660 of 5000 | Training Loss     0.017898 | Validation Loss     0.011498
+Epoch 4680 of 5000 | Training Loss     0.016306 | Validation Loss     0.007644
+Epoch 4700 of 5000 | Training Loss     0.021559 | Validation Loss     0.013942
+Epoch 4720 of 5000 | Training Loss     0.015348 | Validation Loss     0.008388
+Epoch 4740 of 5000 | Training Loss     0.017296 | Validation Loss     0.007605
+Epoch 4760 of 5000 | Training Loss     0.018304 | Validation Loss     0.013312
+Epoch 4780 of 5000 | Training Loss     0.019622 | Validation Loss     0.010638
+Epoch 4800 of 5000 | Training Loss     0.018139 | Validation Loss     0.009831
+Epoch 4820 of 5000 | Training Loss     0.017990 | Validation Loss     0.011380
+Epoch 4840 of 5000 | Training Loss     0.025607 | Validation Loss     0.013810
+Epoch 4860 of 5000 | Training Loss     0.015635 | Validation Loss     0.008300
+Epoch 4880 of 5000 | Training Loss     0.015593 | Validation Loss     0.009108
+Epoch 4900 of 5000 | Training Loss     0.015989 | Validation Loss     0.014329
+Epoch 4920 of 5000 | Training Loss     0.016829 | Validation Loss     0.013685
+Epoch 4940 of 5000 | Training Loss     0.015732 | Validation Loss     0.007989
+Epoch 4960 of 5000 | Training Loss     0.018336 | Validation Loss     0.008986
+Epoch 4980 of 5000 | Training Loss     0.014807 | Validation Loss     0.007362
+COL_Y ['Idc', 'Id', 'Iq']
+Train time: 2108.49, Recent loss: 0.016526, RMS Errors: 0.0252 0.0302 0.0522
+                          MAE Errors: 0.0187 0.0227 0.0214

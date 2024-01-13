@@ -67,9 +67,9 @@ def finish_plot(ax, plot_file = None):
   plt.show()
 
 
-pathname = 'c:/data/'
+pathname = 'd:/data/'
 
-for root in ['sdi5', 'sdi5a', 'sdi5b']:
+for root in ['jan']: # ['unb4', 'sdi5', 'sdi5a', 'sdi5b']:
   filename = '{:s}{:s}.hdf5'.format (pathname, root)
   pngname = '{:s}_Training_Set.png'.format (root)
   ax = start_plot (filename)

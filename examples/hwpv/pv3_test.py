@@ -67,6 +67,12 @@ model_path = './sdi4/sdi4_config.json'
 data_path = 'c:/data/sdi5.hdf5'
 model_path = './sdi5/sdi5_config.json'
 
+data_path = 'd:/data/unb4.hdf5'
+model_path = './unb4/unb4_config.json'
+
+data_path = 'd:/data/jan.hdf5'
+model_path = './jan/jan_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
