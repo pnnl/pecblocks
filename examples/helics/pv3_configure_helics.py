@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
   fp = open (fname_bat, 'w')
   fp.write('start /b cmd /c helics_broker -f 3 --name=mainbroker ^>broker.log 2^>^&1\n')
-  fp.write('start /b cmd /c helics_player --input={:s}.txt --local --time_units=s --stop {:.3f}s^>player.log 2^>^&1\n'.format(case, Tmax))
+  fp.write('start /b cmd /c helics_player -n player --input={:s}.txt --local --time_units=s --stop {:.3f}s ^>player.log 2^>^&1\n'.format(case, Tmax))
   fp.write('start /b cmd /c python pv3_client.py ^>client.log 2^>^&1\n')
   fp.write('start /b cmd /c python pv3_server.py ^>server.log 2^>^&1\n')
   fp.close()

@@ -70,7 +70,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   sub_Ctl = None
   for i in range(sub_count):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
-    key = helics.helicsSubscriptionGetTarget(sub)
+    key = helics.helicsInputGetTarget(sub)
     print ('sub', i, key)
     if key.endswith('Vrms'):
       sub_Vrms = sub

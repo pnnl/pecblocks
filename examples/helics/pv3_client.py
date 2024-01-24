@@ -50,7 +50,7 @@ def helics_loop(cfg_filename):
   sub_Rc = None
   for i in range(sub_count):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
-    key = helics.helicsSubscriptionGetTarget(sub)
+    key = helics.helicsInputGetTarget(sub)
     print ('sub', i, key)
     if key.endswith('Id'):
       sub_Id = sub

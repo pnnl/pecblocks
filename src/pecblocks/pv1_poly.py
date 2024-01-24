@@ -6,7 +6,7 @@ import time
 from dynonet.lti import MimoLinearDynamicalOperator
 from dynonet.static import MimoStaticNonLinearity
 import dynonet.metrics
-from common import PVInvDataset
+from pecblocks.common import PVInvDataset
 import pecblocks.util
 import json
 import torch
@@ -518,12 +518,12 @@ class pv1():
     return val * fac['scale'] + fac['offset']
 
   def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms):
-    Vc = np.complex (Vrms+0.0j)
+    Vc = complex (Vrms+0.0j)
     if self.Lf is not None:
       omega = 2.0*math.pi*Fc
-      ZLf = np.complex(0.0+omega*self.Lf*1j)
-      ZLc = np.complex(0.0+omega*self.Lc*1j)
-      ZCf = np.complex(0.0-1j/omega/self.Cf)
+      ZLf = complex(0.0+omega*self.Lf*1j)
+      ZLc = complex(0.0+omega*self.Lc*1j)
+      ZCf = complex(0.0-1j/omega/self.Cf)
     G = self.normalize (G, self.normfacs['G'])
     T = self.normalize (T, self.normfacs['T'])
     Ud = self.normalize (Ud, self.normfacs['Ud'])
@@ -558,14 +558,14 @@ class pv1():
     Irms = self.de_normalize (Irms, self.normfacs['Irms'])
 
     if self.Lf is not None:
-      Ic = np.complex (Irms+0.0j)
+      Ic = complex (Irms+0.0j)
       Vf = Vc + ZLc * Ic
       If = Vf / ZCf
       Is = Ic + If
       Vs = Vf + ZLf * Is
     else:
       Vs = Vc
-      Is = np.complex (Irms+0.0j)
+      Is = complex (Irms+0.0j)
 
     return Vdc, Idc, Irms, Vs, Is
 

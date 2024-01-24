@@ -27,10 +27,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pecblocks'
-copyright = '2023, Battelle Memorial Institute'
+copyright = '2019-2024, Battelle Memorial Institute'
 author = 'Pacific Northwest National Laboratory'
-version = '0.0.1'
-release = '0.0.1'
+version = '0.0.2'
+release = '0.0.2'
 language = 'en'
 
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

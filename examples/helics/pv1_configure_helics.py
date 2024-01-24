@@ -3,7 +3,7 @@ import sys
 
 if __name__ == '__main__':
   Tmax = 8.0
-  fname_in = 'models/pv1_fhf_poly.json'
+  fname_in = '../hwpv/models/pv1_fhf_poly.json'
   fname_out1 = 'pv1_server.json'
   fname_out2 = 'pv1_client.json'
   fname_bat = 'pv1_helics.bat'
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
   fp = open (fname_bat, 'w')
   fp.write('start /b cmd /c helics_broker -f 3 --name=mainbroker ^>broker.log 2^>^&1\n')
-  fp.write('start /b cmd /c helics_player --input=helics_player.txt --local --time_units=s --stop {:.3f}s^>player.log 2^>^&1\n'.format(Tmax))
+  fp.write('start /b cmd /c helics_player -n player --input=helics_player.txt --local --time_units=s --stop {:.3f}s ^>player.log 2^>^&1\n'.format(Tmax))
   fp.write('start /b cmd /c python pv1_client.py ^>client.log 2^>^&1\n')
   fp.write('start /b cmd /c python pv1_server.py ^>server.log 2^>^&1\n')
   fp.close()
