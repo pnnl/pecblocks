@@ -1,3 +1,5 @@
+# copyright 2022-2023 Battelle Memorial Institute
+
 import os
 import sys
 import numpy as np
