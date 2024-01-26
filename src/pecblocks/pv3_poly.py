@@ -63,6 +63,8 @@ class pv3():
     self.Lc = None
     self.Cf = None
     self.model_folder = None
+    self.model_root = None
+    self.data_path = None
     self.h5grp_prefix = None
 
   def load_training_config(self, filename):
@@ -73,6 +75,10 @@ class pv3():
       self.model_folder = config['model_folder']
     else:
       self.model_folder = os.path.split(filename)[0]
+    if 'model_root' in config:
+      self.model_root = config['model_root']
+    if 'data_path' in config:
+      self.data_path = config['data_path']
     self.lr = config['lr']
     if 'eps' in config:
       self.eps = config['eps']
@@ -573,6 +579,9 @@ class pv3():
     config['normfacs'] = {}
     for key, val in self.normfacs.items():
       config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset']}
+    config['model_folder'] = self.model_folder
+    config['model_root'] = self.model_root
+    config['data_path'] = self.data_path
     config['lr'] = self.lr
     config['eps'] = self.eps
     config['h5grp_prefix'] = self.h5grp_prefix

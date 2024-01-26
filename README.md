@@ -111,6 +111,8 @@ The Python files currently used in this example are:
 - _pv1_import.py_ reads the model for time-step simulation, produces Bode plots, and compares IIR simulation to ATP simulation
 - _pv1_lcl.py_ runs the same case as _pv1_import.py_, with an LCL output filter and plotting the LCL input and output variables.
 
+### JSON Schema
+
 A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
 
 - There is only one top-level entry
@@ -121,20 +123,34 @@ A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains
         - the key is a column name
         - _offset_ is the channel mean, in physical units
         - _scale_ is the channel range, in physical units
+    - second-level _model_folder_ came from _pv1_config.json_ as described above
+    - second-level _model_root_ came from _pv1_config.json_ as described above
+    - second-level _data_path_ came from _pv1_config.json_ as described above
     - second-level _lr_ came from _pv1_config.json_ as described above
+    - second-level _eps_ came from _pv1_config.json_ as described above
+    - second-level _h5grp_prefix_ came from _pv1_config.json_ as described above
     - second-level _num_iter_ came from _pv1_config.json_ as described above
+    - second-level _continue_iterations_ came from _pv1_config.json_ as described above
     - second-level _print_freq_ came from _pv1_config.json_ as described above
     - second-level _batch_size_ came from _pv1_config.json_ as described above
+    - second-level _n_validation_pct_ came from _pv1_config.json_ as described above
+    - second-level _n_validation_seed_ came from _pv1_config.json_ as described above
     - second-level _n_skip_ came from _pv1_config.json_ as described above
     - second-level _n_trunc_ came from _pv1_config.json_ as described above
     - second-level _n_dec_ came from _pv1_config.json_ as described above
+    - second-level _n_loss_skip_ came from _pv1_config.json_ as described above
+    - second-level _n_pad_ came from _pv1_config.json_ as described above
+    - second-level _gtype_ came from _pv1_config.json_ as described above
     - second-level _na_ came from _pv1_config.json_ as described above
     - second-level _nb_ came from _pv1_config.json_ as described above
     - second-level _nk_ came from _pv1_config.json_ as described above
     - second-level _activation_ came from _pv1_config.json_ as described above
     - second-level _nh1_ came from _pv1_config.json_ as described above
     - second-level _nh2_ came from _pv1_config.json_ as described above
-    - second-level _H*_ attribute indicates a linear block; this key should match the block position in _type_. There could be zero or more such blocks, but currently one. The discrete time step used for fitting is 1 ms.
+    - second-level _COL\_T_ is a vector from _pv1_config.json_ as described above
+    - second-level _COL\_U_ is a vector from _pv1_config.json_ as described above 
+    - second-level _COL\_Y_ is a vector from _pv1_config.json_ as described above
+    - second-level _H\*_ attribute indicates a linear block; this key should match the block position in _type_. There could be zero or more such blocks, but currently one. The discrete time step used for fitting is 1 ms.
         - third_level _n_in_ attribute is the number of input channels, should match the overall number of HW inputs
         - third_level _n_out_ attribute is the number of output channels, should match the overall number of HW outputs
         - third_level _n_k_ attribute is an integer number of delay steps, i.e., number of _t_step_ delays in the output.  Zero or more.
@@ -146,7 +162,7 @@ A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains
         - third-level _b_i_j_ attributes are arrays of numerator coefficients, of length equal to polynomial order, beginning with z-1. The implied z0 coefficient is always zero.
             - in the attribute name, _i_ is the output channel number, ranging from 0 to _n_out_ - 1
             - in the attribute name, _j_ is the input channel number, ranging from 0 to _n_in_ - 1
-    - second-level _F*_ attribute indicates a nonlinear block; this key should match the block position in _type_. There are zero or more such blocks, but currently two.
+    - second-level _F\*_ attribute indicates a nonlinear block; this key should match the block position in _type_. There are zero or more such blocks, but currently two.
         - third_level _activation_ attribute may be _tanh_, _sigmoid_ or _relu_
         - third_level _n_in_ attribute is the number of input channels
         - third_level _n_hid_ attribute is the number of neurons in the hidden layer

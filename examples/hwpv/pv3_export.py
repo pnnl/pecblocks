@@ -15,6 +15,7 @@ if __name__ == '__main__':
     fp.close()
     model_folder = cfg['model_folder']
     model_root = cfg['model_root']
+    data_path = cfg['data_path']
   else:
     print ('Usage: python pv3_export.py config.json')
     quit()

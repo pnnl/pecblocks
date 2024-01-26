@@ -32,6 +32,9 @@
       "offset": 8.210274696350098
     }
   },
+  "model_folder": "./lab2/",
+  "model_root": "lab2",
+  "data_path": "d:/data/lab2.hdf5",
   "lr": 0.001,
   "eps": 1e-08,
   "h5grp_prefix": "scope",
