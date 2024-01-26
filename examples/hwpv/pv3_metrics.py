@@ -1,30 +1,31 @@
-# copyright 2021-2022 Battelle Memorial Institute
+# copyright 2021-2024 Battelle Memorial Institute
 # summarizes RMSE and MAE for all training cases of an HW model for three-phase inverters
-#  arg1: relative path to trained model configuration file
-#  arg2: relative path to the training data file, HDF5
+#  arg1: relative path to the model configuration file
 
 import os
 import sys
+import json
 
-import pv3_poly as pv3_model
-
-data_path = 'c:/data/ucf2.hdf5'
-model_path = './ucf2ac/ucf2ac_config.json'
+import pecblocks.pv3_poly as pv3_model
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
-    model_path = sys.argv[1]
-    if len(sys.argv) > 2:
-      data_path = sys.argv[2]
+    config_file = sys.argv[1]
+    fp = open (config_file, 'r')
+    cfg = json.load (fp)
+    fp.close()
+    data_path = cfg['data_path']
+    model_folder = cfg['model_folder']
+    model_root = cfg['model_root']
+  else:
+    print ('Usage: python pv3_metrics.py config.json')
+    quit()
 
-  model_folder, config_file = os.path.split(model_path)
-  model_root = config_file.rstrip('.json')
-  model_root = model_root.rstrip('_config')
   print ('model_folder =', model_folder)
   print ('model_root =', model_root)
   print ('data_path =', data_path)
 
-  model = pv3_model.pv3(training_config=model_path)
+  model = pv3_model.pv3(training_config=config_file)
   model.loadTrainingData(data_path)
   model.loadAndApplyNormalization()
   model.initializeModelStructure()

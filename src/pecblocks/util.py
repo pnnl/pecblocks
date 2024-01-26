@@ -1,3 +1,6 @@
+# copyright 2021-2024 Battelle Memorial Institute
+# HW model training and simulation code for 3-phase inverters
+
 import numpy as np
 import pandas as pd
 import os

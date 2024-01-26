@@ -1,4 +1,4 @@
-# copyright 2021-2023 Battelle Memorial Institute
+# copyright 2021-2024 Battelle Memorial Institute
 # HW model training and simulation code for 3-phase inverters
 
 import pandas as pd
@@ -11,7 +11,7 @@ from dynonet.lti import MimoFirLinearDynamicalOperator
 from dynonet.lti import StableSecondOrderMimoLinearDynamicalOperator
 from dynonet.static import MimoStaticNonLinearity
 import dynonet.metrics
-from common import PVInvDataset
+from pecblocks.common import PVInvDataset
 import pecblocks.util
 import json
 import torch
@@ -69,7 +69,10 @@ class pv3():
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
-    self.model_folder = os.path.split(filename)[0]
+    if 'model_folder' in config:
+      self.model_folder = config['model_folder']
+    else:
+      self.model_folder = os.path.split(filename)[0]
     self.lr = config['lr']
     if 'eps' in config:
       self.eps = config['eps']

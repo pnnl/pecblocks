@@ -1,28 +1,33 @@
-# copyright 2021-2022 Battelle Memorial Institute
+# copyright 2021-2024 Battelle Memorial Institute
 # exports a trained HW model and normalization coefficients to a single JSON file
-#  arg1: relative path to trained model configuration file
-#  arg2: relative path to the combined output file
+#  arg1: relative path to the model configuration file
 
 import os
 import sys
-import pv3_poly as pv3_model
-
-model_path = './ucf2ac/ucf2ac_config.json'
+import json
+import pecblocks.pv3_poly as pv3_model
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
-    model_path = sys.argv[1]
-  model_folder, config_file = os.path.split(model_path)
+    config_file = sys.argv[1]
+    fp = open (config_file, 'r')
+    cfg = json.load (fp)
+    fp.close()
+    model_folder = cfg['model_folder']
+    model_root = cfg['model_root']
+  else:
+    print ('Usage: python pv3_export.py config.json')
+    quit()
   model_root = config_file.rstrip('.json')
   model_root = model_root.rstrip('_config')
   export_path = os.path.join(model_folder,'{:s}_fhf.json'.format(model_root))
   if len(sys.argv) > 2:
     export_path = sys.argv[2]
 
-  print ('Read Model from:', model_path)
+  print ('Read Model from:', model_folder)
   print ('Export Model to:', export_path)
 
-  model = pv3_model.pv3(training_config=model_path)
+  model = pv3_model.pv3(training_config=config_file)
   model.loadNormalization()
   model.initializeModelStructure()
   model.loadModelCoefficients()
