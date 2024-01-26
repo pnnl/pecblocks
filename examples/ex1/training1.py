@@ -1,4 +1,4 @@
-
+# Copyright (C) 2021 Battelle Memorial Institute
 '''
  #TODO
  #  1. save the best model during training

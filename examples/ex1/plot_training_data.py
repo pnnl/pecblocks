@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Battelle Memorial Institute
+
 from numpy.core.fromnumeric import size
 import pandas as pd
 import numpy as np

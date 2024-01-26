@@ -1,6 +1,7 @@
+# Copyright (C) 2021 Battelle Memorial Institute
+
 import os
 import sys
-#import pecblocks.util
 import json
 import numpy as np
 from scipy import signal

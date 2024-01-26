@@ -81,7 +81,7 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
   f.close()
 
 if __name__ == '__main__':
-  cfg_filename = '../hwpv/big/balanced_fhf.json'
+  cfg_filename = 'balanced_fhf.json'
   hdf5_filename = 'hwpv_pi.hdf5'
 
   evaluation_loop (cfg_filename, hdf5_filename, dt=0.03, tmax=8.0)

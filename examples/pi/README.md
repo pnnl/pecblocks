@@ -8,7 +8,9 @@ The scripts and test files currently used in this example are:
 - _hwpv\_evaluator.py_ reads the HPWV model from a JSON file, and evaluates it at a time step.
 - _hwpv\_pi.py_ test harness for _hwpv\_evaluator.py_, creates _hwpv\_pi.hdf5_
 - _pi\_plot.py_ plots the data from _hwpv\_pi.hdf5_.
-- _../hwpv/big/balanced\_fhf.json_, from this repository, contains the model parameters for testing.
+- _balanced\_fhf.json_, from this repository, contains the model parameters for testing a balanced model trained from Simscape.
+- _go.bat_, convenience script to run both steps of the example on Windows
+- _clean.bat_, convenience script to remove output file after executing the example
 
 To run this example:
 
@@ -31,4 +33,4 @@ Reference herein to any specific commercial product, process, or service by trad
      UNITED STATES DEPARTMENT OF ENERGY
       under Contract DE-AC05-76RL01830
 
-Copyright 2021-2023, Battelle Memorial Institute
+Copyright 2021-2024, Battelle Memorial Institute

@@ -1,3 +1,4 @@
+# copyright 2022-2023 Battelle Memorial Institute
 import numpy as np
 
 A=np.array([[1,-2],[-2,5]], dtype=float)

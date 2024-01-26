@@ -1,7 +1,8 @@
+# Copyright (C) 2021 Battelle Memorial Institute
+
 import os
 import sys
 import torch
-#import pecblocks.util
 import json
 
 root_path = './models/'
