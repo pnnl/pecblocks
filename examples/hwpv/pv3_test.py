@@ -1,4 +1,4 @@
-# copyright 2021-2022 Battelle Memorial Institute
+# copyright 2021-2024 Battelle Memorial Institute
 # plots a comparison of simulated and true outputs from a trained HW model
 #  arg1: case number to plot 1..ncases (default 189)
 #  arg2: 1 to plot normalized quantities (default false)
@@ -12,10 +12,10 @@ import numpy as np
 import os
 import sys
 import matplotlib.pyplot as plt
-import pv3_poly as pv3_model
+import pecblocks.pv3_poly as pv3_model
 
-nrows = 2
-ncols = 7 # 9
+nrows = 3 # 2
+ncols = 5 # 7 # 9
 bNormalized = False
 
 data_path = './data/flatbalanced.hdf5'
@@ -73,6 +73,9 @@ model_path = './unb4/unb4_config.json'
 data_path = 'd:/data/jan.hdf5'
 model_path = './jan/jan_config.json'
 
+data_path = 'd:/data/ucf2.hdf5'
+model_path = './ucf2ac/ucf2ac_config.json'
+
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
 #  rmse, y_hat, y_true, u = model.stepOneCase(idx)
@@ -89,15 +92,21 @@ def plot_case(model, idx, bPNG=False):
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
   fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
   j = 0
+  row = 0
+  col = 0
   for key in model.COL_U:
     scale = model.normfacs[key]['scale']
     offset = model.normfacs[key]['offset']
     if bNormalized:
       scale = 1.0
       offset = 0.0
-    ax[0,j].set_title ('Input {:s}'.format (key))
-    ax[0,j].plot (model.t[i1:], u[i1:,j]*scale + offset)
+    ax[row,col].set_title ('Input {:s}'.format (key))
+    ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
     j += 1
+    col += 1
+    if col >= ncols:
+      col = 0
+      row += 1
   j = 0
   for key in model.COL_Y:
     scale = model.normfacs[key]['scale']
@@ -105,10 +114,10 @@ def plot_case(model, idx, bPNG=False):
     if bNormalized:
       scale = 1.0
       offset = 0.0
-    ax[1,j].set_title ('Output {:s}'.format (key))
-    ax[1,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
-    ax[1,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
-    ax[1,j].legend()
+    ax[2,j].set_title ('Output {:s}'.format (key))
+    ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
+    ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
+    ax[2,j].legend()
     j += 1
   if bPNG:
     plt.savefig(os.path.join(report_path,'case{:d}.png'.format(idx)))
@@ -119,7 +128,7 @@ def plot_case(model, idx, bPNG=False):
 
 if __name__ == '__main__':
 
-  case_idx = 36 # 189
+  case_idx = 100 # 36 # 189
   if len(sys.argv) > 1:
     case_idx = int(sys.argv[1])
   if len(sys.argv) > 2:
