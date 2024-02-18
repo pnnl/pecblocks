@@ -1,3 +1,4 @@
+# Copyright (C) 2022-2024 Battelle Memorial Institute
 # configure a three-phase HELICS simulation
 #  arg1: the player[.txt] file of inputs
 #  arg2: the model coefficient JSON file
@@ -9,6 +10,7 @@ if __name__ == '__main__':
   Tmax = 8.0
   fname_in = '../simscape/balanced_fhf.json'
   fname_in = 'big/balanced_fhf.json'
+  fname_in = '../hwpv/ucf3/ucf3_fhf.json'
   fname_out1 = 'pv3_server.json'
   fname_out2 = 'pv3_client.json'
   fname_bat = 'pv3_helics.bat'
@@ -40,7 +42,8 @@ if __name__ == '__main__':
   subs.append({'key':'player/Mq', 'type':'double', 'required':True})
   subs.append({'key':'player/Fc', 'type':'double', 'required':True})
   subs.append({'key':'player/Ctl', 'type':'double', 'required':True})
-  subs.append({'key':'pv3_client/Vrms', 'type':'complex', 'required':True})
+  subs.append({'key':'pv3_client/Vd', 'type':'complex', 'required':True})
+  subs.append({'key':'pv3_client/Vq', 'type':'complex', 'required':True})
   cfg_server['subscriptions'] = subs
   cfg_server['application'] = cfg_app
   fp = open (fname_out1, 'w')
@@ -54,7 +57,8 @@ if __name__ == '__main__':
   cfg_client['log_level'] = 'none'
   pubs = []
   cfg_client['publications'] = pubs
-  pubs.append({'global':False,'key':'Vrms', 'type':'complex'})
+  pubs.append({'global':False,'key':'Vd', 'type':'complex'})
+  pubs.append({'global':False,'key':'Vq', 'type':'complex'})
   subs = []
   cfg_client['subscriptions'] = subs
   subs.append({'key':'pv3_server/Id', 'type':'complex', 'required':True})

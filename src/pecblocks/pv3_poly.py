@@ -886,23 +886,27 @@ class pv3():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
-  def step_simulation (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
+  def step_simulation (self, T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl):
 #   Vc = np.complex (Vrms+0.0j)
 #   if self.Lf is not None:
 #     omega = 2.0*math.pi*Fc
 #     ZLf = np.complex(0.0+omega*self.Lf*1j)
 #     ZLc = np.complex(0.0+omega*self.Lc*1j)
 #     ZCf = np.complex(0.0-1j/omega/self.Cf)
-    T = self.normalize (T, self.normfacs['T'])
+    if 'T' in self.normfacs:
+      T = self.normalize (T, self.normfacs['T'])
     G = self.normalize (G, self.normfacs['G'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Md = self.normalize (Md, self.normfacs['Md'])
-    Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
+    if 'Fc' in self.normfacs:
+      Fc = self.normalize (Fc, self.normfacs['Fc'])
+    Md = self.normalize (Md, self.normfacs['Ud'])
+    Mq = self.normalize (Mq, self.normfacs['Uq'])
+    Vd = self.normalize (Vd, self.normfacs['Vd'])
+    Vq = self.normalize (Vq, self.normfacs['Vq'])
     GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctrl'])
 
-    ub = torch.tensor ([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl], dtype=torch.float)
+#    ub = torch.tensor ([T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl], dtype=torch.float)
+    ub = torch.tensor ([G, Md, Mq, Vd, Vq, GVrms, Ctl], dtype=torch.float)
     with torch.no_grad():
       y_non = self.F1 (ub)
       self.ysum[:] = 0.0

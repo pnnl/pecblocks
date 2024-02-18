@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Battelle Memorial Institute
+# Copyright (C) 2022-2024 Battelle Memorial Institute
 # this client just calculates and publishes Vrms=Rgrid*Irms
 import json
 import os
@@ -31,13 +31,16 @@ def helics_loop(cfg_filename):
   period = int(helics.helicsFederateGetTimeProperty(h_fed, helics.helics_property_time_period))
   print('Federate {:s} has {:d} pub and {:d} sub, {:d} period'.format(fed_name, pub_count, sub_count, period), flush=True)
 
-  pub_Vrms = None
+  pub_Vd = None
+  pub_Vq = None
   for i in range(pub_count):
     pub = helics.helicsFederateGetPublicationByIndex(h_fed, i)
     key = helics.helicsPublicationGetName(pub)
     print ('pub', i, key)
-    if key.endswith('Vrms'):
-      pub_Vrms = pub
+    if key.endswith('Vd'):
+      pub_Vd = pub
+    elif key.endswith('Vq'):
+      pub_Vq = pub
     else:
       print (' ** could not match', key)
 
@@ -77,8 +80,6 @@ def helics_loop(cfg_filename):
   Rb = 0.0
   Rc = 0.0
   Rg = 0.0
-  Irms = 0.0
-  Vrms = 0.0
   ts = 0
 
   helics.helicsFederateEnterExecutingMode(h_fed)
@@ -91,11 +92,13 @@ def helics_loop(cfg_filename):
     Id = newComplexMag (Id, sub_Id)
     Iq = newComplexMag (Iq, sub_Iq)
     Rg = (Ra + Rb + Rc) / 3.0
-    Irms = math.sqrt(1.5) * math.sqrt(Id*Id + Iq*Iq)
-    Vrms = Rg * Irms
-#    print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Irms={:.3f}, Vrms={:.3f}'.format(ts, Id, Iq, Rg, Irms, Vrms))
-    if pub_Vrms is not None:
-      helics.helicsPublicationPublishComplex(pub_Vrms, Vrms+0j)
+    Vd = Rg * Id
+    Vq = Rg * Iq
+#    print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Vd={:.3f}, Vq={:.3f}'.format(ts, Id, Iq, Rg, Vd, Vq))
+    if pub_Vd is not None:
+      helics.helicsPublicationPublishComplex(pub_Vd, Vd+0j)
+    if pub_Vq is not None:
+      helics.helicsPublicationPublishComplex(pub_Vq, Vq+0j)
     ts = helics.helicsFederateRequestTime(h_fed, tmax)
   helics.helicsFederateDestroy(h_fed)
 

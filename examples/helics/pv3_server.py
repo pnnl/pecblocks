@@ -1,12 +1,12 @@
-# Copyright (C) 2022 Battelle Memorial Institute
+# Copyright (C) 2022-2024 Battelle Memorial Institute
 import json
 import os
 import sys
 import pandas as pd
 import helics
 import time
-import pv3_poly as pv3_model
-#import h5py
+import pecblocks.pv3_poly as pv3_model
+import math
 
 def newDouble(val, sub):
   if (sub is not None) and (helics.helicsInputIsUpdated(sub)):
@@ -61,7 +61,8 @@ def helics_loop(cfg_filename, hdf5_filename):
     else:
       print (' ** could not match', key)
 
-  sub_Vrms = None
+  sub_Vd = None
+  sub_Vq = None
   sub_G = None
   sub_T = None
   sub_Md = None
@@ -72,8 +73,10 @@ def helics_loop(cfg_filename, hdf5_filename):
     sub = helics.helicsFederateGetInputByIndex(h_fed, i)
     key = helics.helicsInputGetTarget(sub)
     print ('sub', i, key)
-    if key.endswith('Vrms'):
-      sub_Vrms = sub
+    if key.endswith('Vd'):
+      sub_Vd = sub
+    elif key.endswith('Vq'):
+      sub_Vq = sub
     elif key.endswith('G'):
       sub_G = sub
     elif key.endswith('T'):
@@ -89,7 +92,8 @@ def helics_loop(cfg_filename, hdf5_filename):
     else:
       print (' ** could not match', key)
 
-  Vrms = 0.0
+  Vd = 0.0
+  Vq = 0.0
   T = 0.0
   G = 0.0
   Md = 0.0
@@ -113,12 +117,14 @@ def helics_loop(cfg_filename, hdf5_filename):
     Md = newDouble (Md, sub_Md)
     Mq = newDouble (Mq, sub_Mq)
     Fc = newDouble (Fc, sub_Fc)
-    Vrms = newComplexMag (Vrms, sub_Vrms)
+    Vd = newComplexMag (Vd, sub_Vd)
+    Vq = newComplexMag (Vq, sub_Vq)
+    Vrms = math.sqrt(1.5) * math.sqrt(Vd*Vd + Vq*Vq)
     GVrms = G * Vrms
 
 #    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Md={:.3f}, Mq={:.3f}, Fc={:.3f}, Ctl={:.1f}'.format(ts, Vrms, G, GVrms, T, Md, Mq, Fc, Ctl))
 
-    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
+    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vd=Vd, Vq=Vq, Ctl=Ctl, GVrms=GVrms)
 
     if pub_Idc is not None:
       helics.helicsPublicationPublishDouble(pub_Idc, Idc)
@@ -129,7 +135,7 @@ def helics_loop(cfg_filename, hdf5_filename):
     if pub_Iq is not None:
       helics.helicsPublicationPublishComplex(pub_Iq, Iq+0j)
 
-    dict = {'t':ts,'G':G,'T':T,'Md':Md,'Mq':Mq,'Fc':Fc,'Ctl':Ctl,'Vrms':Vrms,'GVrms':GVrms,'Vdc':Vdc,'Idc':Idc,'Id':Id,'Iq':Iq}
+    dict = {'t':ts,'G':G,'T':T,'Md':Md,'Mq':Mq,'Fc':Fc,'Ctl':Ctl,'Vd':Vd,'Vq':Vq,'GVrms':GVrms,'Vdc':Vdc,'Idc':Idc,'Id':Id,'Iq':Iq}
     rows.append (dict)
     ts = helics.helicsFederateRequestTime(h_fed, tmax)
   helics.helicsFederateDestroy(h_fed)

@@ -17,7 +17,7 @@ df = pd.read_hdf ('pv3_server.hdf5')
 print (df.head(10))
 print (df.tail(1))
 #df.plot(x='t', y=['Vdc', 'Idc'], backend='matplotlib', subplots=True)
-df.plot(x='t', y=['G', 'T', 'Md', 'Mq', 'Fc', 'Ctl', 'Vrms', 'GVrms', 'Vdc', 'Idc', 'Id', 'Iq'], 
-        layout=(3, 4), figsize=(16,10), subplots=True)
+df.plot(x='t', y=['G', 'T', 'Md', 'Mq', 'Fc', 'Ctl', 'Vd', 'Vq', 'GVrms', 'Vdc', 'Idc', 'Id', 'Iq'], 
+        layout=(3, 5), figsize=(18,10), subplots=True)
 
 plt.show()
