@@ -1,15 +1,21 @@
 #second topic type(d,s,i,c) value
 # the other changes can be abrupt
 -1.000 T    double    5.0
+ 3.440 T    double    5.0
  3.450 T    double   35.0
 -1.000 Fc   double   60.0
+ 4.440 Fc   double   60.0
  4.450 Fc   double   63.0
 -1.000 Ud   double   1.00
+ 5.440 Ud   double   1.00
  5.450 Ud   double   0.92
 -1.000 Rg   double   4.25
+ 6.440 Rg   double   4.25
  6.450 Rg   double   6.25
 -1.000 ctl  double    0.0
+ 1.999 ctl  double    0.0
  2.000 ctl  double    1.0
+ 8.000 ctl  double    1.0
 # ramp the changes in G
 -1.000 G    double    0.0
  0.101 G    double   10.0
