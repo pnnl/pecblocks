@@ -15,6 +15,7 @@
 -1.000 ctl  double    0.0
  1.999 ctl  double    0.0
  2.000 ctl  double    1.0
+ 7.999 ctl  double    1.0
  8.000 ctl  double    1.0
 # ramp the changes in G
 -1.000 G    double    0.0

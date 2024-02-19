@@ -83,6 +83,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   Fc = 0.0
   ctl = 0.0
   ts = 0
+  nsteps = 1000 # for initialization of the model history terms, dt=1ms
   rows = []
   print (sub_G)
   print (sub_T)
@@ -119,7 +120,8 @@ def helics_loop(cfg_filename, hdf5_filename):
     Vrms = abs(Vc)
     GVrms = 0.001 * G * Vrms
     print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Ud={:.3f}, Fc={:.3f}'.format(ts, Vrms, G, GVrms, T, Ud, Fc))
-    vdc, idc, irms, Vs, Is = model.step_simulation (G=G, T=T, Ud=Ud, Fc=Fc, Vrms=Vrms, Mode=ctl, GVrms=GVrms)
+    vdc, idc, irms, Vs, Is = model.step_simulation (G=G, T=T, Ud=Ud, Fc=Fc, Vrms=Vrms, Mode=ctl, GVrms=GVrms, nsteps=nsteps)
+    nsteps = 1
     Ic = irms+0j
     if pub_idc is not None:
       helics.helicsPublicationPublishDouble(pub_idc, idc)

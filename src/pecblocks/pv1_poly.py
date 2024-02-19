@@ -520,7 +520,7 @@ class pv1():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
-  def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms):
+  def step_simulation (self, G, T, Ud, Fc, Vrms, Mode, GVrms, nsteps=1):
     Vc = complex (Vrms+0.0j)
     if self.Lf is not None:
       omega = 2.0*math.pi*Fc
@@ -538,17 +538,18 @@ class pv1():
     ub = torch.tensor ([T, G, Fc, Ud, Vrms, GVrms, Mode], dtype=torch.float)
     with torch.no_grad():
       y_non = self.F1 (ub)
-      self.ysum[:] = 0.0
-      for i in range(self.H1.out_channels):
-        for j in range(self.H1.in_channels):
-          uh = self.uhist[i][j]
-          yh = self.yhist[i][j]
-          uh[1:] = uh[:-1]
-          uh[0] = y_non[j]
-          ynew = np.sum(np.multiply(self.b_coeff[i,j,:], uh)) - np.sum(np.multiply(self.a_coeff[i,j,:], yh))
-          yh[1:] = yh[:-1]
-          yh[0] = ynew
-          self.ysum[i] += ynew
+      for iter in range(nsteps):
+        self.ysum[:] = 0.0
+        for i in range(self.H1.out_channels):
+          for j in range(self.H1.in_channels):
+            uh = self.uhist[i][j]
+            yh = self.yhist[i][j]
+            uh[1:] = uh[:-1]
+            uh[0] = y_non[j]
+            ynew = np.sum(np.multiply(self.b_coeff[i,j,:], uh)) - np.sum(np.multiply(self.a_coeff[i,j,:], yh))
+            yh[1:] = yh[:-1]
+            yh[0] = ynew
+            self.ysum[i] += ynew
       y_lin = torch.tensor (self.ysum, dtype=torch.float)
       y_hat = self.F2 (y_lin)
 
