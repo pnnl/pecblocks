@@ -101,6 +101,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   Fc = 0.0
   Ctl = 0.0
   ts = 0
+  nsteps = 100 # for initialization of the model history terms
   rows = []
 
   helics.helicsFederateEnterExecutingMode(h_fed)
@@ -124,7 +125,8 @@ def helics_loop(cfg_filename, hdf5_filename):
 
 #    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Md={:.3f}, Mq={:.3f}, Fc={:.3f}, Ctl={:.1f}'.format(ts, Vrms, G, GVrms, T, Md, Mq, Fc, Ctl))
 
-    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vd=Vd, Vq=Vq, Ctl=Ctl, GVrms=GVrms)
+    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vd=Vd, Vq=Vq, Ctl=Ctl, GVrms=GVrms, nsteps=nsteps)
+    nsteps = 1
 
     if pub_Idc is not None:
       helics.helicsPublicationPublishDouble(pub_Idc, Idc)

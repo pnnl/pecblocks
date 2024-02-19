@@ -1,3 +1,4 @@
+# copyright 2021-2024 Battelle Memorial Institute
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
