@@ -64,7 +64,7 @@ def start_plot(case_title, idx):
 
 def plot_group(ax, grp):
   dlen = grp['t'].len()
-  print (dlen, 'points')
+#  print (dlen, 'points')
   t = np.zeros(dlen)
   y = np.zeros(dlen)
   grp['t'].read_direct (t)

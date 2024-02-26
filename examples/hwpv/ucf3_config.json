@@ -7,7 +7,7 @@
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
   "h5grp_prefix":"ucf",
   "lr": 1.0e-3,
-  "t_step": 0.0125,
+  "t_step": 0.01,
   "num_iter": 2000,
   "continue_iterations": false,
   "print_freq": 10,

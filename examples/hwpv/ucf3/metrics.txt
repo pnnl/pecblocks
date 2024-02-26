@@ -3,29 +3,29 @@ Export Model to: ./ucf3/ucf3_fhf.json
 idx_in [0, 1, 2, 3, 4, 5, 6]
 idx_out [7, 8, 9, 10]
 make_mimo_block iir
-H1s[0][0]  Real Poles: [-114.60086758  -23.10230082] Freqs [Hz]: []
-H1s[0][1]  Real Poles: [-113.51967954  -25.86463786] Freqs [Hz]: []
-H1s[0][2]  Real Poles: [-73.67225945 -73.67225945] Freqs [Hz]: [4.322985525007715]
-H1s[0][3]  Real Poles: [-79.37975384 -79.37975384] Freqs [Hz]: [4.51389866125208]
-H1s[1][0]  Real Poles: [-77.25318491 -77.25318491] Freqs [Hz]: [5.041903403247376]
-H1s[1][1]  Real Poles: [-75.37231833 -75.37231833] Freqs [Hz]: [3.586189862824849]
-H1s[1][2]  Real Poles: [-114.6993506   -22.75969862] Freqs [Hz]: []
-H1s[1][3]  Real Poles: [-81.76257074 -81.76257074] Freqs [Hz]: [5.876356408126094]
-H1s[2][0]  Real Poles: [-76.52169585 -76.52169585] Freqs [Hz]: [3.558041523979179]
-H1s[2][1]  Real Poles: [-114.465646    -21.13370016] Freqs [Hz]: []
-H1s[2][2]  Real Poles: [-77.53968552 -77.53968552] Freqs [Hz]: [6.501572780401718]
-H1s[2][3]  Real Poles: [-77.40598112 -77.40598112] Freqs [Hz]: [3.5403948084986894]
-H1s[3][0]  Real Poles: [-112.11239647  -25.62751461] Freqs [Hz]: []
-H1s[3][1]  Real Poles: [-102.72139765  -51.18877374] Freqs [Hz]: []
-H1s[3][2]  Real Poles: [-85.6884259 -85.6884259] Freqs [Hz]: [4.700300053724745]
-H1s[3][3]  Real Poles: [-114.10584811  -19.87328169] Freqs [Hz]: []
+H1s[0][0]  Real Poles: [-143.25108447  -28.87787602] Freqs [Hz]: []
+H1s[0][1]  Real Poles: [-141.89959943  -32.33079732] Freqs [Hz]: []
+H1s[0][2]  Real Poles: [-92.09032431 -92.09032431] Freqs [Hz]: [5.403731906259645]
+H1s[0][3]  Real Poles: [-99.2246923 -99.2246923] Freqs [Hz]: [5.6423733265651]
+H1s[1][0]  Real Poles: [-96.56648114 -96.56648114] Freqs [Hz]: [6.302379254059219]
+H1s[1][1]  Real Poles: [-94.21539791 -94.21539791] Freqs [Hz]: [4.482737328531055]
+H1s[1][2]  Real Poles: [-143.37418826  -28.44962327] Freqs [Hz]: []
+H1s[1][3]  Real Poles: [-102.20321342 -102.20321342] Freqs [Hz]: [7.345445510157624]
+H1s[2][0]  Real Poles: [-95.65211982 -95.65211982] Freqs [Hz]: [4.447551904973979]
+H1s[2][1]  Real Poles: [-143.0820575   -26.41712521] Freqs [Hz]: []
+H1s[2][2]  Real Poles: [-96.9246069 -96.9246069] Freqs [Hz]: [8.12696597550215]
+H1s[2][3]  Real Poles: [-96.7574764 -96.7574764] Freqs [Hz]: [4.425493510623369]
+H1s[3][0]  Real Poles: [-140.14049558  -32.03439327] Freqs [Hz]: []
+H1s[3][1]  Real Poles: [-128.40174706  -63.98596718] Freqs [Hz]: []
+H1s[3][2]  Real Poles: [-107.11053237 -107.11053237] Freqs [Hz]: [5.875375067155941]
+H1s[3][3]  Real Poles: [-142.63231013  -24.84160211] Freqs [Hz]: []
 model_folder = ./ucf3/
 model_root = ucf3
 data_path = d:/data/ucf3/ucf3.hdf5
 idx_in [0, 1, 2, 3, 4, 5, 6]
 idx_out [7, 8, 9, 10]
 read 1500 dataframes
-dt=0.012500 data_len=401 n_io=11 n_case=1500
+dt=0.010000 data_len=401 n_io=11 n_case=1500
 ['G', 'Ud', 'Uq', 'Vd', 'Vq', 'GVrms', 'Ctrl'] ['Vdc', 'Idc', 'Id', 'Iq'] (1500, 401, 11)
 make_mimo_block iir
 Idx,Vdc,Idc,Id,Iq,Vdc,Idc,Id,Iq
