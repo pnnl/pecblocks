@@ -14,6 +14,7 @@ if __name__ == '__main__':
   fname_out1 = 'pv3_server.json'
   fname_out2 = 'pv3_client.json'
   fname_bat = 'pv3_helics.bat'
+  fname_sh = 'pv3_helics.sh'
   case = 'ucf' # 'flat3' # 'ramp3'
   if len(sys.argv) > 1:
     case = sys.argv[1]
@@ -32,8 +33,8 @@ if __name__ == '__main__':
   pubs = []
   pubs.append({'global':False,'key':'Vdc', 'type':'double'})
   pubs.append({'global':False,'key':'Idc', 'type':'double'})
-  pubs.append({'global':False,'key':'Id', 'type':'complex'})
-  pubs.append({'global':False,'key':'Iq', 'type':'complex'})
+  pubs.append({'global':False,'key':'Id', 'type':'double'})
+  pubs.append({'global':False,'key':'Iq', 'type':'double'})
   cfg_server['publications'] = pubs
   subs = []
   subs.append({'key':'player/G', 'type':'double', 'required':True})
@@ -42,8 +43,8 @@ if __name__ == '__main__':
   subs.append({'key':'player/Mq', 'type':'double', 'required':True})
   subs.append({'key':'player/Fc', 'type':'double', 'required':True})
   subs.append({'key':'player/Ctl', 'type':'double', 'required':True})
-  subs.append({'key':'pv3_client/Vd', 'type':'complex', 'required':True})
-  subs.append({'key':'pv3_client/Vq', 'type':'complex', 'required':True})
+  subs.append({'key':'pv3_client/Vd', 'type':'double', 'required':True})
+  subs.append({'key':'pv3_client/Vq', 'type':'double', 'required':True})
   cfg_server['subscriptions'] = subs
   cfg_server['application'] = cfg_app
   fp = open (fname_out1, 'w')
@@ -57,12 +58,12 @@ if __name__ == '__main__':
   cfg_client['log_level'] = 'none'
   pubs = []
   cfg_client['publications'] = pubs
-  pubs.append({'global':False,'key':'Vd', 'type':'complex'})
-  pubs.append({'global':False,'key':'Vq', 'type':'complex'})
+  pubs.append({'global':False,'key':'Vd', 'type':'double'})
+  pubs.append({'global':False,'key':'Vq', 'type':'double'})
   subs = []
   cfg_client['subscriptions'] = subs
-  subs.append({'key':'pv3_server/Id', 'type':'complex', 'required':True})
-  subs.append({'key':'pv3_server/Iq', 'type':'complex', 'required':True})
+  subs.append({'key':'pv3_server/Id', 'type':'double', 'required':True})
+  subs.append({'key':'pv3_server/Iq', 'type':'double', 'required':True})
   subs.append({'key':'pv3_server/Vdc', 'type':'double', 'required':True})
   subs.append({'key':'pv3_server/Idc', 'type':'double', 'required':True})
   subs.append({'key':'player/Ra', 'type':'double', 'required':True})
@@ -79,3 +80,12 @@ if __name__ == '__main__':
   fp.write('start /b cmd /c python pv3_client.py ^>client.log 2^>^&1\n')
   fp.write('start /b cmd /c python pv3_server.py ^>server.log 2^>^&1\n')
   fp.close()
+
+  fp = open (fname_sh, 'w')
+  fp.write('(exec helics_broker -f 3 --name=mainbroker &> broker.log &)\n')
+  fp.write('(exec helics_player -n player --input={:s}.txt --local --time_units=s --stop {:.3f}s &> player.log &)\n'.format(case, Tmax))
+  fp.write('(exec python3 pv3_client.py &> client.log &)\n')
+  fp.write('(exec python3 pv3_server.py &> server.log &)\n')
+  fp.close()
+
+

@@ -22,6 +22,7 @@ def helics_loop(cfg_filename):
   fp = open (cfg_filename, 'r')
   cfg = json.load (fp)
   tmax = cfg['application']['Tmax']
+  dt = cfg['period']
   fp.close()
 
   h_fed = helics.helicsCreateValueFederateFromConfig(cfg_filename)
@@ -82,6 +83,7 @@ def helics_loop(cfg_filename):
   Rg = 0.0
   ts = 0
 
+  print ('    ts     Id     Iq     Rg       Vd       Vq')
   helics.helicsFederateEnterExecutingMode(h_fed)
   while ts < tmax:
     Ra = newDouble (Ra, sub_Ra)
@@ -89,16 +91,16 @@ def helics_loop(cfg_filename):
     Rc = newDouble (Rc, sub_Rc)
     Vdc = newDouble (Vdc, sub_Vdc)
     Idc = newDouble (Idc, sub_Idc)
-    Id = newComplexMag (Id, sub_Id)
-    Iq = newComplexMag (Iq, sub_Iq)
+    Id = newDouble (Id, sub_Id)
+    Iq = newDouble (Iq, sub_Iq)
     Rg = (Ra + Rb + Rc) / 3.0
     Vd = Rg * Id
     Vq = Rg * Iq
-#    print ('{:6.3f}, Id={:.3f}, Iq={:.3f}, Rg={:.3f}, Vd={:.3f}, Vq={:.3f}'.format(ts, Id, Iq, Rg, Vd, Vq))
+    print ('{:6.3f} {:6.3f} {:6.3f} {:6.2f} {:8.3f} {:8.3f}'.format(ts, Id, Iq, Rg, Vd, Vq))
     if pub_Vd is not None:
-      helics.helicsPublicationPublishComplex(pub_Vd, Vd+0j)
+      helics.helicsPublicationPublishDouble(pub_Vd, Vd)
     if pub_Vq is not None:
-      helics.helicsPublicationPublishComplex(pub_Vq, Vq+0j)
+      helics.helicsPublicationPublishDouble(pub_Vq, Vq)
     ts = helics.helicsFederateRequestTime(h_fed, tmax)
   helics.helicsFederateDestroy(h_fed)
 

@@ -25,6 +25,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   fp = open (cfg_filename, 'r')
   cfg = json.load (fp)
   tmax = cfg['application']['Tmax']
+  dt = cfg['period']
   fp.close()
 
   model = pv3_model.pv3 ()
@@ -101,6 +102,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   Fc = 0.0
   Ctl = 0.0
   ts = 0
+  tnext = 0
   nsteps = 100 # for initialization of the model history terms
   rows = []
 
@@ -111,6 +113,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   #  3) helicsInputIsUpdated resets to False immediately after you read the value,
   #     will become True if value changes later
   #  4) helicsInputLastUpdateTime is > 0 only after the other federate published its first value
+  print ('    Ts     Vd     Vq      G    GVrms     Md     Mq    Ctl    Vdc    Idc     Id     Iq')
   while ts < tmax:
     Ctl = newDouble (Ctl, sub_Ctl)
     T = newDouble (T, sub_T)
@@ -118,33 +121,34 @@ def helics_loop(cfg_filename, hdf5_filename):
     Md = newDouble (Md, sub_Md)
     Mq = newDouble (Mq, sub_Mq)
     Fc = newDouble (Fc, sub_Fc)
-    Vd = newComplexMag (Vd, sub_Vd)
-    Vq = newComplexMag (Vq, sub_Vq)
+    Vd = newDouble (Vd, sub_Vd)
+    Vq = newDouble (Vq, sub_Vq)
     Vrms = math.sqrt(1.5) * math.sqrt(Vd*Vd + Vq*Vq)
     GVrms = G * Vrms
-
-#    print ('{:6.3f}, Vrms={:.3f}, G={:.1f}, GVrms={:.3f}, T={:.3f}, Md={:.3f}, Mq={:.3f}, Fc={:.3f}, Ctl={:.1f}'.format(ts, Vrms, G, GVrms, T, Md, Mq, Fc, Ctl))
 
     Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vd=Vd, Vq=Vq, Ctl=Ctl, GVrms=GVrms, nsteps=nsteps)
     nsteps = 1
 
+    print ('{:6.3f} {:6.2f} {:6.2f} {:6.1f} {:8.1f} {:6.3f} {:6.3f} {:6.1f} {:6.2f} {:6.3f} {:6.3f} {:6.3f}'.format(ts, Vd, Vq, G, GVrms, Md, Mq, Ctl,
+                                                                                                                     Vdc, Idc, Id, Iq))
     if pub_Idc is not None:
       helics.helicsPublicationPublishDouble(pub_Idc, Idc)
     if pub_Idc is not None:
       helics.helicsPublicationPublishDouble(pub_Vdc, Vdc)
     if pub_Id is not None:
-      helics.helicsPublicationPublishComplex(pub_Id, Id+0j)
+      helics.helicsPublicationPublishDouble(pub_Id, Id)
     if pub_Iq is not None:
-      helics.helicsPublicationPublishComplex(pub_Iq, Iq+0j)
+      helics.helicsPublicationPublishDouble(pub_Iq, Iq)
 
     dict = {'t':ts,'G':G,'T':T,'Md':Md,'Mq':Mq,'Fc':Fc,'Ctl':Ctl,'Vd':Vd,'Vq':Vq,'GVrms':GVrms,'Vdc':Vdc,'Idc':Idc,'Id':Id,'Iq':Iq}
     rows.append (dict)
-    ts = helics.helicsFederateRequestTime(h_fed, tmax)
+    tnext += dt
+    ts = helics.helicsFederateRequestTime(h_fed, tnext)
   helics.helicsFederateDestroy(h_fed)
 
   print ('simulation done, writing output to', hdf5_filename)
   df = pd.DataFrame (rows)
-  df.to_hdf (hdf5_filename, 'basecase', mode='w', complevel=9)
+  df.to_hdf (hdf5_filename, key='basecase', mode='w', complevel=9)
 
 if __name__ == '__main__':
   t0 = time.process_time()
