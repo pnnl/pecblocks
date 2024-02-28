@@ -44,6 +44,7 @@ The relevant files for a single-phase example are:
 The relevant files for a three-phase example are:
 
 - _flat3.txt_ alternative input stimuli
+- _make_playerfile.py_ creates _ucf1.txt_ with smooth ramp of G
 - _pv3_client.json_ contains HELICS publication, subscription, and other configurations for _pv1_client.py_
 - _pv3_client.py_ a HELICS federate that constructs _Vrms_ from _Irms_ and _Rgrid_, and collects the simulation data from _pv1_server.py_. It takes the role of an EMT simulator using the HW-PV model.
 - _pv3_configure_helics.py_ produces _pv3_client.json_, _pv3_server.json_, and _pv3_helics.bat_. Reads _ucf3_fhf_poly.json_ for model information.
@@ -53,7 +54,8 @@ The relevant files for a three-phase example are:
 - _pv3_server.json_ contains HELICS publication, subscription, and other configurations for _pv3_server.py_
 - _pv3_server.py_ is a HELICS federate that subscribes to all weather and control inputs, runs the HW-PV model, and publishes the HW-PV model outputs. In this example, the input and output data are saved from this federate for convenience.
 - _ramp3.txt_ alternative input stimuli
-- _ucf.txt_ input stimuli for simulation of three-phase PV
+- _ucf.txt_ alternative input stimuli for simulation of three-phase PV
+- _ucf1.txt_ alternative input stimuli for simulation of three-phase PV
 
 ![HELICS_Sim3](pv3_helics.png)
 
