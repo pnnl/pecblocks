@@ -129,8 +129,22 @@ def plot_case(model, idx, bPNG=False):
     plt.show()
   plt.close(fig)
 
-if __name__ == '__main__':
+def add_case(model, idx, bTrueOutput=False):
+  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
+  i1 = 1 # 2*model.n_loss_skip
+  for j in range(len(model.COL_Y)):
+    key = model.COL_Y[j]
+    scale = model.normfacs[key]['scale']
+    offset = model.normfacs[key]['offset']
+    if bNormalized:
+      scale = 1.0
+      offset = 0.0
+    if bTrueOutput:
+      ax[j // 2, j % 2].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
+    else:
+      ax[j // 2, j % 2].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
 
+if __name__ == '__main__':
   case_idx = 100 # 36 # 189
   if len(sys.argv) > 1:
     case_idx = int(sys.argv[1])
@@ -158,10 +172,31 @@ if __name__ == '__main__':
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
 
   if case_idx < 0:
+    fig, ax = plt.subplots (2, 2, sharex = 'col', figsize=(12,8), constrained_layout=True)
+    fig.suptitle ('Testing model {:s} estimated output with {:d} cases'.format(model_path, model.n_cases))
+    for j in range(len(model.COL_Y)):
+      ax[j // 2, j % 2].set_title ('Estimated {:s}'.format (model.COL_Y[j]))
+      ax[j // 2, j % 2].grid()
     for idx in range(model.n_cases):
-      plot_case (model, idx, bPNG=True)
+      add_case (model, idx)
       if (idx+1) % 10 == 0:
         print ('plotted {:d} of {:d} cases'.format(idx+1, model.n_cases))
+    plt.rcParams['savefig.directory'] = os.getcwd()
+    plt.show()
+    plt.close(fig)
+
+    fig, ax = plt.subplots (2, 2, sharex = 'col', figsize=(12,8), constrained_layout=True)
+    fig.suptitle ('Testing model {:s} true output with {:d} cases'.format(model_path, model.n_cases))
+    for j in range(len(model.COL_Y)):
+      ax[j // 2, j % 2].set_title ('True {:s}'.format (model.COL_Y[j]))
+      ax[j // 2, j % 2].grid()
+    for idx in range(model.n_cases):
+      add_case (model, idx, bTrueOutput=True)
+      if (idx+1) % 10 == 0:
+        print ('plotted {:d} of {:d} cases'.format(idx+1, model.n_cases))
+    plt.rcParams['savefig.directory'] = os.getcwd()
+    plt.show()
+    plt.close(fig)
   else:
     plot_case (model, case_idx)
 
