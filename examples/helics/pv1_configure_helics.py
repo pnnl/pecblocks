@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 
 if __name__ == '__main__':
   Tmax = 8.0
@@ -7,6 +8,7 @@ if __name__ == '__main__':
   fname_out1 = 'pv1_server.json'
   fname_out2 = 'pv1_client.json'
   fname_bat = 'pv1_helics.bat'
+  fname_sh = 'pv1_helics.sh'
   if len(sys.argv) > 1:
     fname_in = sys.argv[1]
   fp = open (fname_in, 'r')
@@ -66,3 +68,14 @@ if __name__ == '__main__':
   fp.write('start /b cmd /c python pv1_client.py ^>client.log 2^>^&1\n')
   fp.write('start /b cmd /c python pv1_server.py ^>server.log 2^>^&1\n')
   fp.close()
+
+  fp = open (fname_sh, 'w')
+  fp.write('(exec helics_broker -f 3 --name=mainbroker &> broker.log &)\n')
+  fp.write('(exec helics_player -n player --input=helics_player.txt --local --time_units=s --stop {:.3f}s &> player.log &)\n'.format(Tmax))
+  fp.write('(exec python3 pv1_client.py &> client.log &)\n')
+  fp.write('(exec python3 pv1_server.py &> server.log &)\n')
+  fp.close()
+
+  os.chmod (fname_sh, 0o755)
+
+

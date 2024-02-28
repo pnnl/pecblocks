@@ -114,7 +114,7 @@ def helics_loop(cfg_filename, hdf5_filename):
   #     will become True if value changes later
   #  4) helicsInputLastUpdateTime is > 0 only after the other federate published its first value
   print ('    Ts     Vd     Vq      G    GVrms     Md     Mq    Ctl    Vdc    Idc     Id     Iq')
-  while ts < tmax:
+  while ts <= tmax:
     Ctl = newDouble (Ctl, sub_Ctl)
     T = newDouble (T, sub_T)
     G = newDouble (G, sub_G)

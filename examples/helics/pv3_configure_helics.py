@@ -5,6 +5,7 @@
 
 import json
 import sys
+import os
 
 if __name__ == '__main__':
   Tmax = 8.0
@@ -87,5 +88,7 @@ if __name__ == '__main__':
   fp.write('(exec python3 pv3_client.py &> client.log &)\n')
   fp.write('(exec python3 pv3_server.py &> server.log &)\n')
   fp.close()
+
+  os.chmod (fname_sh, 0o755)
 
 
