@@ -70,6 +70,7 @@ if __name__ == '__main__':
   fp.close()
 
   fp = open (fname_sh, 'w')
+  fp.write('#!/bin/bash\n')
   fp.write('(exec helics_broker -f 3 --name=mainbroker &> broker.log &)\n')
   fp.write('(exec helics_player -n player --input=helics_player.txt --local --time_units=s --stop {:.3f}s &> player.log &)\n'.format(Tmax))
   fp.write('(exec python3 pv1_client.py &> client.log &)\n')
