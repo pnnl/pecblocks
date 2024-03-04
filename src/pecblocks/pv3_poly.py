@@ -358,6 +358,7 @@ class pv3():
     for c in self.COL_U + self.COL_Y:
       dmax = np.max (self.data_train[:,:,idx])
       dmin = np.min (self.data_train[:,:,idx])
+      # dmean = 0.5 * (dmax + dmin) # middle of the range over scenarios and time
       dmean = np.mean (self.data_train[:,:,idx]) # mean over scenarios and time
       drange = dmax - dmin
       if abs(drange) <= 0.0:
@@ -702,15 +703,16 @@ class pv3():
     Iq = self.de_normalize (y_hat[npad:,3], self.normfacs['Iq'])
     return Vdc, Idc, Id, Iq
 
-  def stepOneCase(self, case_idx):
+  def stepOneCase(self, case_idx, npad):
     case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(self.idx_out)))
     ub = torch.zeros((1, 1, len(self.idx_in)), dtype=torch.float)
-#    print ('case_data', case_data.shape, 'y_hat', y_hat.shape)
     self.start_simulation()
-    for k in range(n):
-      ub = torch.tensor (case_data[k,self.idx_in])
+    ub = torch.tensor (case_data[0,self.idx_in]) # initial inputs
+    for k in range(-npad, n):
+      if k > 0:
+        ub = torch.tensor (case_data[k,self.idx_in])
       with torch.no_grad():
         y_non = self.F1 (ub)
         self.ysum[:] = 0.0
@@ -724,9 +726,15 @@ class pv3():
             yh[1:] = yh[:-1]
             yh[0] = ynew
             self.ysum[i] += ynew
-        y_lin = torch.tensor (self.ysum, dtype=torch.float)
-        y_hat[k,:] = self.F2(y_lin)
-    return y_hat # the caller de_normalizes
+        if k >= 0:
+          y_lin = torch.tensor (self.ysum, dtype=torch.float)
+          y_hat[k,:] = self.F2(y_lin)
+    y_true = case_data[:,self.idx_out].squeeze()
+    udata = case_data[:,self.idx_in].squeeze()
+#    print ('shapes: case_data', case_data.shape, 'y_hat', y_hat.shape, 'y_true', y_true.shape, 'udata', udata.shape)
+    rmse = dynonet.metrics.error_rmse(y_true, y_hat)
+    mae = dynonet.metrics.error_mae(y_true, y_hat)
+    return rmse, mae, y_hat, y_true, udata
 
   def trainingErrors(self, bByCase=False):
     self.n_cases = self.data_train.shape[0]
@@ -893,6 +901,7 @@ class pv3():
 #     ZLf = np.complex(0.0+omega*self.Lf*1j)
 #     ZLc = np.complex(0.0+omega*self.Lc*1j)
 #     ZCf = np.complex(0.0-1j/omega/self.Cf)
+#    print ('Incoming G={:.4f},Md={:.4f},Mq={:.4f},Vd={:.4f},Vq={:.4f},GVrms={:.4f}'.format (G, Md, Mq, Vd, Vq, GVrms))
     if 'T' in self.normfacs:
       T = self.normalize (T, self.normfacs['T'])
     G = self.normalize (G, self.normfacs['G'])
@@ -928,6 +937,7 @@ class pv3():
     Idc = y_hat[1].item()
     Id = y_hat[2].item()
     Iq = y_hat[3].item()
+#    print ('Normalized G={:.4f},Md={:.4f},Mq={:.4f},Vd={:.4f},Vq={:.4f},GVrms={:.4f},Vdc={:.4f},Idc={:.4f},Id={:.4f},Iq={:.4f}'.format (G, Md, Mq, Vd, Vq, GVrms, Vdc, Idc, Id, Iq))
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])

@@ -78,6 +78,7 @@ model_path = './ucf2ac/ucf2ac_config.json'
 
 data_path = 'd:/data/ucf3/ucf3.hdf5'
 model_path = './ucf3_config.json'
+#model_path = './ucf4_config.json'
 
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
@@ -105,6 +106,7 @@ def plot_case(model, idx, bPNG=False):
       offset = 0.0
     ax[row,col].set_title ('Input {:s}'.format (key))
     ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
+    #print ('initial {:s}={:.6f}'.format (key, u[i1,j]*scale + offset))
     j += 1
     col += 1
     if col >= ncols:
