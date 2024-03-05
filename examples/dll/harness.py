@@ -8,72 +8,167 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-cfg_filename = '../hwpv/ucf3/ucf3_fhf.json'
-#cfg_filename = '../hwpv/ucf4/ucf4_fhf.json'
 hdf5_filename = 'harness.hdf5'
-tmax = 2.0
-
 KRMS = math.sqrt(1.5)
 
-G0 = 0.000023
-G1 = 1000.0
-def getG(t):
-  return np.interp (t, [-1.0, 0.1, 1.1, 100.0], [G0, G0, G1, G1])
+cases = [
+  {
+    'model': '../hwpv/ucf3/ucf3_fhf.json',
+    'tmax': 2.0,
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1, 100.0], 
+           [0.0, 0.0, 1000.0, 1000.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.0, 1.010, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.999995, 0.999995, 0.999995, 0.999995]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.001, 0.001, 0.001, 0.001]],
+    'Rg': [[-1.0, 6.0, 6.010, 100.0], 
+           [90.0, 90.0, 65.0, 65.0]]
+  },
+  {
+    'model': '../hwpv/ucf3z/ucf3z_fhf.json',
+    'tmax': 2.0,
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1, 100.0], 
+           [0.0, 0.0, 1000.0, 1000.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.0, 1.010, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.999995, 0.999995, 0.999995, 0.999995]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.001, 0.001, 0.001, 0.001]],
+    'Rg': [[-1.0, 6.0, 6.010, 100.0], 
+           [90.0, 90.0, 65.0, 65.0]]
+  },
+  {
+    'model': '../hwpv/ucf4/ucf4_fhf.json',
+    'tmax': 2.0,
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1, 100.0], 
+           [0.0, 0.0, 1000.0, 1000.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.0, 1.010, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.999995, 0.999995, 0.999995, 0.999995]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.001, 0.001, 0.001, 0.001]],
+    'Rg': [[-1.0, 6.0, 6.010, 100.0], 
+           [90.0, 90.0, 65.0, 65.0]]
+  },
+  {
+    'model': '../hwpv/ucf5/ucf5_fhf.json',
+    'tmax': 2.0,
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1, 100.0], 
+           [0.0, 0.0, 1000.0, 1000.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.0, 1.010, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.999995, 0.999995, 0.999995, 0.999995]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.001, 0.001, 0.001, 0.001]],
+    'Rg': [[-1.0, 6.0, 6.010, 100.0], 
+           [90.0, 90.0, 65.0, 65.0]]
+  },
+  {
+    'model': '../hwpv/big3/big3_fhf.json',
+    'tmax': 10.0,
+    'kGVrms': 0.001,
+    'G':  [[-1.0, 0.1, 1.1, 100.0], 
+           [0.0, 0.0, 1000.0, 1000.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.0, 1.010, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.999995, 0.999995, 1.2, 1.2]],
+    'Uq': [[-1.0, 9.0, 9.010, 100.0], 
+           [0.001, 0.001, -0.1, -0.1]],
+    'Rg': [[-1.0, 6.0, 6.010, 100.0], 
+           [3.0, 3.0, 2.0, 2.0]]
+  }
+]
 
-def getFc(t):
-  return 60.0
-
-def getT(t):
-  return 35.0
-
-def getCtl(t):
-  return np.interp (t, [-1.0, 1.0, 1.010, 100.0], [0.0, 0.0, 1.0, 1.0])
-
-R0 = 90.0
-R1 = 65.0
-def getRg(t):
-  return np.interp (t, [-1.0, 6.0, 6.010, 100.0], [R0, R0, R1, R1])
-
-MD0 = 0.999995
-def getMd(t):
-  return MD0
-
-MQ0 = 0.001
-def getMq(t):
-  return MQ0
+def getInput(case, tag, t):
+  xvals = case[tag][0]
+  yvals = case[tag][1]
+  return np.interp (t, xvals, yvals)
 
 if __name__ == '__main__':
 
-  fp = open (cfg_filename, 'r')
+  print ('Usage: python harness.py [idx=0]')
+  print ('Cases Available:')
+  print ('Idx Model                                     Tmax')
+  for i in range(len(cases)):
+    print ('{:3d} {:40s} {:5.2f}'.format (i, cases[i]['model'], cases[i]['tmax']))
+
+  case_idx = 0
+  if len(sys.argv) > 1:
+    case_idx = int(sys.argv[1])
+
+  case = cases[case_idx]
+  fp = open (case['model'], 'r')
   cfg = json.load (fp)
   dt = cfg['t_step']
+  tmax = case['tmax']
+  kGVrms = case['kGVrms']
   fp.close()
 
   model = pv3_model.pv3 ()
   model.set_sim_config (cfg, model_only=False)
   model.start_simulation ()
-  t = 0.0
 
-  nsteps = 200 # for initialization of the model history terms
+  print ('Model inputs', model.COL_U, model.idx_in)
+  print ('Model outputs', model.COL_Y, model.idx_out)
+  print ('Case {:d}, dt={:.5f}, kGVrms={:.2f}'.format (case_idx, dt, kGVrms))
+
+  t = 0.0
+  nsteps = int (2.0 / dt) # for initialization of the model history terms
   Id = 0.0
   Iq = 0.0
   rows = []
 
 #  print ('    Ts     Vd     Vq      G    GVrms     Md     Mq    Ctl    Vdc    Idc     Id     Iq')
   while t <= tmax:
-    Rg = getRg(t)
-    G = getG(t)
-    Md = getMd(t)
-    Mq = getMq(t)
-    Fc = getFc(t)
-    Ctl = getCtl(t)
-    T = getT(t)
+    G = getInput(case, 'G', t)
+    T = getInput(case, 'T', t)
+    Md = getInput(case, 'Ud', t)
+    Mq = getInput(case, 'Uq', t)
+    Fc = getInput(case, 'Fc', t)
+    Ctl = getInput(case, 'Ctl', t)
+    Rg = getInput(case, 'Rg', t)
     Vd = Rg * Id
     Vq = Rg * Iq
     Vrms = KRMS * math.sqrt(Vd*Vd + Vq*Vq)
-    GVrms = G * Vrms
+    GVrms = G * Vrms * kGVrms
 
-    Vdc, Idc, Id, Iq = model.step_simulation (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vd=Vd, Vq=Vq, Ctl=Ctl, GVrms=GVrms, nsteps=nsteps)
+    if 'T' in model.COL_U and 'Fc' in model.COL_U:
+      step_vals = [T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl]
+    elif 'Vq' in model.COL_U:
+      step_vals = [G, Md, Mq, Vd, Vq, GVrms, Ctl]
+    else:
+      step_vals = [G, Md, Mq, Vd, GVrms, Ctl]
+    Vdc, Idc, Id, Iq = model.step_simulation (step_vals, nsteps=nsteps)
     nsteps = 1
 
     Id = max(0.0, Id)
@@ -91,6 +186,7 @@ if __name__ == '__main__':
 
   df.plot(x='t', y=['G', 'T', 'Md', 'Mq', 'Fc', 
                     'Ctl', 'Rg', 'Vd', 'Vq', 'GVrms', 
-                    'Vdc', 'Idc', 'Id', 'Iq'], 
+                    'Vdc', 'Idc', 'Id', 'Iq'],
+    title='Model {:s} Case {:d}'.format (case['model'], case_idx),
     layout=(3, 5), figsize=(15,8), subplots=True)
   plt.show()

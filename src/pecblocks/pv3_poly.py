@@ -883,6 +883,7 @@ class pv3():
       for j in range(self.H1.in_channels):
         self.uhist[i][j] = np.zeros(self.H1.n_b)
         self.yhist[i][j] = np.zeros(self.H1.n_a)
+    return self.COL_U
                                              
 # set up the static nonlinearity blocks for time step simulation                       
     self.F1.eval()
@@ -894,7 +895,7 @@ class pv3():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
-  def step_simulation (self, T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl, nsteps=1):
+  def step_simulation (self, vals, nsteps=1):
 #   Vc = np.complex (Vrms+0.0j)
 #   if self.Lf is not None:
 #     omega = 2.0*math.pi*Fc
@@ -902,20 +903,10 @@ class pv3():
 #     ZLc = np.complex(0.0+omega*self.Lc*1j)
 #     ZCf = np.complex(0.0-1j/omega/self.Cf)
 #    print ('Incoming G={:.4f},Md={:.4f},Mq={:.4f},Vd={:.4f},Vq={:.4f},GVrms={:.4f}'.format (G, Md, Mq, Vd, Vq, GVrms))
-    if 'T' in self.normfacs:
-      T = self.normalize (T, self.normfacs['T'])
-    G = self.normalize (G, self.normfacs['G'])
-    if 'Fc' in self.normfacs:
-      Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Md = self.normalize (Md, self.normfacs['Ud'])
-    Mq = self.normalize (Mq, self.normfacs['Uq'])
-    Vd = self.normalize (Vd, self.normfacs['Vd'])
-    Vq = self.normalize (Vq, self.normfacs['Vq'])
-    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctrl'])
+    for i in range(len(vals)):
+      vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
 
-#    ub = torch.tensor ([T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl], dtype=torch.float)
-    ub = torch.tensor ([G, Md, Mq, Vd, Vq, GVrms, Ctl], dtype=torch.float)
+    ub = torch.tensor (vals, dtype=torch.float)
     with torch.no_grad():
       y_non = self.F1 (ub)
       for iter in range(nsteps):
@@ -933,11 +924,19 @@ class pv3():
       y_lin = torch.tensor (self.ysum, dtype=torch.float)
       y_hat = self.F2 (y_lin)
 
+    if len(y_hat) < 4:
+      Idc = y_hat[0].item()
+      Id = y_hat[1].item()
+      Iq = y_hat[2].item()
+      Idc = self.de_normalize (Idc, self.normfacs['Idc'])
+      Id = self.de_normalize (Id, self.normfacs['Id'])
+      Iq = self.de_normalize (Iq, self.normfacs['Iq'])
+      return Idc, Id, Iq
+
     Vdc = y_hat[0].item()
     Idc = y_hat[1].item()
     Id = y_hat[2].item()
     Iq = y_hat[3].item()
-#    print ('Normalized G={:.4f},Md={:.4f},Mq={:.4f},Vd={:.4f},Vq={:.4f},GVrms={:.4f},Vdc={:.4f},Idc={:.4f},Id={:.4f},Iq={:.4f}'.format (G, Md, Mq, Vd, Vq, GVrms, Vdc, Idc, Id, Iq))
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])
