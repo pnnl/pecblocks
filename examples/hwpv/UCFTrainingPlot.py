@@ -50,6 +50,21 @@ plot_defs = [
     {'row':2, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'}
   ]
 
+# this is for the February 1, 2024 data set, without Fc, T, and Rload
+plot_defs = [
+    {'row':0, 'col':1, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
+    {'row':0, 'col':3, 'tag':'Ctrl', 'title':'Control Mode',      'ylabel':''},
+    {'row':0, 'col':4, 'tag':'GVrms','title':'Polynomial Feature','ylabel':''},
+    {'row':1, 'col':0, 'tag':'Ud',   'title':'Ud',                'ylabel':'V'},
+    {'row':1, 'col':1, 'tag':'Uq',   'title':'Uq',                'ylabel':'V'},
+    {'row':1, 'col':2, 'tag':'Vd',   'title':'Vd',                'ylabel':'V'},
+    {'row':1, 'col':3, 'tag':'Vq',   'title':'Vq',                'ylabel':'V'},
+    {'row':2, 'col':0, 'tag':'Vdc',  'title':'DC Voltage',        'ylabel':'V'},
+    {'row':2, 'col':1, 'tag':'Idc',  'title':'DC Current',        'ylabel':'A'},
+    {'row':2, 'col':2, 'tag':'Id',   'title':'Id',                'ylabel':'A'},
+    {'row':2, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'}
+  ]
+
 def start_plot(case_title, idx):
   fig, ax = plt.subplots(3, 5, sharex = 'col', figsize=(15,6), constrained_layout=True)
   if idx < 0:
@@ -97,7 +112,7 @@ if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf3']: # ucf2
+  for root in ['ucf3z']: # ucf2, ucf3
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)
