@@ -278,7 +278,7 @@ class pv3():
   def append_2nd(self, model, label, H):
     n_in = H.b_coeff.shape[1]
     n_out = H.b_coeff.shape[0]
-    model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 2, 'n_a': 2, 'n_k':0}
+    model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 3, 'n_a': 2, 'n_k':0}
     block = H.state_dict()
     b = block['b_coeff'].numpy()
     rho = block['rho'].numpy().squeeze()
@@ -529,7 +529,7 @@ class pv3():
 
   def make_H1Q1s(self, Hz):
     if self.gtype != 'iir':
-      return {}
+      return None, None
     n_in = Hz.in_channels
     n_out = Hz.out_channels
     n_a = Hz.n_a
@@ -872,11 +872,24 @@ class pv3():
 #    self.H1.eval()                                            
 #---------------------------------------------------------------------------------------
 # set up IIR filters for time step simulation
-    self.a_coeff = self.H1.a_coeff.detach().numpy()                                         
     self.b_coeff = self.H1.b_coeff.detach().numpy()
+    if self.gtype == 'stable2nd':
+      rho = self.H1.rho.detach().numpy().squeeze()
+      psi = self.H1.psi.detach().numpy().squeeze()
+      r = 1 / (1 + np.exp(-rho))
+      beta = np.pi / (1 + np.exp(-psi))
+      a1 = -2 * r * np.cos(beta)
+      a2 = r * r
+      self.a_coeff = np.ones ((self.b_coeff.shape[0], self.b_coeff.shape[1], 2)) #  3))
+      self.a_coeff[:,:,0] = a1
+      self.a_coeff[:,:,1] = a2
+    else:
+      self.a_coeff = self.H1.a_coeff.detach().numpy()                                         
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.H1.out_channels)
+    #print ('a_coeff', self.a_coeff)
+    #print ('b_coeff', self.b_coeff)
     for i in range(self.H1.out_channels):
       self.uhist[i] = {}
       self.yhist[i] = {}

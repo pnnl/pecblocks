@@ -76,12 +76,13 @@ model_path = './jan/jan_config.json'
 data_path = 'd:/data/ucf2.hdf5'
 model_path = './ucf2ac/ucf2ac_config.json'
 
-data_path = 'd:/data/ucf3/ucf3.hdf5'
-model_path = './ucf3_config.json'
-model_path = './ucf4_config.json'
-
 data_path = 'd:/data/ucf3/ucf3z.hdf5'
 model_path = './ucf3z_config.json'
+
+data_path = 'd:/data/ucf3/ucf3.hdf5'
+#model_path = './ucf3_config.json'
+#model_path = './ucf4_config.json'
+model_path = './ucf6_config.json'
 
 def plot_case(model, idx, bPNG=False):
 #  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
