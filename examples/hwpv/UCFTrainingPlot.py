@@ -50,7 +50,7 @@ plot_defs = [
     {'row':2, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'}
   ]
 
-# this is for the February 1, 2024 data set, without Fc, T, and Rload
+# this is for the Feb 1 and March 11, 2024 data sets, without Fc, T, and Rload
 plot_defs = [
     {'row':0, 'col':1, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
     {'row':0, 'col':3, 'tag':'Ctrl', 'title':'Control Mode',      'ylabel':''},
@@ -112,7 +112,7 @@ if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf3z']: # ucf2, ucf3
+  for root in ['ucf7']: # ucf3z. ucf2, ucf3
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)
