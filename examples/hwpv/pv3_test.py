@@ -87,6 +87,10 @@ model_path = './ucf6_config.json'
 data_path = 'd:/data/ucf3/ucf7.hdf5'
 model_path = './ucf7_config.json'
 
+data_path = 'd:/data/osg4_vdvq.hdf5'
+model_path = './osg4/osg4_vdvq_config.json'
+
+
 def plot_case(model, idx, bPNG=False):
 #  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
   rmse, mae, y_hat, y_true, u = model.stepOneCase(idx, npad=1000)
