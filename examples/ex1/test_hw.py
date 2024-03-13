@@ -18,6 +18,7 @@ import dynonet.metrics
 import pecblocks.util
 
 from scipy import signal
+import math
 
 training_sets = [
    {'Title':'Irrad to Vdc',
@@ -222,7 +223,7 @@ def process_training_set (row):
         LOSS.append(loss.item())
         if itr % msg_freq == 0:
             with torch.no_grad():
-                RMSE = torch.sqrt(loss)
+                RMSE = torch.mean (err_fit**2) # torch.sqrt(loss)
             print(f'Iter {itr} | Fit Loss {loss:.6f} | RMSE:{RMSE:.4f}')
         optimizer.step()
 
@@ -261,7 +262,17 @@ def process_training_set (row):
     e_rms = dynonet.metrics.error_rmse(y_fit[n_skip:], y_hat[n_skip:])[0]
     fit_idx = dynonet.metrics.fit_index(y_fit[n_skip:], y_hat[n_skip:])[0]
     r_sq = dynonet.metrics.r_squared(y_fit[n_skip:], y_hat[n_skip:])[0]
-    print(f"RMSE: {e_rms:.4f}V\nFIT:  {fit_idx:.1f}%\nR_sq: {r_sq:.1f}")
+    print ('shapes', e_rms.shape, y_hat.shape, y_fit.shape)
+    e_sum = 0.0
+    npts = y_hat.shape[0]
+    for idx in range(npts):
+#      print ('{:8.4f} {:8.4f} {:8.4f}'.format (y_fit[idx][0], y_hat[idx][0], y_fit[idx][0] - y_hat[idx][0]))
+      error = y_fit[idx][0] - y_hat[idx][0]
+      e_sum += error*error
+    e_mean = e_sum / npts
+    e_rms = math.sqrt(e_mean)
+    print (e_rms)
+    print(f"RMSE: {e_rms:.4f}\nFIT:  {fit_idx:.1f}%\nR_sq: {r_sq:.1f}")
 
     # In[Plot]
     plt.figure()
@@ -283,19 +294,19 @@ def process_training_set (row):
 
 #    plt.figure()
 
-#    plt.plot(t_fit[n_skip:], u_fit[n_skip:], 'g', label="$u$")
-#    plt.legend()
-
-#    plt.savefig(os.path.join(model_folder,'test_hw_train_input_u.pdf'))
-#    plt.show()
-
-    # In[Plot loss]
-#    plt.figure()
-#    plt.plot(LOSS)
-#    plt.grid(True)
-    
-#    plt.savefig(os.path.join(model_folder,'test_hw_train_loss.pdf'))
-#    plt.show()
+#   plt.plot(t_fit[n_skip:], u_fit[n_skip:], 'g', label="$u$")
+#   plt.legend()
+#
+#   plt.savefig(os.path.join(model_folder,'test_hw_train_input_u.pdf'))
+#   plt.show()
+#
+#   # In[Plot loss]
+#   plt.figure()
+#   plt.plot(LOSS)
+#   plt.grid(True)
+#
+#   plt.savefig(os.path.join(model_folder,'test_hw_train_loss.pdf'))
+#   plt.show()
 
 if __name__ == '__main__':
     for row in training_sets:

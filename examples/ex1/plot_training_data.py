@@ -116,9 +116,10 @@ def plot_training_set (row):
         os.makedirs(plot_folder)
     plt.savefig(plot_folder + row['PlotFile'])
     plt.show()
+    plt.close()
 
 if __name__ == '__main__':
     for row in training_sets:
         plot_training_set (row)
-        quit()
+#        quit()
 
