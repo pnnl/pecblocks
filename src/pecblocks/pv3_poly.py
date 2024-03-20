@@ -158,10 +158,7 @@ class pv3():
     n_a = config['n_a']
     n_b = config['n_b']
     n_k = config['n_k']
-    if 'gtype' in config:
-      gtype = config['gtype']
-    else:
-      gtype = 'iir'
+    gtype = 'iir'
     block = self.make_mimo_block (gtype, n_in, n_out, n_a, n_b, n_k)
     dict = block.state_dict()
     for i in range(n_out):
@@ -281,12 +278,24 @@ class pv3():
     model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 3, 'n_a': 2, 'n_k':0}
     block = H.state_dict()
     b = block['b_coeff'].numpy()
+    # construct the a coefficients for IIR implementation
     rho = block['rho'].numpy().squeeze()
     psi = block['psi'].numpy().squeeze()
+    r = 1 / (1 + np.exp(-rho))
+    beta = np.pi / (1 + np.exp(-psi))
+    a1 = -2 * r * np.cos(beta)
+    a2 = r * r
+    a = np.ones ((b.shape[0], b.shape[1], 2)) # don't write a0==1
+    a[:,:,0] = a1
+    a[:,:,1] = a2
+
     for i in range(n_out):
       for j in range(n_in):
         key = 'b_{:d}_{:d}'.format(i, j)
         ary = b[i,j,:]
+        model[label][key] = ary.tolist()
+        key = 'a_{:d}_{:d}'.format(i, j)
+        ary = a[i,j,:]
         model[label][key] = ary.tolist()
         key = 'rho_{:d}_{:d}'.format(i, j)
         model[label][key] = float(rho[i,j])
@@ -524,6 +533,10 @@ class pv3():
     self.F1.load_state_dict(B1)
     B2 = torch.load(os.path.join(self.model_folder, "H1.pkl"))
     self.H1.load_state_dict(B2)
+#   print (self.H1)
+#   print ('b_coeff', self.H1.b_coeff)
+#   print ('rho', self.H1.rho)
+#   print ('psi', self.H1.psi)
     B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"))
     self.F2.load_state_dict(B3)
 
@@ -873,7 +886,8 @@ class pv3():
 #---------------------------------------------------------------------------------------
 # set up IIR filters for time step simulation
     self.b_coeff = self.H1.b_coeff.detach().numpy()
-    if self.gtype == 'stable2nd':
+    print ('start_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
+    if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):
       rho = self.H1.rho.detach().numpy().squeeze()
       psi = self.H1.psi.detach().numpy().squeeze()
       r = 1 / (1 + np.exp(-rho))
@@ -883,13 +897,15 @@ class pv3():
       self.a_coeff = np.ones ((self.b_coeff.shape[0], self.b_coeff.shape[1], 2)) #  3))
       self.a_coeff[:,:,0] = a1
       self.a_coeff[:,:,1] = a2
+      print ('constructed a_coeff')                                         
     else:
-      self.a_coeff = self.H1.a_coeff.detach().numpy()                                         
+      self.a_coeff = self.H1.a_coeff.detach().numpy()
+      print ('existing a_coeff')
+    print (self.a_coeff)
+    print (self.b_coeff)
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.H1.out_channels)
-    #print ('a_coeff', self.a_coeff)
-    #print ('b_coeff', self.b_coeff)
     for i in range(self.H1.out_channels):
       self.uhist[i] = {}
       self.yhist[i] = {}
@@ -915,7 +931,6 @@ class pv3():
 #     ZLf = np.complex(0.0+omega*self.Lf*1j)
 #     ZLc = np.complex(0.0+omega*self.Lc*1j)
 #     ZCf = np.complex(0.0-1j/omega/self.Cf)
-#    print ('Incoming G={:.4f},Md={:.4f},Mq={:.4f},Vd={:.4f},Vq={:.4f},GVrms={:.4f}'.format (G, Md, Mq, Vd, Vq, GVrms))
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
 

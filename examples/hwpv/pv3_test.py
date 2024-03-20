@@ -121,6 +121,7 @@ def plot_case(model, idx, bPNG=False):
       offset = 0.0
     ax[row,col].set_title ('Input {:s}'.format (key))
     ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
+    ax[row,col].grid()
     #print ('initial {:s}={:.6f}'.format (key, u[i1,j]*scale + offset))
     j += 1
     col += 1
@@ -138,6 +139,7 @@ def plot_case(model, idx, bPNG=False):
     ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
     ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
     ax[2,j].legend()
+    ax[2,j].grid()
     j += 1
   if bPNG:
     plt.savefig(os.path.join(report_path,'case{:d}.png'.format(idx)))
