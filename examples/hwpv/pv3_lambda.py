@@ -95,7 +95,7 @@ def sensitivity_analysis (model, idx, bPrint):
   maxdIqVq = 0.0
 
   print ('   G0   Ud0   Uq0   Vd0    Vq0 Ctl   dIdVd   dIdVq   dIqVd   dIqVq')
-
+  model.start_simulation (bPrint=True)
   for G0 in [600.0, 800.0, 999.0]:
     for Ud0 in [0.8, 1.0, 1.2]:
       for Uq0 in [-0.5, 0.0, 0.5]:
@@ -103,35 +103,36 @@ def sensitivity_analysis (model, idx, bPrint):
           for Vd0 in [170.0, 340.0]:
             for Vq0 in [-140.0, 0.0, 140.0]:
               # baseline
-              model.start_simulation ()
+#              model.start_simulation ()
               Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
               GVrms = G0 * Vrms
               step_vals = [G0, Ud0, Uq0, Vd0, Vq0, GVrms, Ctl]
-              Vdc0, Idc0, Id0, Iq0 = model.step_simulation (step_vals, nsteps=nsteps)
+              Vdc0, Idc0, Id0, Iq0 = model.steady_state_response (step_vals) # model.step_simulation (step_vals, nsteps=nsteps)
 
               # change Vd and GVrms
-              model.start_simulation ()
+#              model.start_simulation ()
               Vd1 = Vd0 + 1.0
               Vrms = KRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
               GVrms = G0 * Vrms
               step_vals = [G0, Ud0, Uq0, Vd1, Vq0, GVrms, Ctl]
-              Vdc1, Idc1, Id1, Iq1 = model.step_simulation (step_vals, nsteps=nsteps)
+              Vdc1, Idc1, Id1, Iq1 = model.steady_state_response (step_vals) # model.step_simulation (step_vals, nsteps=nsteps)
 
               # change Vq and GVrms
-              model.start_simulation ()
+#              model.start_simulation ()
               Vq1 = Vq0 + 1.0
               Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
               GVrms = G0 * Vrms
               step_vals = [G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
-              Vdc2, Idc2, Id2, Iq2 = model.step_simulation (step_vals, nsteps=nsteps)
+              Vdc2, Idc2, Id2, Iq2 = model.steady_state_response (step_vals) # model.step_simulation (step_vals, nsteps=nsteps)
 
               # calculate the changes
               dIdVd = Id1 - Id0
               dIqVd = Iq1 - Iq0
               dIdVq = Id2 - Id0
               dIqVq = Iq2 - Iq0
-              print ('{:6.1f} {:4.2f} {:5.2f} {:5.1f} {:6.1f} {:3.1f} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format (G0, Ud0, Uq0, Vd0, Vq0, Ctl,
-                                                                                                               dIdVd, dIdVq, dIqVd, dIqVq))
+              if bPrint:
+                print ('{:6.1f} {:4.2f} {:5.2f} {:5.1f} {:6.1f} {:3.1f} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format (G0, Ud0, Uq0, Vd0, Vq0, Ctl,
+                                                                                                                 dIdVd, dIdVq, dIqVd, dIqVq))
               # track the global maxima
               dIdVd = abs(dIdVd)
               if dIdVd > maxdIdVd:

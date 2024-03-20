@@ -951,6 +951,42 @@ class pv3():
   def de_normalize (self, val, fac):
     return val * fac['scale'] + fac['offset']
 
+  def steady_state_response (self, vals):
+    for i in range(len(vals)):
+      vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
+
+    ub = torch.tensor (vals, dtype=torch.float)
+    with torch.no_grad():
+      y_non = self.F1 (ub)
+      self.ysum[:] = 0.0
+      for i in range(self.H1.out_channels):
+        for j in range(self.H1.in_channels):
+          ynew = y_non[j] * np.sum(self.b_coeff[i,j,:]) / (np.sum(self.a_coeff[i,j,:])+1.0)
+          self.ysum[i] += ynew
+      y_lin = torch.tensor (self.ysum, dtype=torch.float)
+      y_hat = self.F2 (y_lin)
+
+    if len(y_hat) < 4:
+      Idc = y_hat[0].item()
+      Id = y_hat[1].item()
+      Iq = y_hat[2].item()
+      Idc = self.de_normalize (Idc, self.normfacs['Idc'])
+      Id = self.de_normalize (Id, self.normfacs['Id'])
+      Iq = self.de_normalize (Iq, self.normfacs['Iq'])
+      return Idc, Id, Iq
+
+    Vdc = y_hat[0].item()
+    Idc = y_hat[1].item()
+    Id = y_hat[2].item()
+    Iq = y_hat[3].item()
+
+    Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
+    Idc = self.de_normalize (Idc, self.normfacs['Idc'])
+    Id = self.de_normalize (Id, self.normfacs['Id'])
+    Iq = self.de_normalize (Iq, self.normfacs['Iq'])
+
+    return Vdc, Idc, Id, Iq
+
   def step_simulation (self, vals, nsteps=1):
 #   Vc = np.complex (Vrms+0.0j)
 #   if self.Lf is not None:
