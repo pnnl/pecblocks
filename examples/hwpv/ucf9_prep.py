@@ -8,7 +8,7 @@ import h5py
 
 PREFIX = 'ucf'
 input_path = 'd:/data/ucf3/ucf3x.hdf5'
-output_path = 'd:/data/ucf3/ucf9.hdf5'
+output_path = 'd:/data/ucf3/ucf9c.hdf5'
 
 if __name__ == '__main__':
   print ('Copying UCF3 training records from {:s} to {:s}'.format (input_path, output_path))
@@ -25,10 +25,12 @@ if __name__ == '__main__':
         tbase = np.zeros(n)
         grp_in['t'].read_direct (tbase)
         tmax = tbase[-1]
+        ctl = np.interp(tbase, [0.0, 1.750, 1.751, 10.0], [0.0, 0.0, 1.0, 1.0])
       new_name = '{:s}{:d}'.format (PREFIX, idx)
       idx += 1
       grp_out = f_out.create_group (new_name)
-      for tag in ['t', 'G', 'Ctrl', 'Ud', 'Uq', 'Vdc', 'Idc', 'Vd', 'Vq', 'GVrms', 'Id', 'Iq']:
+      grp_out.create_dataset ('Ctrl', data=ctl, compression='gzip')
+      for tag in ['t', 'G', 'Ud', 'Uq', 'Vdc', 'Idc', 'Vd', 'Vq', 'GVrms', 'Id', 'Iq']:
         grp_out.create_dataset (tag, data=grp_in[tag], compression='gzip')
 
 # print ('Augmentation starts at {:s}{:d}, n={:d}, tmax={:.5f}'.format (PREFIX, idx, n, tmax))

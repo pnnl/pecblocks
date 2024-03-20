@@ -112,7 +112,7 @@ if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf7']: # ucf3z. ucf2, ucf3
+  for root in ['ucf9c']: # ucf3z. ucf2, ucf3, ucf7, ucf9
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)
