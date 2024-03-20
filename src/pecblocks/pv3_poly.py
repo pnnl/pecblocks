@@ -406,9 +406,32 @@ class pv3():
     else:
       self.normfacs = cfg
 
-  def loadAndApplyNormalization(self, filename=None):
+  def loadAndApplyNormalization(self, filename=None, bSummary=False):
+    if bSummary:
+      print ('Before Scaling:')
+      print ('Column       Min       Max      Mean     Range')
+      idx = 0
+      for c in self.COL_U + self.COL_Y:
+        dmax = np.max (self.data_train[:,:,idx])
+        dmin = np.min (self.data_train[:,:,idx])
+        dmean = np.mean (self.data_train[:,:,idx]) # mean over scenarios and time
+        drange = dmax - dmin
+        idx += 1
+        print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
     self.loadNormalization(filename)
     self.applyNormalization()
+    if bSummary:
+      idx = 0
+      print ('After Scaling:')
+      print ('Column       Min       Max      Mean     Range     Scale    Offset')
+      for c in self.COL_U + self.COL_Y:
+        dmean = np.mean (self.data_train[:,:,idx])
+        dmax = np.max (self.data_train[:,:,idx])
+        dmin = np.min (self.data_train[:,:,idx])
+        drange = dmax - dmin
+        idx += 1
+        print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, 
+          dmin, dmax, dmean, drange, self.normfacs[c]['scale'], self.normfacs[c]['offset']))
 
   def applyNormalization(self):
     idx = 0
@@ -865,7 +888,7 @@ class pv3():
           pass
 #          print ('==H(z)[{:d}][{:d}] ({:s} from {:s}) pole magnitudes {:s}'.format(i, j, self.COL_Y[i], self.COL_Y[j], str(polemag)))
 
-  def start_simulation(self):
+  def start_simulation(self, bPrint=False):
 #-------------------------------------------------------------------------------------------------------
 ## control MIMO TransferFunction, needs 'slycot' package for forced_response
 #    a_coeff = self.H1.a_coeff.detach().numpy()                                                         
@@ -886,7 +909,8 @@ class pv3():
 #---------------------------------------------------------------------------------------
 # set up IIR filters for time step simulation
     self.b_coeff = self.H1.b_coeff.detach().numpy()
-    print ('start_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
+    if bPrint:
+      print ('start_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
     if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):
       rho = self.H1.rho.detach().numpy().squeeze()
       psi = self.H1.psi.detach().numpy().squeeze()
@@ -897,12 +921,15 @@ class pv3():
       self.a_coeff = np.ones ((self.b_coeff.shape[0], self.b_coeff.shape[1], 2)) #  3))
       self.a_coeff[:,:,0] = a1
       self.a_coeff[:,:,1] = a2
-      print ('constructed a_coeff')                                         
+      if bPrint:
+        print ('constructed a_coeff')                                         
     else:
       self.a_coeff = self.H1.a_coeff.detach().numpy()
-      print ('existing a_coeff')
-    print (self.a_coeff)
-    print (self.b_coeff)
+      if bPrint:
+        print ('existing a_coeff')
+    if bPrint:
+      print (self.a_coeff)
+      print (self.b_coeff)
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.H1.out_channels)
