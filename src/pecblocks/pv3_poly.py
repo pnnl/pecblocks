@@ -739,16 +739,24 @@ class pv3():
     Iq = self.de_normalize (y_hat[npad:,3], self.normfacs['Iq'])
     return Vdc, Idc, Id, Iq
 
-  def stepOneCase(self, case_idx, npad):
+  def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(self.idx_out)))
     ub = torch.zeros((1, 1, len(self.idx_in)), dtype=torch.float)
     self.start_simulation()
+    # establish initial conditions of the normalized data
     ub = torch.tensor (case_data[0,self.idx_in]) # initial inputs
-    for k in range(-npad, n):
-      if k > 0:
-        ub = torch.tensor (case_data[k,self.idx_in])
+    with torch.no_grad():
+      y_non = self.F1 (ub)
+      for i in range(self.H1.out_channels):
+        for j in range(self.H1.in_channels):
+          ynew = y_non[j] * np.sum(self.b_coeff[i,j,:]) / (np.sum(self.a_coeff[i,j,:])+1.0)
+          self.uhist[i][j][:] = y_non[j]
+          self.yhist[i][j][:] = ynew
+
+    for k in range(n):
+      ub = torch.tensor (case_data[k,self.idx_in])
       with torch.no_grad():
         y_non = self.F1 (ub)
         self.ysum[:] = 0.0
@@ -762,12 +770,10 @@ class pv3():
             yh[1:] = yh[:-1]
             yh[0] = ynew
             self.ysum[i] += ynew
-        if k >= 0:
-          y_lin = torch.tensor (self.ysum, dtype=torch.float)
-          y_hat[k,:] = self.F2(y_lin)
+        y_lin = torch.tensor (self.ysum, dtype=torch.float)
+        y_hat[k,:] = self.F2(y_lin)
     y_true = case_data[:,self.idx_out].squeeze()
     udata = case_data[:,self.idx_in].squeeze()
-#    print ('shapes: case_data', case_data.shape, 'y_hat', y_hat.shape, 'y_true', y_true.shape, 'udata', udata.shape)
     rmse = dynonet.metrics.error_rmse(y_true, y_hat)
     mae = dynonet.metrics.error_mae(y_true, y_hat)
     return rmse, mae, y_hat, y_true, udata
