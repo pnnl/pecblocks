@@ -5,7 +5,7 @@ import sys
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
-data_path = 'lab1'
+data_path = 'ucf7'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -13,6 +13,10 @@ if __name__ == '__main__':
 
   fname = os.path.join (data_path, 'Loss.npy')
   data = np.load (fname)
+
+  print ('Read {:d} epochs from {:s}'.format (len(data[0]), fname))
+  print ('Last training loss {:.6f}'.format (data[0][-1]))
+  print ('Last validation loss {:.6f}'.format (data[1][-1]))
 
   plt.figure()
   plt.title(fname)

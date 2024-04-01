@@ -66,6 +66,8 @@ class pv3():
     self.model_root = None
     self.data_path = None
     self.h5grp_prefix = None
+    self.clamps = None
+    self.sensitivity = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
@@ -92,6 +94,10 @@ class pv3():
       self.t_step = config['t_step']
     else:
       self.t_step = 1.0e-3
+    if 'clamps' in config:
+      self.clamps = config['clamps']
+    if 'sensitivity' in config:
+      self.sensitivity = config['sensitivity']
     self.batch_size = config['batch_size']
     if 'n_validation_pct' in config:
       self.n_validation_pct = config['n_validation_pct']
@@ -458,7 +464,120 @@ class pv3():
       self.u0 = None
     self.F2 = MimoStaticNonLinearity(in_channels=len(self.idx_out), out_channels=len(self.idx_out), n_hidden=self.nh2, activation=self.activation)
 
+  def find_sens_channel_indices (self, targets, available):
+    n = len(targets)
+    idx = []
+    for i in range(n):
+      idx.append (available.index(targets[i]))
+    return n, idx
+
+  def build_sens_baselines (self, bases, step_vals, cfg, keys, indices, lens, level):
+    self.sens_counter += 1
+
+    key = keys[level]
+    ary = cfg['sets'][key]
+    idx = cfg['idx_set'][key]
+
+    if level+1 == len(keys): # add basecases at the lowest level
+      for i in range(lens[level]):
+        step_vals[idx] = ary[i]
+        bases.append (step_vals.copy())
+    else: # propagate this new value down to lower levels
+      step_vals[idx] = ary[indices[level]]
+
+    if level+1 < len(keys):
+      level += 1
+      self.build_sens_baselines (bases, step_vals, cfg, keys, indices, lens, level)
+    else:
+      level -= 1
+      while level >= 0:
+        if indices[level]+1 >= lens[level]:
+          level -= 1
+        else:
+          indices[level] += 1
+          indices[level+1:] = 0
+          self.build_sens_baselines (bases, step_vals, cfg, keys, indices, lens, level)
+
+  def get_sens_gvrms (self, G, Vd, Vq, k):
+    return G * k * math.sqrt(Vd*Vd + Vq*Vq)
+
+  def setup_sensitivity_losses(self):
+    self.sensitivity['n_in'], self.sensitivity['idx_in'] = self.find_sens_channel_indices (self.sensitivity['inputs'], self.COL_U)
+    self.sensitivity['n_out'], self.sensitivity['idx_out'] = self.find_sens_channel_indices (self.sensitivity['outputs'], self.COL_Y)
+    self.sensitivity['idx_set'] = {}
+    for key in self.sensitivity['sets']:
+      self.sensitivity['idx_set'][key] = self.COL_U.index(key)
+    print ('inputs', self.sensitivity['inputs'], self.sensitivity['idx_in'])
+    print ('outputs', self.sensitivity['outputs'], self.sensitivity['idx_out'])
+    print ('sets', self.sensitivity['idx_set'])
+    self.sensitivity['idx_g_rms'] = self.COL_U.index (self.sensitivity['GVrms']['G'])
+    self.sensitivity['idx_vd_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vd'])
+    self.sensitivity['idx_vq_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vq'])
+    self.sensitivity['idx_gvrms'] = self.COL_U.index ('GVrms')
+    print ('GVrms', self.sensitivity['idx_g_rms'], self.sensitivity['idx_vd_rms'], self.sensitivity['idx_vq_rms'], 
+           self.sensitivity['GVrms']['k'], self.sensitivity['idx_gvrms'])
+
+    self.sens_bases = []
+    vals = np.zeros (len(self.COL_U))
+    keys = list(self.sensitivity['sets'])
+    indices = np.zeros(len(keys), dtype=int)
+    lens = np.zeros(len(keys), dtype=int)
+    for i in range(len(keys)):
+      lens[i] = len(self.sensitivity['sets'][keys[i]])
+    self.sens_counter = 0
+    self.build_sens_baselines (self.sens_bases, vals, self.sensitivity, keys, indices, lens, 0)
+    print (len(self.sens_bases), 'sensitivity base cases constructed in', self.sens_counter, 'function calls')
+
+  def calc_sensitivity_losses(self, bPrint=False):
+    idx_vd = self.sensitivity['idx_vd_rms']
+    idx_vq = self.sensitivity['idx_vq_rms']
+    idx_gvrms = self.sensitivity['idx_gvrms']
+    idx_g = self.sensitivity['idx_g_rms']
+    krms = self.sensitivity['GVrms']['k']
+    max_sens = np.zeros ((self.sensitivity['n_out'], self.sensitivity['n_in']))
+    sens = np.zeros ((self.sensitivity['n_out'], self.sensitivity['n_in']))
+    self.start_simulation (bPrint)
+
+    for vals in self.sens_bases:
+      Vd0 = vals[idx_vd]
+      Vq0 = vals[idx_vq]
+      Vd1 = Vd0 + 1.0
+      Vq1 = Vq0 + 1.0
+
+      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq0, krms)
+      _, _, Id0, Iq0 = self.steady_state_response (vals.copy())
+      #print (vals, Id0, Iq0)
+
+      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd1, Vq0, krms)
+      vals[idx_vd] = Vd1
+      vals[idx_vq] = Vq0
+      _, _, Id1, Iq1 = self.steady_state_response (vals.copy())
+      #print (vals, Id1, Iq1)
+
+      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq1, krms)
+      vals[idx_vd] = Vd0
+      vals[idx_vq] = Vq1
+      _, _, Id2, Iq2 = self.steady_state_response (vals.copy())
+      #print (vals, Id2, Iq2)
+
+      sens[0][0] = abs(Id1 - Id0)
+      sens[1][0] = abs(Iq1 - Iq0)
+      sens[0][1] = abs(Id2 - Id0)
+      sens[1][1] = abs(Iq2 - Iq0)
+      for i in range(2):
+        for j in range(2):
+          if sens[i][j] > max_sens[i][j]:
+            max_sens[i][j] = sens[i][j]
+
+    if bPrint:
+      print (max_sens)
+    sens_loss = max (np.max(max_sens) - self.sensitivity['limit'], 1.0e-5)
+    return sens_loss
+
   def trainModelCoefficients(self, bMAE = False):
+    if self.sensitivity is not None:
+      self.setup_sensitivity_losses()
+
     self.optimizer = torch.optim.Adam([
       {'params': self.F1.parameters(), 'lr': self.lr},
       {'params': self.H1.parameters(), 'lr': self.lr},
@@ -485,10 +604,12 @@ class pv3():
 
     LOSS = []
     VALID = []
+    SENS = []
     lossfile = os.path.join(self.model_folder, "Loss.npy")
     start_time = time.time()
     for itr in range(0, self.num_iter):
       epoch_loss = 0.0
+      epoch_sens = 0.0
       self.F1.train()
       self.H1.train()
       self.F2.train()
@@ -507,14 +628,22 @@ class pv3():
           loss_fit = torch.sum(torch.abs(err_fit))
         else:
           loss_fit = torch.mean(err_fit**2)
-        loss = loss_fit
+
+        # Compute sensitivity loss
+        loss_sens = 0.0
+        if self.sensitivity is not None:
+          loss_sens = self.calc_sensitivity_losses (bPrint=False)
+
         # Optimize on this batch
+        loss = loss_fit + loss_sens
         loss.backward()
         self.optimizer.step()
 #        print ('  batch size={:d} loss={:12.6f}'.format (ub.shape[0], loss_fit))
         epoch_loss += loss_fit
+        epoch_sens += loss_sens
 
       LOSS.append(epoch_loss.item())
+      SENS.append(epoch_sens)
 
       # validation loss
       valid_loss = 0.0
@@ -538,13 +667,13 @@ class pv3():
 
       VALID.append(valid_loss.item())
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Training Loss {:12.6f} | Validation Loss {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss))
+        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens))
         self.saveModelCoefficients()
         np.save (lossfile, [LOSS, VALID])
 
     train_time = time.time() - start_time
-    np.save (lossfile, [LOSS, VALID])
-    return train_time, LOSS, VALID
+    np.save (lossfile, [LOSS, VALID, SENS])
+    return train_time, LOSS, VALID, SENS
 
   def saveModelCoefficients(self):
     torch.save(self.F1.state_dict(), os.path.join(self.model_folder, "F1.pkl"))
@@ -649,6 +778,8 @@ class pv3():
       if 'Mode' in self.normfacs:
         self.COL_U.append('Mode')
     config['COL_U'] = self.COL_U
+    config['clamps'] = self.clamps
+    config['sensitivity'] = self.sensitivity
 
     self.append_lti (config, 'H1', self.H1)
     config['H1s'], config['Q1s'] = self.make_H1Q1s(self.H1)
@@ -820,6 +951,28 @@ class pv3():
     if bByCase:
       case_rmse = np.sqrt(case_rmse)
     return total_rmse, total_mae, case_rmse, case_mae
+
+  def trainingLosses(self):
+    self.n_cases = self.data_train.shape[0]
+    in_size = len(self.COL_U)
+    out_size = len(self.COL_Y)
+
+    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
+    rmse_loss = 0.0
+
+    for ub, y_true in total_dl: # batch loop
+      y_non = self.F1 (ub)
+      y_lin = self.make_mimo_ylin (y_non)
+      y_hat = self.F2 (y_lin)
+      if self.n_loss_skip > 0:
+        err_fit = y_true[:,self.n_loss_skip:,:] - y_hat[:,self.n_loss_skip:,:]
+      else:
+        err_fit = y_true - y_hat
+      loss_fit = torch.mean(err_fit**2)
+      rmse_loss += loss_fit
+
+    return rmse_loss.item()
 
   def set_LCL_filter(self, Lf, Cf, Lc):
     self.Lf = Lf
