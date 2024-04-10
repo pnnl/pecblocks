@@ -546,19 +546,18 @@ class pv3():
 
       vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq0, krms)
       _, _, Id0, Iq0 = self.steady_state_response (vals.copy())
-      #print (vals, Id0, Iq0)
 
       vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd1, Vq0, krms)
       vals[idx_vd] = Vd1
       vals[idx_vq] = Vq0
       _, _, Id1, Iq1 = self.steady_state_response (vals.copy())
-      #print (vals, Id1, Iq1)
 
       vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq1, krms)
       vals[idx_vd] = Vd0
       vals[idx_vq] = Vq1
       _, _, Id2, Iq2 = self.steady_state_response (vals.copy())
-      #print (vals, Id2, Iq2)
+      #prevent aliasing the base cases
+      vals[idx_vq] = Vq0
 
       sens[0][0] = abs(Id1 - Id0)
       sens[1][0] = abs(Iq1 - Iq0)
@@ -569,9 +568,9 @@ class pv3():
           if sens[i][j] > max_sens[i][j]:
             max_sens[i][j] = sens[i][j]
 
-    if bPrint:
-      print (max_sens)
     sens_loss = max (np.max(max_sens) - self.sensitivity['limit'], 1.0e-5)
+    if bPrint:
+      print (max_sens, np.max(max_sens), sens_loss)
     return sens_loss
 
   def trainModelCoefficients(self, bMAE = False):
@@ -596,6 +595,7 @@ class pv3():
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=self.batch_size, shuffle=True)
     valid_dl = torch.utils.data.DataLoader(valid_ds, batch_size=self.batch_size, shuffle=False)
     validation_scale = float(len(train_ds)) / float(len(valid_ds))
+    sensitivity_scale = float(self.batch_size) / float(len(train_ds))
     print ('Dataset split:', len(total_ds), len(train_ds), len (valid_ds), 'validation_scale={:.3f}'.format(validation_scale))
 
     if self.continue_iterations:
@@ -632,20 +632,26 @@ class pv3():
         # Compute sensitivity loss
         loss_sens = 0.0
         if self.sensitivity is not None:
-          loss_sens = self.calc_sensitivity_losses (bPrint=False)
+          loss_sens = torch.tensor (self.calc_sensitivity_losses (bPrint=False), requires_grad=True)
 
         # Optimize on this batch
         loss = loss_fit + loss_sens
+#       print (' loss_fit', loss_fit)
+#       print (' loss_sens', loss_sens)
+#       print (' loss', loss)
         loss.backward()
         self.optimizer.step()
 #        print ('  batch size={:d} loss={:12.6f}'.format (ub.shape[0], loss_fit))
         epoch_loss += loss_fit
         epoch_sens += loss_sens
+#        print ('  fit,sens,loss = [{:12.6f} {:12.6f} {:12.6f}]'.format (loss_fit, loss_sens, loss))
 
+      print ('  last batch loss_fit, loss_sens, loss:', loss_fit, loss_sens, loss)
+      epoch_sens *= sensitivity_scale
       LOSS.append(epoch_loss.item())
-      SENS.append(epoch_sens)
+      SENS.append(epoch_sens.item())
 
-      # validation loss
+      # validation loss (sensitivity loss won't change, as it does not depend on the validation dataset)
       valid_loss = 0.0
       self.F1.eval()
       self.H1.eval()
@@ -669,7 +675,7 @@ class pv3():
       if itr % self.print_freq == 0:
         print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens))
         self.saveModelCoefficients()
-        np.save (lossfile, [LOSS, VALID])
+        np.save (lossfile, [LOSS, VALID, SENS])
 
     train_time = time.time() - start_time
     np.save (lossfile, [LOSS, VALID, SENS])
@@ -1069,7 +1075,7 @@ class pv3():
 # set up IIR filters for time step simulation
     self.b_coeff = self.H1.b_coeff.detach().numpy()
     if bPrint:
-      print ('start_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
+      print ('  start_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
     if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):
       rho = self.H1.rho.detach().numpy().squeeze()
       psi = self.H1.psi.detach().numpy().squeeze()
@@ -1081,14 +1087,14 @@ class pv3():
       self.a_coeff[:,:,0] = a1
       self.a_coeff[:,:,1] = a2
       if bPrint:
-        print ('constructed a_coeff')                                         
+        print ('    constructed a_coeff')                                         
     else:
       self.a_coeff = self.H1.a_coeff.detach().numpy()
       if bPrint:
-        print ('existing a_coeff')
+        print ('    existing a_coeff')
     if bPrint:
-      print (self.a_coeff)
-      print (self.b_coeff)
+      print ('    a=\n', self.a_coeff)
+      print ('    b=\n', self.b_coeff)
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.H1.out_channels)

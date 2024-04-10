@@ -10,7 +10,7 @@
              "Id": [0.0, 5.9],
              "Iq": [-2.7, 2.4]
   },
-  "sensitivity": {"limit": 0.0080,
+  "sensitivity": {"limit": 0.0099,
                   "inputs": ["Vd", "Vq"],
                   "outputs": ["Id", "Iq"],
                   "GVrms": {"G": "G", "Vd": "Vd", "Vq": "Vq", "k": 1.2247449
@@ -26,7 +26,7 @@
   "h5grp_prefix":"ucf",
   "lr": 1.0e-3,
   "t_step": 0.01,
-  "num_iter": 1000,
+  "num_iter": 400,
   "continue_iterations": false,
   "print_freq": 1,
   "batch_size": 90,

@@ -19,6 +19,9 @@ model_path = './ucf7s_config.json'
 #data_path = 'd:/data/ucf3/ucf9.hdf5'
 #model_path = './ucf9_config.json'
 
+#data_path = 'd:/data/ucf3/ucf9c.hdf5'
+#model_path = './ucf10c_config.json'
+
 minRd = 1.0e9
 maxRd = 0.0
 minRq = 1.0e9
@@ -243,6 +246,8 @@ def model_sensitivity (model, bPrint):
     vals[cfg['idx_vq_rms']] = Vq1
     _, _, Id2, Iq2 = model.steady_state_response (vals.copy())
     #print (vals, Id2, Iq2)
+    #prevent aliasing the base cases
+    vals[cfg['idx_vq_rms']] = Vq0
 
     sens[0][0] = abs(Id1 - Id0)
     sens[1][0] = abs(Iq1 - Iq0)
