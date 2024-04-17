@@ -498,9 +498,6 @@ class pv3():
           indices[level+1:] = 0
           self.build_sens_baselines (bases, step_vals, cfg, keys, indices, lens, level)
 
-  def get_sens_gvrms (self, G, Vd, Vq, k):
-    return G * k * math.sqrt(Vd*Vd + Vq*Vq)
-
   def setup_sensitivity_losses(self):
     self.sensitivity['n_in'], self.sensitivity['idx_in'] = self.find_sens_channel_indices (self.sensitivity['inputs'], self.COL_U)
     self.sensitivity['n_out'], self.sensitivity['idx_out'] = self.find_sens_channel_indices (self.sensitivity['outputs'], self.COL_Y)
@@ -528,15 +525,56 @@ class pv3():
     self.build_sens_baselines (self.sens_bases, vals, self.sensitivity, keys, indices, lens, 0)
     print (len(self.sens_bases), 'sensitivity base cases constructed in', self.sens_counter, 'function calls')
 
+  def sensitivity_response (self, vals):
+    for i in range(len(vals)):
+      vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
+
+    ub = torch.tensor (vals, dtype=torch.float) # requires_grad=False
+    y_non = self.F1 (ub)
+    ysum = torch.sum (y_non * self.sens_mat, dim=1)
+    y_hat = self.F2 (ysum)
+    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
+    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+    return Id, Iq
+
+  # coefficients as trainable tensors instead of numpy, use self.H1.b as they are, but pad self.H1.a with ones
+  def start_sensitivity_simulation(self, bPrint=False):
+    if bPrint:
+      print ('  start_sensitivity_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
+    if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):  # TODO: this may be an issue for training H1.a coefficients
+      rho = self.H1.rho.detach().numpy().squeeze()
+      psi = self.H1.psi.detach().numpy().squeeze()
+      r = 1 / (1 + np.exp(-rho))
+      beta = np.pi / (1 + np.exp(-psi))
+      a1 = -2 * r * np.cos(beta)
+      a2 = r * r
+      self.H1.a_coeff = torch.ones ((self.H1.b_coeff.shape[0], self.H1.b_coeff.shape[1], 2), requires_grad=True)
+      self.H1.a_coeff[:,:,0] = a1
+      self.H1.a_coeff[:,:,1] = a2
+      if bPrint:
+        print ('    constructed a_coeff')                                         
+    else:
+      if bPrint:
+        print ('    existing a_coeff')
+    sa_coeff = torch.cat ((self.H1.a_coeff, torch.ones ((self.H1.b_coeff.shape[0], self.H1.b_coeff.shape[1], 1))), dim=2)
+    sum_b = torch.sum(self.H1.b_coeff, dim=2)
+    sum_sa = torch.sum(sa_coeff, dim=2)
+    self.sens_mat = torch.div(sum_b, sum_sa)
+    if bPrint:
+      print ('    a=\n', self.H1.a_coeff)
+      print ('   sa=\n', sa_coeff)
+      print ('    b=\n', self.H1.b_coeff)
+      print ('  mat=\n', self.sens_mat)
+
   def calc_sensitivity_losses(self, bPrint=False):
     idx_vd = self.sensitivity['idx_vd_rms']
     idx_vq = self.sensitivity['idx_vq_rms']
     idx_gvrms = self.sensitivity['idx_gvrms']
     idx_g = self.sensitivity['idx_g_rms']
     krms = self.sensitivity['GVrms']['k']
-    max_sens = np.zeros ((self.sensitivity['n_out'], self.sensitivity['n_in']))
-    sens = np.zeros ((self.sensitivity['n_out'], self.sensitivity['n_in']))
-    self.start_simulation (bPrint)
+    max_sens = torch.tensor (0.0, requires_grad=True)
+    sens_floor = torch.tensor (1.0e-5, requires_grad=True)
+    self.start_sensitivity_simulation ()
 
     for vals in self.sens_bases:
       Vd0 = vals[idx_vd]
@@ -544,33 +582,32 @@ class pv3():
       Vd1 = Vd0 + 1.0
       Vq1 = Vq0 + 1.0
 
-      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq0, krms)
-      _, _, Id0, Iq0 = self.steady_state_response (vals.copy())
+      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd0*Vd0 + Vq0*Vq0)
+      Id0, Iq0 = self.sensitivity_response (vals.copy())
 
-      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd1, Vq0, krms)
+      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd1*Vd1 + Vq0*Vq0)
       vals[idx_vd] = Vd1
       vals[idx_vq] = Vq0
-      _, _, Id1, Iq1 = self.steady_state_response (vals.copy())
+      Id1, Iq1 = self.sensitivity_response (vals.copy())
 
-      vals[idx_gvrms] = self.get_sens_gvrms (vals[idx_g], Vd0, Vq1, krms)
+      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd0*Vd0 + Vq1*Vq1)
       vals[idx_vd] = Vd0
       vals[idx_vq] = Vq1
-      _, _, Id2, Iq2 = self.steady_state_response (vals.copy())
+      Id2, Iq2 = self.sensitivity_response (vals.copy())
       #prevent aliasing the base cases
       vals[idx_vq] = Vq0
 
-      sens[0][0] = abs(Id1 - Id0)
-      sens[1][0] = abs(Iq1 - Iq0)
-      sens[0][1] = abs(Id2 - Id0)
-      sens[1][1] = abs(Iq2 - Iq0)
-      for i in range(2):
-        for j in range(2):
-          if sens[i][j] > max_sens[i][j]:
-            max_sens[i][j] = sens[i][j]
+      sens = torch.max (torch.stack ((torch.abs(Id1 - Id0), torch.abs(Iq1 - Iq0), torch.abs(Id2 - Id0), torch.abs(Iq2 - Iq0))))
+      max_sens = torch.max (torch.stack ((max_sens, sens)))
 
-    sens_loss = max (np.max(max_sens) - self.sensitivity['limit'], 1.0e-5)
+#     if bPrint:
+#       print (' * Id=', Id0, Id1, Id2)
+#       print ('   Iq=', Iq0, Iq1, Iq2)
+#       print ('   sens=', sens, 'max=', max_sens)
+
+    sens_loss = torch.max(max_sens - self.sensitivity['limit'], sens_floor)
     if bPrint:
-      print (max_sens, np.max(max_sens), sens_loss)
+      print ('  sens=', max_sens, 'loss=', sens_loss)
     return sens_loss
 
   def trainModelCoefficients(self, bMAE = False):
@@ -632,7 +669,9 @@ class pv3():
         # Compute sensitivity loss
         loss_sens = 0.0
         if self.sensitivity is not None:
-          loss_sens = torch.tensor (self.calc_sensitivity_losses (bPrint=False), requires_grad=True)
+#          loss_sens = self.calc_sensitivity_losses (bPrint=True).clone().detach().requires_grad_(True)
+          loss_sens = self.calc_sensitivity_losses (bPrint=False)
+          #loss_sens = torch.tensor (self.calc_sensitivity_losses (bPrint=False), requires_grad=True)
 
         # Optimize on this batch
         loss = loss_fit + loss_sens
@@ -646,7 +685,7 @@ class pv3():
         epoch_sens += loss_sens
 #        print ('  fit,sens,loss = [{:12.6f} {:12.6f} {:12.6f}]'.format (loss_fit, loss_sens, loss))
 
-      print ('  last batch loss_fit, loss_sens, loss:', loss_fit, loss_sens, loss)
+#      print ('  last batch loss_fit, loss_sens, loss:', loss_fit, loss_sens, loss)
       epoch_sens *= sensitivity_scale
       LOSS.append(epoch_loss.item())
       SENS.append(epoch_sens.item())
