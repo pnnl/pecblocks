@@ -10,7 +10,7 @@
              "Id": [0.0, 5.9],
              "Iq": [-2.7, 2.4]
   },
-  "sensitivity": {"limit": 0.0080,
+  "sensitivity": {"limit": 0.0099,
                   "inputs": ["Vd", "Vq"],
                   "outputs": ["Id", "Iq"],
                   "GVrms": {"G": "G", "Vd": "Vd", "Vq": "Vq", "k": 1.2247449

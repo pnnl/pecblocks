@@ -1,6 +1,6 @@
 {
-  "model_folder": "./ucf7s/",
-  "model_root": "ucf7s",
+  "model_folder": "./ucf7s2/",
+  "model_root": "ucf7s2",
   "data_path": "d:/data/ucf3/ucf7.hdf5",
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
@@ -10,7 +10,7 @@
              "Id": [0.0, 5.9],
              "Iq": [-2.7, 2.4]
   },
-  "sensitivity": {"limit": 0.0099,
+  "sensitivity": {"limit": 0.02,
                   "inputs": ["Vd", "Vq"],
                   "outputs": ["Id", "Iq"],
                   "GVrms": {"G": "G", "Vd": "Vd", "Vq": "Vq", "k": 1.2247449
@@ -26,8 +26,8 @@
   "h5grp_prefix":"ucf",
   "lr": 1.0e-3,
   "t_step": 0.01,
-  "num_iter": 600,
-  "continue_iterations": true,
+  "num_iter": 2000,
+  "continue_iterations": false,
   "print_freq": 1,
   "batch_size": 90,
   "n_validation_pct": 10,
