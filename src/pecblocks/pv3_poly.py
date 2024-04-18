@@ -667,7 +667,7 @@ class pv3():
           loss_fit = torch.mean(err_fit**2)
 
         # Compute sensitivity loss
-        loss_sens = 0.0
+        loss_sens = torch.tensor (0.0)
         if self.sensitivity is not None:
 #          loss_sens = self.calc_sensitivity_losses (bPrint=True).clone().detach().requires_grad_(True)
           loss_sens = self.calc_sensitivity_losses (bPrint=False)
