@@ -1,11 +1,10 @@
 # copyright 2021-2024 Battelle Memorial Institute
 # plots a comparison of simulated and true outputs from a trained HW model
-#  arg1: case number to plot 1..ncases (default 189)
-#  arg2: 1 to plot normalized quantities (default false)
-#  arg3: relative path to trained model configuration file
-#  arg4: relative path to the training data file, HDF5
+#  arg1: configuration file
+#  arg2: case number to plot 1..ncases (default 189)
+#  arg3: 1 to plot normalized quantities (default false)
 #
-# example: python pv3_test.py 189 1 flatbal/flatbal_config.json
+# example: python pv3_test.py flatbal_config.json
 
 import pandas as pd
 import numpy as np
@@ -13,79 +12,79 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import pecblocks.pv3_poly as pv3_model
+import json
 
 nrows = 3 # 2
 ncols = 5 # 7 # 9
 bNormalized = False
 
-data_path = './data/flatbalanced.hdf5'
-model_path = './flatbal/flatbal_config.json'
-report_path = './report'
-
-model_path = './flatstable/flatstable_config.json'
-
-
-data_path = './data/balanced.hdf5'
-model_path = './big/balanced_config.json'
-
-data_path = '../../../atptools/unbalanced.hdf5'
-model_path = './tacs/tacs_config.json'
-model_path = './unbal/unbal_config.json'
-
-data_path = '../simscape/balanced.hdf5'
-model_path = '../simscape/balanced_config.json'
-
-data_path = './data/osg_vrms.hdf5'
-model_path = './osg_vrms/osg_vrms_config.json'
-
-data_path = './data/osg_vdvq.hdf5'
-model_path = './osg_vdvq/osg_vdvq_config.json'
-
-data_path = './data/balanced_vdvq.hdf5'
-model_path = './dc/dc_config.json'
-
-data_path = './data/flatbalanced.hdf5'
-model_path = './flatbal_continuation/flatbal_continuation_config.json'
-
-data_path = './data/osg_vdvq2.hdf5'
-model_path = './osg_vdvq/osg_vdvq_config.json'
-
-data_path = './data/balanced_vdvq2.hdf5'
-model_path = './flat_vdvq/flat_vdvq_config.json'
-
-data_path = 'c:/data/ucf2.hdf5'
-model_path = './ucf2/ucf2_config.json'
-model_path = './ucf2ac/ucf2ac_config.json'
-
-data_path = 'c:/data/sdi.hdf5'
-model_path = './sdi/sdi_config.json'
-
-data_path = 'c:/data/sdi4.hdf5'
-model_path = './sdi4/sdi4_config.json'
-#model_path = './sdi4v/sdi4v_config.json'
-
-data_path = 'c:/data/sdi5.hdf5'
-model_path = './sdi5/sdi5_config.json'
-
-data_path = 'd:/data/unb4.hdf5'
-model_path = './unb4/unb4_config.json'
-
-data_path = 'd:/data/jan.hdf5'
-model_path = './jan/jan_config.json'
-
-data_path = 'd:/data/ucf2.hdf5'
-model_path = './ucf2ac/ucf2ac_config.json'
-
-data_path = 'd:/data/ucf3/ucf3z.hdf5'
-model_path = './ucf3z_config.json'
-
-data_path = 'd:/data/ucf3/ucf3.hdf5'
-#model_path = './ucf3_config.json'
-#model_path = './ucf4_config.json'
-model_path = './ucf6_config.json'
-
-data_path = 'd:/data/ucf3/ucf7.hdf5'
-model_path = './ucf7s_config.json'
+#data_path = './data/flatbalanced.hdf5'
+#model_path = './flatbal/flatbal_config.json'
+#report_path = './report'
+#
+#model_path = './flatstable/flatstable_config.json'
+#
+#data_path = './data/balanced.hdf5'
+#model_path = './big/balanced_config.json'
+#
+#data_path = '../../../atptools/unbalanced.hdf5'
+#model_path = './tacs/tacs_config.json'
+#model_path = './unbal/unbal_config.json'
+#
+#data_path = '../simscape/balanced.hdf5'
+#model_path = '../simscape/balanced_config.json'
+#
+#data_path = './data/osg_vrms.hdf5'
+#model_path = './osg_vrms/osg_vrms_config.json'
+#
+#data_path = './data/osg_vdvq.hdf5'
+#model_path = './osg_vdvq/osg_vdvq_config.json'
+#
+#data_path = './data/balanced_vdvq.hdf5'
+#model_path = './dc/dc_config.json'
+#
+#data_path = './data/flatbalanced.hdf5'
+#model_path = './flatbal_continuation/flatbal_continuation_config.json'
+#
+#data_path = './data/osg_vdvq2.hdf5'
+#model_path = './osg_vdvq/osg_vdvq_config.json'
+#
+#data_path = './data/balanced_vdvq2.hdf5'
+#model_path = './flat_vdvq/flat_vdvq_config.json'
+#
+#data_path = 'c:/data/ucf2.hdf5'
+#model_path = './ucf2/ucf2_config.json'
+#model_path = './ucf2ac/ucf2ac_config.json'
+#
+#data_path = 'c:/data/sdi.hdf5'
+#model_path = './sdi/sdi_config.json'
+#
+#data_path = 'c:/data/sdi4.hdf5'
+#model_path = './sdi4/sdi4_config.json'
+##model_path = './sdi4v/sdi4v_config.json'
+#
+#data_path = 'c:/data/sdi5.hdf5'
+#model_path = './sdi5/sdi5_config.json'
+#
+#data_path = 'd:/data/unb4.hdf5'
+#model_path = './unb4/unb4_config.json'
+#
+#data_path = 'd:/data/jan.hdf5'
+#model_path = './jan/jan_config.json'
+#
+#data_path = 'd:/data/ucf2.hdf5'
+#model_path = './ucf2ac/ucf2ac_config.json'
+#
+#data_path = 'd:/data/ucf3/ucf3z.hdf5'
+#model_path = './ucf3z_config.json'
+#
+#data_path = 'd:/data/ucf3/ucf3.hdf5'
+##model_path = './ucf3_config.json'
+##model_path = './ucf4_config.json'
+#model_path = './ucf6_config.json'
+#
+#data_path = 'd:/data/ucf3/ucf7.hdf5'
+#model_path = './ucf7s_config.json'
 #model_path = './ucf8_config.json'
 
 #data_path = 'd:/data/osg4_vdvq.hdf5'
@@ -167,25 +166,29 @@ def add_case(model, idx, bTrueOutput=False):
       ax[j // 2, j % 2].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
 
 if __name__ == '__main__':
-  case_idx = 100 # 36 # 189
   if len(sys.argv) > 1:
-    case_idx = int(sys.argv[1])
-  if len(sys.argv) > 2:
-    if int(sys.argv[2]) > 0:
-      bNormalized = True
-  if len(sys.argv) > 3:
-    model_path = sys.argv[3]
-  if len(sys.argv) > 4:
-    data_path = sys.argv[4]
+    config_file = sys.argv[1]
+    fp = open (config_file, 'r')
+    cfg = json.load (fp)
+    fp.close()
+    data_path = cfg['data_path']
+    model_folder = cfg['model_folder']
+    model_root = cfg['model_root']
+  else:
+    print ('Usage: python pv3_test.py config.json')
+    quit()
 
-  model_folder, config_file = os.path.split(model_path)
-  model_root = config_file.rstrip('.json')
-  model_root = model_root.rstrip('_config')
   print ('model_folder =', model_folder)
   print ('model_root =', model_root)
   print ('data_path =', data_path)
+  case_idx = 100 # 36 # 189
+  if len(sys.argv) > 2:
+    case_idx = int(sys.argv[2])
+    if len(sys.argv) > 3:
+      if int(sys.argv[3]) > 0:
+        bNormalized = True
 
-  model = pv3_model.pv3(training_config=model_path)
+  model = pv3_model.pv3(training_config=config_file)
   model.loadTrainingData(data_path)
   model.loadAndApplyNormalization()
   model.initializeModelStructure()

@@ -10,17 +10,9 @@ import os
 import sys
 import pecblocks.pv3_poly as pv3_model
 import math
+import json
 
 KRMS = math.sqrt(1.5)
-
-data_path = 'd:/data/ucf3/ucf7.hdf5'
-model_path = './ucf7s_config.json'
-
-#data_path = 'd:/data/ucf3/ucf9.hdf5'
-#model_path = './ucf9_config.json'
-
-#data_path = 'd:/data/ucf3/ucf9c.hdf5'
-#model_path = './ucf10c_config.json'
 
 minRd = 1.0e9
 maxRd = 0.0
@@ -263,39 +255,47 @@ def model_sensitivity (model, bPrint):
   return np.max(max_sens)
 
 if __name__ == '__main__':
-
-  case_idx = 100 # 36 # 189
   if len(sys.argv) > 1:
-    case_idx = int(sys.argv[1])
+    config_file = sys.argv[1]
+    fp = open (config_file, 'r')
+    cfg = json.load (fp)
+    fp.close()
+    data_path = cfg['data_path']
+    model_folder = cfg['model_folder']
+    model_root = cfg['model_root']
+  else:
+    print ('Usage: python pv3_lambda.py config.json')
+    quit()
 
-  model_folder, config_file = os.path.split(model_path)
-  model_root = config_file.rstrip('.json')
-  model_root = model_root.rstrip('_config')
   print ('model_folder =', model_folder)
   print ('model_root =', model_root)
   print ('data_path =', data_path)
 
-  model = pv3_model.pv3(training_config=model_path)
+  case_idx = 100 # 36 # 189
+  if len(sys.argv) > 2:
+    case_idx = int(sys.argv[2])
+
+  model = pv3_model.pv3(training_config=config_file)
   model.loadTrainingData(data_path)
   model.loadAndApplyNormalization(filename=None, bSummary=True)
   model.initializeModelStructure()
   model.loadModelCoefficients()
   print (len(model.COL_U), 'inputs:', model.COL_U)
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
-  #sens = sensitivity_analysis (model, bPrint=False)
-  #print ('Maximum Sensitivity = {:.6f}'.format (sens))
-
-  #print ('model.clamps', model.clamps)
-  print ('model.sensitivity', model.sensitivity)
-  sens = model_sensitivity (model, bPrint=True)
+  sens = sensitivity_analysis (model, bPrint=False)
   print ('Maximum Sensitivity = {:.6f}'.format (sens))
 
-  sens_loss = max (sens - model.sensitivity['limit'], 0.0)
-  print ('Sensitivity Loss = {:.6f}'.format (sens_loss))
-  rmse, mae, case_rmse, case_mae = model.trainingErrors(True)
-  loss_rmse = model.n_cases * rmse * rmse
-  print ('RMSE =', rmse, 'Loss RMSE =', loss_rmse)
-  print ('Total Loss =', model.trainingLosses())
+  #print ('model.clamps', model.clamps)
+  if 'sensitivity' in cfg:
+    print ('model.sensitivity', model.sensitivity)
+    sens = model_sensitivity (model, bPrint=True)
+    print ('Maximum Sensitivity = {:.6f}'.format (sens))
+    sens_loss = max (sens - model.sensitivity['limit'], 0.0)
+    print ('Sensitivity Loss = {:.6f}'.format (sens_loss))
+    rmse, mae, case_rmse, case_mae = model.trainingErrors(True)
+    loss_rmse = model.n_cases * rmse * rmse
+    print ('RMSE =', rmse, 'Loss RMSE =', loss_rmse)
+    print ('Total Loss =', model.trainingLosses())
 
 #  if case_idx < 0:
 #    for idx in range(model.n_cases):
