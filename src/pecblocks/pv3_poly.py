@@ -954,6 +954,55 @@ class pv3():
     mae = dynonet.metrics.error_mae(y_true, y_hat)
     return rmse, mae, y_hat, y_true, udata
 
+  def clampingErrors(self, bByCase=False):
+    self.n_cases = self.data_train.shape[0]
+    npts = self.data_train.shape[1]
+    in_size = len(self.COL_U)
+    out_size = len(self.COL_Y)
+    sizes = (self.batch_size, npts, out_size)
+
+    # normalize the limits
+    zeros = torch.zeros(sizes, requires_grad=True)
+    lower_np = np.zeros(sizes)
+    upper_np = np.zeros(sizes)
+    for i in range(out_size):
+      key = self.COL_Y[i]
+      val = self.clamps[key]
+      lower_np[:,:,i] = self.normalize (val[0], self.normfacs[key])
+      upper_np[:,:,i] = self.normalize (val[1], self.normfacs[key])
+    lower = torch.from_numpy (lower_np)
+    upper = torch.from_numpy (upper_np)
+#   print ('Clamping shapes for zeros, lower, upper', zeros.shape, lower.shape, upper.shape)
+
+    total_loss = torch.zeros (out_size, requires_grad=True)
+    if bByCase:
+      case_loss = np.zeros([self.n_cases, out_size])
+    else:
+      case_loss = None
+
+    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
+
+    icase = 0
+    for ub, y_true in total_dl: # batch loop
+      y_non = self.F1 (ub)
+      y_lin = self.make_mimo_ylin (y_non)
+      y_hat = self.F2 (y_lin)
+      p1 = torch.maximum (zeros, y_hat - upper)
+      p2 = torch.maximum (zeros, lower - y_hat)
+      loss = self.t_step * torch.sum(p1 + p2, dim=1) # [case, output]
+      total_loss = total_loss + torch.sum (loss, dim=0)
+#     print (total_loss)
+
+      # extract the clamping losses by case, but only for numpy reporting
+      if bByCase:
+        cl = loss.detach().numpy()
+        nb = cl.shape[0]
+        iend = icase + nb
+        case_loss[icase:iend,:] = cl[:,:]
+        icase = iend
+    return total_loss, case_loss
+
   def trainingErrors(self, bByCase=False):
     self.n_cases = self.data_train.shape[0]
     in_size = len(self.COL_U)

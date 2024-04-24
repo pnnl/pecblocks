@@ -11,6 +11,7 @@ import sys
 import pecblocks.pv3_poly as pv3_model
 import math
 import json
+import torch
 
 KRMS = math.sqrt(1.5)
 
@@ -81,6 +82,23 @@ def analyze_case(model, idx, bPrint=False):
     if Rq > maxRq:
       maxRq = Rq
 #    print ('  t={:6.3f} Id={:.3f} Iq={:6.3f} Vod={:8.3f} Voq={:8.3f} Rd={:8.2f} Rq={:8.2f}'.format (t, Id, Iq, Vod, Voq, Rd, Rq))
+
+def clamp_loss (model, bPrint):
+  total, cases = model.clampingErrors (bByCase=True)
+  total = total.detach().numpy()
+
+  if bPrint:
+    out_size = len(model.COL_Y)
+    colstr = ','.join('{:s}'.format(col) for col in model.COL_Y)
+    print ('Clamping Loss by Case and Output')
+    print ('Idx,{:s}'.format(colstr))
+    for i in range(len(cases)):
+      valstr = ','.join('{:.6f}'.format(cases[i][j]) for j in range(out_size))
+      print ('{:d},{:s}'.format(i, valstr))
+    print ('Total Clamping Error Summary')
+    for j in range(out_size):
+      print ('{:4s} Loss={:8.6f}'.format (model.COL_Y[j], total[j]))
+  return np.sum(total)
 
 def sensitivity_analysis (model, bPrint):
   maxdIdVd = 0.0
@@ -284,6 +302,10 @@ if __name__ == '__main__':
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
   sens = sensitivity_analysis (model, bPrint=False)
   print ('Maximum Sensitivity = {:.6f}'.format (sens))
+
+  clamp = clamp_loss (model, bPrint=True)
+  print ('Total Clamping Loss = {:.6f}'.format (clamp))
+  quit()
 
   #print ('model.clamps', model.clamps)
   if 'sensitivity' in cfg:
