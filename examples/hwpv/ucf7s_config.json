@@ -5,7 +5,7 @@
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
-  "clamps": {"Vdc": [0.0, 655.0],
+  "disable_clamps": {"Vdc": [0.0, 655.0],
              "Idc": [0.0, 5.0],
              "Id": [0.0, 5.9],
              "Iq": [-2.7, 2.4]
