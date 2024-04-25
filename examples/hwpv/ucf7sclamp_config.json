@@ -5,12 +5,12 @@
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
-  "clamps": {"Vdc": [0.0, 655.0],
-             "Idc": [0.0, 5.0],
-             "Id": [0.0, 5.9],
+  "clamps": {"Vdc": [-0.01, 655.0],
+             "Idc": [-0.01, 5.0],
+             "Id": [-0.01, 5.9],
              "Iq": [-2.7, 2.4]
   },
-  "sensitivity": {"limit": 0.015,
+  "sensitivity": {"limit": 0.02,
                   "inputs": ["Vd", "Vq"],
                   "outputs": ["Id", "Iq"],
                   "GVrms": {"G": "G", "Vd": "Vd", "Vq": "Vq", "k": 1.2247449
