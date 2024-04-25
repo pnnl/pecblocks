@@ -614,6 +614,9 @@ class pv3():
     if self.sensitivity is not None:
       self.setup_sensitivity_losses()
 
+    if self.clamps is not None:
+      self.setup_clamping_losses()
+
     self.optimizer = torch.optim.Adam([
       {'params': self.F1.parameters(), 'lr': self.lr},
       {'params': self.H1.parameters(), 'lr': self.lr},
@@ -647,6 +650,7 @@ class pv3():
     for itr in range(0, self.num_iter):
       epoch_loss = 0.0
       epoch_sens = 0.0
+      epoch_clamp = 0.0
       self.F1.train()
       self.H1.train()
       self.F2.train()
@@ -666,12 +670,20 @@ class pv3():
         else:
           loss_fit = torch.mean(err_fit**2)
 
-        # Compute sensitivity loss
-        loss_sens = torch.tensor (0.0)
+        # add clamping loss to the fitting loss
+        loss_clamp = torch.tensor (0.0)
+        if self.clamps is not None:
+          p1 = torch.maximum (self.clamping_zeros, y_hat - self.clamping_upper)
+          p2 = torch.maximum (self.clamping_zeros, self.clamping_lower - y_hat)
+          loss_clamp = self.t_step * torch.sum(p1 + p2) # [case, output]
+#         loss_clamp = self.t_step * torch.sum(p1 + p2, dim=1) # [case, output]
+#         total_loss = total_loss + torch.sum (loss, dim=0)
+          loss_fit = loss_fit + loss_clamp
+
+        # Compute the sensitivity loss
+        loss_sensitivity = torch.tensor (0.0)
         if self.sensitivity is not None:
-#          loss_sens = self.calc_sensitivity_losses (bPrint=True).clone().detach().requires_grad_(True)
           loss_sens = self.calc_sensitivity_losses (bPrint=False)
-          #loss_sens = torch.tensor (self.calc_sensitivity_losses (bPrint=False), requires_grad=True)
 
         # Optimize on this batch
         loss = loss_fit + loss_sens
@@ -683,6 +695,7 @@ class pv3():
 #        print ('  batch size={:d} loss={:12.6f}'.format (ub.shape[0], loss_fit))
         epoch_loss += loss_fit
         epoch_sens += loss_sens
+        epoch_clamp += loss_clamp
 #        print ('  fit,sens,loss = [{:12.6f} {:12.6f} {:12.6f}]'.format (loss_fit, loss_sens, loss))
 
 #      print ('  last batch loss_fit, loss_sens, loss:', loss_fit, loss_sens, loss)
@@ -708,11 +721,18 @@ class pv3():
           loss_fit = torch.sum(torch.abs(err_fit))
         else:
           loss_fit = torch.mean(err_fit**2)
+        # add the clamping loss
+        if self.clamps is not None:
+          p1 = torch.maximum (self.clamping_zeros, y_hat - self.clamping_upper)
+          p2 = torch.maximum (self.clamping_zeros, self.clamping_lower - y_hat)
+          validation_clamp = self.t_step * torch.sum(p1 + p2) # [case, output]
+          loss_fit = loss_fit + validation_clamp
+
         valid_loss += loss_fit * validation_scale
 
       VALID.append(valid_loss.item())
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens))
+        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Training Clamp {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_clamp))
         self.saveModelCoefficients()
         np.save (lossfile, [LOSS, VALID, SENS])
 
@@ -953,6 +973,34 @@ class pv3():
     rmse = dynonet.metrics.error_rmse(y_true, y_hat)
     mae = dynonet.metrics.error_mae(y_true, y_hat)
     return rmse, mae, y_hat, y_true, udata
+
+  def setup_clamping_losses(self):
+    sizes = (self.batch_size, self.data_train.shape[1], len(self.COL_Y))
+    self.clamping_zeros = torch.zeros(sizes, requires_grad=True)
+    lower_np = np.zeros(sizes)
+    upper_np = np.zeros(sizes)
+    for i in range(len(self.COL_Y)):
+      key = self.COL_Y[i]
+      val = self.clamps[key]
+      lower_np[:,:,i] = self.normalize (val[0], self.normfacs[key])
+      upper_np[:,:,i] = self.normalize (val[1], self.normfacs[key])
+    self.clamping_lower = torch.from_numpy (lower_np)
+    self.clamping_upper = torch.from_numpy (upper_np)
+
+  def clamping_losses(self):
+    total_loss = torch.zeros (out_size, requires_grad=True)
+
+    for ub, y_true in total_dl: # batch loop
+      y_non = self.F1 (ub)
+      y_lin = self.make_mimo_ylin (y_non)
+      y_hat = self.F2 (y_lin)
+      p1 = torch.maximum (zeros, y_hat - upper)
+      p2 = torch.maximum (zeros, lower - y_hat)
+      loss = self.t_step * torch.sum(p1 + p2, dim=1) # [case, output]
+      total_loss = total_loss + torch.sum (loss, dim=0)
+#     print (total_loss)
+
+    return total_loss
 
   def clampingErrors(self, bByCase=False):
     self.n_cases = self.data_train.shape[0]
