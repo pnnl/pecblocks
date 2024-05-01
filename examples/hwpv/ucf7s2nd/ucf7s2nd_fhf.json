@@ -48,8 +48,8 @@
       "offset": -0.09570319950580597
     }
   },
-  "model_folder": "./ucf7s2/",
-  "model_root": "ucf7s2",
+  "model_folder": "./ucf7s2nd/",
+  "model_root": "ucf7s2nd",
   "data_path": "d:/data/ucf3/ucf7.hdf5",
   "lr": 0.001,
   "eps": 1e-08,

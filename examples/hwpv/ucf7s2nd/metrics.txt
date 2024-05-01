@@ -1,10 +1,10 @@
-Read Model from: ./ucf7s2/
-Export Model to: ./ucf7s2/ucf7s2nd_fhf.json
+Read Model from: ./ucf7s2nd/
+Export Model to: ./ucf7s2nd/ucf7s2nd_fhf.json
 idx_in [0, 1, 2, 3, 4, 5, 6]
 idx_out [7, 8, 9, 10]
 make_mimo_block stable2nd
-model_folder = ./ucf7s2/
-model_root = ucf7s2
+model_folder = ./ucf7s2nd/
+model_root = ucf7s2nd
 data_path = d:/data/ucf3/ucf7.hdf5
 idx_in [0, 1, 2, 3, 4, 5, 6]
 idx_out [7, 8, 9, 10]
