@@ -5,7 +5,7 @@ import sys
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
-data_path = 'ucf7'
+data_path = 'ucf7s2nd'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -15,6 +15,7 @@ if __name__ == '__main__':
   data = np.load (fname)
 
   print ('Read {:d} epochs from {:s}'.format (len(data[0]), fname))
+  print ('Data shape is', data.shape)
   print ('Last training loss {:.6f}'.format (data[0][-1]))
   print ('Last validation loss {:.6f}'.format (data[1][-1]))
 
@@ -22,6 +23,8 @@ if __name__ == '__main__':
   plt.title(fname)
   plt.plot(np.log10(data[0]), label='Training Loss')
   plt.plot(np.log10(data[1]), label='Validation Loss')
+  if data.shape[0] > 2:
+    plt.plot(np.log10(data[2]), label='Sensitivity Loss')
   plt.ylabel ('Log10')
   plt.xlabel ('Epoch')
   plt.legend()
