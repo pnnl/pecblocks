@@ -84,6 +84,8 @@ def analyze_case(model, idx, bPrint=False):
 #    print ('  t={:6.3f} Id={:.3f} Iq={:6.3f} Vod={:8.3f} Voq={:8.3f} Rd={:8.2f} Rq={:8.2f}'.format (t, Id, Iq, Vod, Voq, Rd, Rq))
 
 def clamp_loss (model, bPrint):
+  if not hasattr (model, 'clamp'):
+    return 0.0
   total, cases = model.clampingErrors (bByCase=True)
   total = total.detach().numpy()
 
