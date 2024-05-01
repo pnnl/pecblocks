@@ -542,17 +542,16 @@ class pv3():
     if bPrint:
       print ('  start_sensitivity_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
     if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):  # TODO: this may be an issue for training H1.a coefficients
-      rho = self.H1.rho.detach().numpy().squeeze()
-      psi = self.H1.psi.detach().numpy().squeeze()
-      r = 1 / (1 + np.exp(-rho))
-      beta = np.pi / (1 + np.exp(-psi))
-      a1 = -2 * r * np.cos(beta)
+      r = 1 / (1 + torch.exp(-self.H1.rho))
+      beta = np.pi / (1 + torch.exp(-self.H1.psi))
+      a1 = -2 * r * torch.cos(beta)
       a2 = r * r
-      self.H1.a_coeff = torch.ones ((self.H1.b_coeff.shape[0], self.H1.b_coeff.shape[1], 2), requires_grad=True)
-      self.H1.a_coeff[:,:,0] = a1
-      self.H1.a_coeff[:,:,1] = a2
+      self.H1.a_coeff = torch.cat ((a1, a2), dim=2)
       if bPrint:
-        print ('    constructed a_coeff')                                         
+        print ('    constructed a_coeff', self.H1.a_coeff.shape, self.H1.a_coeff)
+        print ('    beta', beta.shape, beta)
+        print ('    a1', a1.shape, a1)
+        print ('    a2', a2.shape, a2)
     else:
       if bPrint:
         print ('    existing a_coeff')
@@ -681,7 +680,7 @@ class pv3():
           loss_fit = loss_fit + loss_clamp
 
         # Compute the sensitivity loss
-        loss_sensitivity = torch.tensor (0.0)
+        loss_sens = torch.tensor (0.0)
         if self.sensitivity is not None:
           loss_sens = self.calc_sensitivity_losses (bPrint=False)
 
@@ -690,7 +689,7 @@ class pv3():
 #       print (' loss_fit', loss_fit)
 #       print (' loss_sens', loss_sens)
 #       print (' loss', loss)
-        loss.backward()
+        loss.backward(retain_graph=True) # for sensitivity optimization
         self.optimizer.step()
 #        print ('  batch size={:d} loss={:12.6f}'.format (ub.shape[0], loss_fit))
         epoch_loss += loss_fit
