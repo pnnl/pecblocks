@@ -757,7 +757,7 @@ class pv3():
     self.F2.load_state_dict(B3)
 
   def make_H1Q1s(self, Hz):
-    if self.gtype != 'iir':
+    if self.gtype == 'fir':
       return None, None
     n_in = Hz.in_channels
     n_out = Hz.out_channels
@@ -765,14 +765,27 @@ class pv3():
     n_b = Hz.n_b
     H1s = {'n_in':n_in, 'n_out':n_out, 'n_a': n_a+1, 'n_b': n_b}
     Q1s = {'n_in':n_in, 'n_out':n_out, 'n_a': n_a, 'n_b': n_b}
-    btf, atf = Hz.get_tfdata()
-    b_coeff, a_coeff = Hz.__get_ba_coeff__()
+    if self.gtype == 'iir':
+      btf, atf = Hz.get_tfdata()
+      b_coeff, a_coeff = Hz.__get_ba_coeff__()
 #   print ('btf', btf.shape, btf[0][0])
 #   print ('b_coeff', b_coeff.shape, b_coeff[0][0])
 #   print ('atf', atf.shape, atf[0][0])
 #   print ('a_coeff', a_coeff.shape, a_coeff[0][0])
-    a = atf
-    b = b_coeff
+      a = atf
+      b = b_coeff
+    else:
+      block = Hz.state_dict()
+      b = block['b_coeff'].numpy().squeeze()
+      rho = block['rho'].numpy().squeeze()
+      psi = block['psi'].numpy().squeeze()
+      r = 1 / (1 + np.exp(-rho))
+      beta = np.pi / (1 + np.exp(-psi))
+      a1 = -2 * r * np.cos(beta)
+      a2 = r * r
+      a = np.ones ((b.shape[0], b.shape[1], 3)) 
+      a[:,:,1] = a1
+      a[:,:,2] = a2
 
     # convert each MIMO channel one at a time
     for i in range(n_out):
