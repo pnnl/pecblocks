@@ -57,7 +57,8 @@ if __name__ == '__main__':
   plt.title(model_root)
   plt.plot(np.log10(LOSS), label='Training Loss')
   plt.plot(np.log10(VALID), label='Validation Loss')
-  plt.plot(np.log10(SENS), label='Sensitivity Loss')
+  if np.min(SENS) > 0.0:
+    plt.plot(np.log10(SENS), label='Sensitivity Loss')
   plt.ylabel ('Log10')
   plt.xlabel ('Epoch')
   plt.legend()
