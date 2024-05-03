@@ -1084,26 +1084,34 @@ class pv3():
       y_non = self.F1 (ub)
       y_lin = self.make_mimo_ylin (y_non)
       y_hat = self.F2 (y_lin)
-      y1 = y_true.detach().numpy()
-      y2 = y_hat.detach().numpy()
+      y1 = y_true.detach().numpy()[:,self.n_loss_skip:,:]
+      y2 = y_hat.detach().numpy()[:,self.n_loss_skip:,:]
       y_err = np.abs(y1-y2)
       y_sqr = y_err*y_err
       nb = y_err.shape[0]
       npts = y_err.shape[1]
       ncol = y_err.shape[2]
+#     print ('** Training Error Batch', nb, npts, ncol, y1.shape, y2.shape)
       mae = np.mean (y_err, axis=1) # nb x ncol
       mse = np.mean (y_sqr, axis=1)
       total_mae += np.sum(mae, axis=0)
       total_rmse += np.sum(mse, axis=0)
+#     print ('   Accumulating case squared errors', mse.shape, total_rmse)
       if bByCase:
         iend = icase + nb
         case_mae[icase:iend,:] = mae[:,:]
         case_rmse[icase:iend,:] = mse[:,:]
+#       print ('    Slicing case squared errors', icase, iend, case_rmse.shape)
         icase = iend
     total_rmse = np.sqrt(total_rmse / self.n_cases)
+#   print ('** Summarizing RMSE', total_rmse, self.n_cases, total_rmse)
     total_mae /= self.n_cases
     if bByCase:
       case_rmse = np.sqrt(case_rmse)
+#   print ('==========Detailing the first case results for Idc==========')
+#   print ('k,Idc_true,Idc_hat,y_err,y_sqr')
+#   for k in range(npts):
+#     print ('{:4d},{:.6f},{:.6f},{:.6f},{:.6f}'.format (k, y1[0,k,1], y2[0,k,1], y_err[0,k,1], y_sqr[0,k,1]))
     return total_rmse, total_mae, case_rmse, case_mae
 
   def trainingLosses(self):

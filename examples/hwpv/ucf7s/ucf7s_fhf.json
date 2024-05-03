@@ -90,24 +90,7 @@
     "GVrms",
     "Ctrl"
   ],
-  "clamps": {
-    "Vdc": [
-      0.0,
-      655.0
-    ],
-    "Idc": [
-      0.0,
-      5.0
-    ],
-    "Id": [
-      0.0,
-      5.9
-    ],
-    "Iq": [
-      -2.7,
-      2.4
-    ]
-  },
+  "clamps": null,
   "sensitivity": {
     "limit": 0.0099,
     "inputs": [

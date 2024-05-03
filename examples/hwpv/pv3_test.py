@@ -18,6 +18,8 @@ nrows = 3 # 2
 ncols = 5 # 7 # 9
 bNormalized = False
 
+bWantMAE = False
+
 #data_path = './data/flatbalanced.hdf5'
 #model_path = './flatbal/flatbal_config.json'
 #report_path = './report'
@@ -111,7 +113,8 @@ def plot_case(model, idx, bPNG=False):
   i1 = 1 # 2*model.n_loss_skip
 
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
-  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
+  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}'.format(idx, valstr))
+#  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
   j = 0
   row = 0
   col = 0

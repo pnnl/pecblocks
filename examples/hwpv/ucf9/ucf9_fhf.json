@@ -90,6 +90,8 @@
     "GVrms",
     "Ctrl"
   ],
+  "clamps": null,
+  "sensitivity": null,
   "H1": {
     "n_in": 4,
     "n_out": 4,

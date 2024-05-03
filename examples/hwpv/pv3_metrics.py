@@ -8,6 +8,8 @@ import json
 
 import pecblocks.pv3_poly as pv3_model
 
+bWantMAE = False
+
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     config_file = sys.argv[1]
@@ -31,26 +33,31 @@ if __name__ == '__main__':
   model.initializeModelStructure()
   model.loadModelCoefficients()
   rmse, mae, case_rmse, case_mae = model.trainingErrors(True)
-#  print ('Case RMSE and MAE:')
-#  colstr = ' '.join('{:>6s}'.format(col) for col in model.COL_Y)
-#  print ('Idx ', colstr, colstr)
   out_size = len(model.COL_Y)
   colstr = ','.join('{:s}'.format(col) for col in model.COL_Y)
-  print ('Idx,{:s},{:s}'.format(colstr, colstr))
   h1str = ','.join('{:s}'.format('RMSE') for col in model.COL_Y)
-  h2str = ','.join('{:s}'.format('MAE') for col in model.COL_Y)
-  print (',{:s},{:s}'.format(h1str, h2str))
   valstr = ','.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
-  maestr = ','.join('{:.4f}'.format(mae[j]) for j in range(out_size))
-  print ('Total,{:s},{:s}'.format(valstr, maestr))
-  for i in range(len(case_rmse)):
-#    valstr = ' '.join('{:6.4f}'.format(case_rmse[i][j]) for j in range(out_size))
-#    maestr = ' '.join('{:6.4f}'.format(case_mae[i][j]) for j in range(out_size))
-#    print ('{:3d}  {:s}  {:s}'.format(i, valstr, maestr))
-    valstr = ','.join('{:.4f}'.format(case_rmse[i][j]) for j in range(out_size))
-    maestr = ','.join('{:.4f}'.format(case_mae[i][j]) for j in range(out_size))
-    print ('{:d},{:s},{:s}'.format(i, valstr, maestr))
-  print ('Total Error Summary')
-  for j in range(out_size):
-    print ('{:4s} MAE={:8.4f} RMSE={:8.4f}'.format (model.COL_Y[j], mae[j], rmse[j]))
+  if bWantMAE:
+    h2str = ','.join('{:s}'.format('MAE') for col in model.COL_Y)
+    maestr = ','.join('{:.4f}'.format(mae[j]) for j in range(out_size))
+    print ('Idx,{:s},{:s}'.format(colstr, colstr))
+    print ('#,{:s},{:s}'.format(h1str, h2str))
+    print ('Total,{:s},{:s}'.format(valstr, maestr))
+    for i in range(len(case_rmse)):
+      valstr = ','.join('{:.4f}'.format(case_rmse[i][j]) for j in range(out_size))
+      maestr = ','.join('{:.4f}'.format(case_mae[i][j]) for j in range(out_size))
+      print ('{:d},{:s},{:s}'.format(i, valstr, maestr))
+    print ('Total Error Summary')
+    for j in range(out_size):
+      print ('{:4s} MAE={:8.4f} RMSE={:8.4f}'.format (model.COL_Y[j], mae[j], rmse[j]))
+  else:
+    print ('Idx,{:s}'.format(colstr))
+    print ('#,{:s}'.format(h1str))
+    print ('Total,{:s}'.format(valstr))
+    for i in range(len(case_rmse)):
+      valstr = ','.join('{:.4f}'.format(case_rmse[i][j]) for j in range(out_size))
+      print ('{:d},{:s}'.format(i, valstr))
+    print ('Total Error Summary')
+    for j in range(out_size):
+      print ('{:4s} RMSE={:8.4f}'.format (model.COL_Y[j], rmse[j]))
 
