@@ -15,6 +15,8 @@ import pecblocks.pv3_poly as pv3_model
 #data_path = 'c:/data/ucf2.hdf5'
 #model_path = './ucf2ac/ucf2ac_config.json'
 
+bWantMAE = False
+
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     config_file = sys.argv[1]
@@ -50,8 +52,9 @@ if __name__ == '__main__':
   valstr = ' '.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
   print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
     np.mean(recent_loss), valstr))
-  valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
-  print ('                          MAE Errors: {:s}'.format (valstr))
+  if bWantMAE:
+    valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
+    print ('                          MAE Errors: {:s}'.format (valstr))
 
   plt.figure()
   plt.title(model_root)

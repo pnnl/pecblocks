@@ -9,6 +9,7 @@ import time
 from dynonet.lti import MimoLinearDynamicalOperator
 from dynonet.lti import MimoFirLinearDynamicalOperator
 from dynonet.lti import StableSecondOrderMimoLinearDynamicalOperator
+from dynonet.lti import StableSecondOrderMimoLinearDynamicalOperatorX
 from dynonet.static import MimoStaticNonLinearity
 import dynonet.metrics
 from pecblocks.common import PVInvDataset
@@ -142,6 +143,12 @@ class pv3():
         print (' *** for stable 2nd-order block, n_a should be 2, not', n_a)
       if n_b != 3:
         print (' *** for stable 2nd-order block, n_b should be 3, not', n_b)
+    elif gtype == 'stable2ndx':
+      block = StableSecondOrderMimoLinearDynamicalOperatorX(in_channels=n_in, out_channels=n_out)
+      if n_a != 2:
+        print (' *** for stable 2nd-order extended block, n_a should be 2, not', n_a)
+      if n_b != 3:
+        print (' *** for stable 2nd-order extended block, n_b should be 3, not', n_b)
     elif gtype == 'iir':
       block = MimoLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b, n_a=n_a, n_k=n_k)
     else:
@@ -155,6 +162,8 @@ class pv3():
     elif self.gtype == 'fir':
       return self.H1 (y_non)
     elif self.gtype == 'stable2nd':
+      return self.H1 (y_non, self.y0, self.u0)
+    elif self.gtype == 'stable2ndx':
       return self.H1 (y_non, self.y0, self.u0)
     return None
 
@@ -308,12 +317,44 @@ class pv3():
         key = 'psi_{:d}_{:d}'.format(i, j)
         model[label][key] = float(psi[i,j])
 
+  def append_2ndx(self, model, label, H):
+    n_in = H.b_coeff.shape[1]
+    n_out = H.b_coeff.shape[0]
+    model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 3, 'n_a': 2, 'n_k':0}
+    block = H.state_dict()
+    b = block['b_coeff'].numpy()
+    # construct the a coefficients for IIR implementation
+    alpha1 = block['alpha1'].numpy().squeeze()
+    alpha2 = block['alpha2'].numpy().squeeze()
+    a1 = 2.0 * np.tanh(alpha1)
+    a1abs = np.abs(a1)
+    a2 = a1abs + (2.0 - a1abs) * 1.0/(1+np.exp(-alpha2)) - 1.0
+    a = np.ones ((b.shape[0], b.shape[1], 2)) # don't write a0==1
+    a[:,:,0] = a1
+    a[:,:,1] = a2
+
+    for i in range(n_out):
+      for j in range(n_in):
+        key = 'b_{:d}_{:d}'.format(i, j)
+        ary = b[i,j,:]
+        model[label][key] = ary.tolist()
+        key = 'a_{:d}_{:d}'.format(i, j)
+        ary = a[i,j,:]
+        model[label][key] = ary.tolist()
+        key = 'alpha1_{:d}_{:d}'.format(i, j)
+        model[label][key] = float(alpha1[i,j])
+        key = 'alpha2_{:d}_{:d}'.format(i, j)
+        model[label][key] = float(alpha2[i,j])
+
   def append_lti(self, model, label, H):
     if self.gtype == 'fir':
       self.append_fir(model, label, H)
       return
     elif self.gtype == 'stable2nd':
       self.append_2nd(model, label, H)
+      return
+    elif self.gtype == 'stable2ndx':
+      self.append_2ndx(model, label, H)
       return
     n_in = H.in_channels
     n_out = H.out_channels
@@ -456,7 +497,7 @@ class pv3():
     #  inputs COL_U as ub; outputs COL_Y as y_hat
     self.F1 = MimoStaticNonLinearity(in_channels=len(self.idx_in), out_channels=len(self.idx_out), n_hidden=self.nh1, activation=self.activation)
     self.H1 = self.make_mimo_block(gtype=self.gtype, n_in=len(self.idx_out), n_out=len(self.idx_out), n_b=self.nb, n_a=self.na, n_k=self.nk)
-    if self.gtype in ['iir', 'stable2nd']:
+    if self.gtype in ['iir', 'stable2nd', 'stable2ndx']:
       self.y0 = torch.zeros((self.batch_size, self.na), dtype=torch.float)
       self.u0 = torch.zeros((self.batch_size, self.nb), dtype=torch.float)
     else:
@@ -541,11 +582,21 @@ class pv3():
   def start_sensitivity_simulation(self, bPrint=False):
     if bPrint:
       print ('  start_sensitivity_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
-    if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'):  # TODO: this may be an issue for training H1.a coefficients
+    if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'): 
       r = 1 / (1 + torch.exp(-self.H1.rho))
       beta = np.pi / (1 + torch.exp(-self.H1.psi))
       a1 = -2 * r * torch.cos(beta)
       a2 = r * r
+      self.H1.a_coeff = torch.cat ((a1, a2), dim=2)
+      if bPrint:
+        print ('    constructed a_coeff', self.H1.a_coeff.shape, self.H1.a_coeff)
+        print ('    beta', beta.shape, beta)
+        print ('    a1', a1.shape, a1)
+        print ('    a2', a2.shape, a2)
+    if self.gtype == 'stable2ndx' and not hasattr(self.H1, 'a_coeff'): 
+      a1 = 2.0 * torch.tanh(self.H1.alpha1)
+      a1abs = torch.abs(a1)
+      a2 = a1abs + (2.0 - a1abs) * torch.sigmoid(self.H1.alpha2) - 1.0
       self.H1.a_coeff = torch.cat ((a1, a2), dim=2)
       if bPrint:
         print ('    constructed a_coeff', self.H1.a_coeff.shape, self.H1.a_coeff)
@@ -625,7 +676,7 @@ class pv3():
     out_size = len(self.COL_Y)
 
     # split the data into training and validation datasets
-    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
     nvalidation = int (len(total_ds) * float (self.n_validation_pct) / 100.0)
     ntraining = len(total_ds) - nvalidation
     splits = [ntraining, nvalidation]
@@ -774,7 +825,7 @@ class pv3():
 #   print ('a_coeff', a_coeff.shape, a_coeff[0][0])
       a = atf
       b = b_coeff
-    else:
+    elif self.gtype == 'stable2nd':
       block = Hz.state_dict()
       b = block['b_coeff'].numpy().squeeze()
       rho = block['rho'].numpy().squeeze()
@@ -783,6 +834,17 @@ class pv3():
       beta = np.pi / (1 + np.exp(-psi))
       a1 = -2 * r * np.cos(beta)
       a2 = r * r
+      a = np.ones ((b.shape[0], b.shape[1], 3)) 
+      a[:,:,1] = a1
+      a[:,:,2] = a2
+    elif self.gtype == 'stable2ndx':
+      block = Hz.state_dict()
+      b = block['b_coeff'].numpy().squeeze()
+      alpha1 = block['alpha1'].numpy().squeeze()
+      alpha2 = block['alpha2'].numpy().squeeze()
+      a1 = 2.0 * np.tanh(alpha1)
+      a1abs = np.abs(a1)
+      a2 = a1abs + (2.0 - a1abs) * 1.0/(1+np.exp(-alpha2)) - 1.0
       a = np.ones ((b.shape[0], b.shape[1], 3)) 
       a[:,:,1] = a1
       a[:,:,2] = a2
@@ -1040,7 +1102,7 @@ class pv3():
     else:
       case_loss = None
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
 
     icase = 0
@@ -1076,7 +1138,7 @@ class pv3():
       case_rmse = None
       case_mae = None
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
 
     icase = 0
@@ -1119,7 +1181,7 @@ class pv3():
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
     rmse_loss = 0.0
 
@@ -1170,6 +1232,22 @@ class pv3():
       a[:,:,1] = a1
       a[:,:,2] = a2
 #     print ('a', a)
+      for i in range(n_out):
+        HTF[i] = {}
+        for j in range(n_in):
+          HTF[i][j] = control.TransferFunction (b[i, j, :], a[i, j, :], self.t_step)
+    elif self.gtype == 'stable2ndx':
+      b = self.H1.b_coeff.detach().numpy().squeeze()
+      n_in = b.shape[1]
+      n_out = b.shape[0]
+      alpha1 = self.H1.alpha1.detach().numpy().squeeze()
+      alpha2 = self.H1.alpha2.detach().numpy().squeeze()
+      a1 = 2.0 * np.tanh(alpha1)
+      a1abs = np.abs(a1)
+      a2 = a1abs + (2.0 - a1abs) * 1.0/(1+np.exp(-alpha2)) - 1.0
+      a = np.ones ((b.shape[0], b.shape[1], 3))
+      a[:,:,1] = a1
+      a[:,:,2] = a2
       for i in range(n_out):
         HTF[i] = {}
         for j in range(n_in):
@@ -1239,6 +1317,17 @@ class pv3():
       beta = np.pi / (1 + np.exp(-psi))
       a1 = -2 * r * np.cos(beta)
       a2 = r * r
+      self.a_coeff = np.ones ((self.b_coeff.shape[0], self.b_coeff.shape[1], 2)) #  3))
+      self.a_coeff[:,:,0] = a1
+      self.a_coeff[:,:,1] = a2
+      if bPrint:
+        print ('    constructed a_coeff')                                         
+    elif self.gtype == 'stable2ndx' and not hasattr(self.H1, 'a_coeff'):
+      alpha1 = self.H1.alpha1.detach().numpy().squeeze()
+      alpha2 = self.H1.alpha2.detach().numpy().squeeze()
+      a1 = 2.0 * np.tanh(alpha1)
+      a1abs = np.abs(a1)
+      a2 = a1abs + (2.0 - a1abs) * 1.0/(1+np.exp(-alpha2)) - 1.0
       self.a_coeff = np.ones ((self.b_coeff.shape[0], self.b_coeff.shape[1], 2)) #  3))
       self.a_coeff[:,:,0] = a1
       self.a_coeff[:,:,1] = a2

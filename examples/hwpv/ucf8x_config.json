@@ -1,6 +1,6 @@
 {
-  "model_folder": "./ucf8/",
-  "model_root": "ucf8",
+  "model_folder": "./ucf8x/",
+  "model_root": "ucf8x",
   "data_path": "d:/data/ucf3/ucf7.hdf5",
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
@@ -19,7 +19,7 @@
   "n_dec": 1,
   "n_loss_skip": 30,
   "n_pad": 0,
-  "gtype": "stable2nd",
+  "gtype": "stable2ndx",
   "na": 2,
   "nb": 3,
   "nk": 0,

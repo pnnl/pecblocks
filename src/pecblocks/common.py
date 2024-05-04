@@ -3,17 +3,29 @@
 import torch
 import os
 import pandas as pd
+import numpy as np
 
 class PVInvDataset(torch.utils.data.Dataset):
   """Helper to load training datasets
   """
 
-  def __init__(self, data,input_dim, out_dim):
+  def __init__(self, data, input_dim, out_dim, pre_pad = 0):
     """ Constructor method
     Args:
       data (torch.Tensor): Tensor with data organized in.
     """
-    self.data = torch.tensor(data)
+    if pre_pad > 0:
+      # padding initial conditions
+      nchan = input_dim + out_dim
+      ic = np.zeros((data.shape[0], pre_pad, nchan), dtype=data.dtype)
+      print ('prepending initial conditions', ic.shape, data.shape, ic.dtype, data.dtype)
+      for i in range(nchan):
+        ic[:,i] = data[0,i]
+      icdata = np.concatenate ((ic, data), axis=1)
+      print ('results in', icdata.shape)      
+      self.data = torch.tensor(icdata)
+    else:
+      self.data = torch.tensor(data)
     self.len = self.data.shape[0]
     self.n_in = input_dim
     self.n_out = out_dim
