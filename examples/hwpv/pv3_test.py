@@ -15,7 +15,7 @@ import pecblocks.pv3_poly as pv3_model
 import json
 
 nrows = 3 # 2
-ncols = 5 # 7 # 9
+ncols = 4 # 5 # 7 # 9
 bNormalized = False
 
 bWantMAE = False
@@ -106,6 +106,13 @@ def plot_case(model, idx, bPNG=False):
     print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
   maestr = ' '.join('{:.4f}'.format(val) for val in mae)
+  y_ic = []
+  j = 0
+  for key in model.COL_Y:
+    y_ic.append (y_hat[1,j] * model.normfacs[key]['scale'] + model.normfacs[key]['offset'])
+    j += 1
+  icstr = ' '.join('{:.4f}'.format(val) for val in y_ic)
+
 #  print ('y_hat shape', y_hat.shape)
 #  print ('y_true shape', y_true.shape)
 #  print ('u shape', u.shape)
@@ -113,7 +120,7 @@ def plot_case(model, idx, bPNG=False):
   i1 = 1 # 2*model.n_loss_skip
 
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
-  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}'.format(idx, valstr))
+  fig.suptitle ('Model {:s} Case {:d} Simulation; Output RMSE = {:s}, Output Y(0) = {:s}'.format(model.model_root, idx, valstr, icstr))
 #  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
   j = 0
   row = 0

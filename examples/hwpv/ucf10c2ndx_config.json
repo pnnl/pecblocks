@@ -1,6 +1,6 @@
 {
-  "model_folder": "./ucf10c/",
-  "model_root": "ucf10c",
+  "model_folder": "./ucf10c2ndx/",
+  "model_root": "ucf10c2ndx",
   "data_path": "d:/data/ucf3/ucf9c.hdf5",
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
