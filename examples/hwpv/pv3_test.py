@@ -145,6 +145,7 @@ def plot_case(model, idx, bPNG=False):
     ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
     ax[2,j].legend()
     ax[2,j].grid()
+    print ('initial {:s}={:.6f}'.format (key, y_hat[i1,j]*scale + offset))
     j += 1
   if bPNG:
     plt.savefig(os.path.join(report_path,'case{:d}.png'.format(idx)))
