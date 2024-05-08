@@ -69,9 +69,10 @@ def finish_plot(ax, plot_file = None):
 
 pathname = 'd:/data/'
 
-for root in ['jan']: # ['unb4', 'sdi5', 'sdi5a', 'sdi5b']:
+for root in ['jan', 'sdi5']: # ['unb4', 'jan', 'sdi5a', 'sdi5b']:
   filename = '{:s}{:s}.hdf5'.format (pathname, root)
   pngname = '{:s}_Training_Set.png'.format (root)
+#  pngname = None
   ax = start_plot (filename)
   with h5py.File(filename, 'r') as f:
     for grp_name, grp in f.items():

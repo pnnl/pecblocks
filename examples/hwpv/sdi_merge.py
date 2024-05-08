@@ -1,10 +1,10 @@
 import h5py
 
 PREFIX = 'scope'
-input_path = 'c:/data/'
+input_path = 'd:/data/'
 output_path = 'c:/data/sdi3rc.hdf5'
 output_path = 'c:/data/sdi3merged.hdf5'
-output_path = 'c:/data/sdi5.hdf5'
+output_path = 'd:/data/sdi5.hdf5'
 
 if __name__ == '__main__':
   print ('Merging HWPV training records {:s}'.format (output_path))

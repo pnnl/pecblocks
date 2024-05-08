@@ -30,12 +30,6 @@ SCOPE_DC = 3
 tticks = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 #tticks = [0.0, 0.05, 0.10]
 
-input_path = 'c:/data/ken2/'
-output_path = 'c:/data/sdi5a.hdf5'
-
-input_path = 'c:/data/ken2/power_factor/'
-output_path = 'c:/data/sdi5b.hdf5'
-
 dec_b, dec_a = signal.butter (2, 1.0 / 256.0, btype='lowpass', analog=False)
 
 def my_decimate(x, q, method='butter'):
@@ -160,7 +154,23 @@ def control_signals (ud, uq, hz, triggerKey, t1, t2, tbase):
       rc[i] = r1 + slope * (tbase[i] - t1)
   return fc, udc, uqc, rc, vdc
 
+def usage():
+  print ('usage: python sdi_prep5.py a|b')
+  quit()
+
 if __name__ == '__main__':
+  if len(sys.argv) > 1:
+    if sys.argv[1] == 'a':
+      input_path = 'd:/data/ken2/'
+      output_path = 'd:/data/sdi5a.hdf5'
+    elif sys.argv[1] == 'b':
+      input_path = 'd:/data/ken2/power_factor/'
+      output_path = 'd:/data/sdi5b.hdf5'
+    else:
+      usage()
+  else:
+    usage()
+
   print ('Writing HWPV training records {:s}'.format (output_path))
   f = h5py.File (output_path, 'w')
   tdec = 1.0 + np.linspace (0.0, 3.0, 3001)
@@ -193,7 +203,7 @@ if __name__ == '__main__':
         idc_flt = signal.filtfilt (idc_b, idc_a, df_dc['Idc'])[::1]
         idc_pre = np.mean(idc_flt[:30000])
         idc_post = np.mean(idc_flt[-30000:])
-        ntrig1 = int(np.argwhere (idc_flt < idc_pre)[-1])
+        ntrig1 = int(np.argwhere (idc_flt < idc_pre)[-1][0])
         ntrig2 = np.argmax (idc_flt > idc_post)
         ttrig1 = t[ntrig1]
         ttrig2 = t[ntrig2]
@@ -258,7 +268,7 @@ if __name__ == '__main__':
         if SHOW_PLOTS:
           fig, ax = plt.subplots (5, 3, sharex = 'col', figsize=(16,10), constrained_layout=True)
           fig.suptitle ('{:s} {:s} Use Rgrid={:s}'.format(casename, key, str(USE_RGRID)))
-          ax[0,0].plot (t, df_idc['Idc'], label='inst')
+          ax[0,0].plot (t, df_dc['Idc'], label='inst')
           ax[0,0].plot (t, idc_flt, label='filtered', color='magenta')
           ax[0,0].plot ([ttrig1, ttrig2], [idc_pre, idc_post], marker='o', color='orange', linestyle='dotted', label='trigger')
           ax[0,0].plot (tdec, Idc_dec, label='decimated', color='red')

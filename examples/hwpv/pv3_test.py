@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import pecblocks.pv3_poly as pv3_model
 import json
 
-nrows = 3 # 2
-ncols = 4 # 5 # 7 # 9
+#nrows = 3 # 2
+#ncols = 4 # 5 # 7 # 9
 bNormalized = False
 
 bWantMAE = False
@@ -119,6 +119,11 @@ def plot_case(model, idx, bPNG=False):
 
   i1 = 1 # 2*model.n_loss_skip
 
+  nrows = 3 # first two rows for inputs, last row for outputs
+  ncols = len(model.COL_Y)
+  while 2*ncols < len(model.COL_U):
+    ncols += 1
+
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
   fig.suptitle ('Model {:s} Case {:d} Simulation; Output RMSE = {:s}, Output Y(0) = {:s}'.format(model.model_root, idx, valstr, icstr))
 #  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
@@ -134,6 +139,7 @@ def plot_case(model, idx, bPNG=False):
     ax[row,col].set_title ('Input {:s}'.format (key))
     ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
     ax[row,col].grid()
+#    ax[row,col].ticklabel_format(useOffset=False)
     #print ('initial {:s}={:.6f}'.format (key, u[i1,j]*scale + offset))
     j += 1
     col += 1
@@ -152,6 +158,7 @@ def plot_case(model, idx, bPNG=False):
     ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
     ax[2,j].legend()
     ax[2,j].grid()
+#    ax[row,col].ticklabel_format(useOffset=False)
     print ('initial {:s}={:.6f}'.format (key, y_hat[i1,j]*scale + offset))
     j += 1
   if bPNG:

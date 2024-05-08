@@ -57,6 +57,15 @@ if __name__ == '__main__':
     for i in range(len(case_rmse)):
       valstr = ','.join('{:.4f}'.format(case_rmse[i][j]) for j in range(out_size))
       print ('{:d},{:s}'.format(i, valstr))
+    print ('Highest RMSE Cases')
+    for j in range(out_size):
+      val = 0.0
+      idx = 0
+      for i in range(len(case_rmse)):
+        if case_rmse[i][j] > val:
+          idx = i
+          val = case_rmse[i][j]
+      print ('{:4s} Max RMSE={:8.4f} at Case {:d}'.format (model.COL_Y[j], val, idx))
     print ('Total Error Summary')
     for j in range(out_size):
       print ('{:4s} RMSE={:8.4f}'.format (model.COL_Y[j], rmse[j]))

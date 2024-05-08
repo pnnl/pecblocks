@@ -70,6 +70,8 @@
     "Rc",
     "Vdc"
   ],
+  "clamps": null,
+  "sensitivity": null,
   "H1": {
     "n_in": 3,
     "n_out": 3,
