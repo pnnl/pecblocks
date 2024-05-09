@@ -65,8 +65,24 @@ plot_defs = [
     {'row':2, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'}
   ]
 
+# this is for the May 8, 2024 data sets, augmented with GIrms, Vd and Vq outputs
+plot_defs = [
+    {'row':0, 'col':0, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
+    {'row':0, 'col':1, 'tag':'Ctrl', 'title':'Control Mode',      'ylabel':''},
+    {'row':0, 'col':2, 'tag':'GVrms','title':'Polynomial GVrms',  'ylabel':''},
+    {'row':0, 'col':3, 'tag':'GIrms','title':'Polynomial GIrms',  'ylabel':''},
+    {'row':1, 'col':0, 'tag':'Ud',   'title':'Ud',                'ylabel':'V'},
+    {'row':1, 'col':1, 'tag':'Uq',   'title':'Uq',                'ylabel':'V'},
+    {'row':1, 'col':2, 'tag':'Id',   'title':'Id',                'ylabel':'A'},
+    {'row':1, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'},
+    {'row':2, 'col':0, 'tag':'Vdc',  'title':'DC Voltage',        'ylabel':'V'},
+    {'row':2, 'col':1, 'tag':'Idc',  'title':'DC Current',        'ylabel':'A'},
+    {'row':2, 'col':2, 'tag':'Vd',   'title':'Vd',                'ylabel':'V'},
+    {'row':2, 'col':3, 'tag':'Vq',   'title':'Vq',                'ylabel':'V'}
+  ]
+
 def start_plot(case_title, idx):
-  fig, ax = plt.subplots(3, 5, sharex = 'col', figsize=(15,6), constrained_layout=True)
+  fig, ax = plt.subplots(3, 4, sharex = 'col', figsize=(15,6), constrained_layout=True)
   if idx < 0:
     fig.suptitle ('Dataset: ' + case_title)
   else:

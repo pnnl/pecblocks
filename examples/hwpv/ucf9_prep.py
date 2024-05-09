@@ -1,14 +1,16 @@
 # Copyright (C) 2018-2024 Battelle Memorial Institute
 # file: ucf9_prep.py
-""" Reduces unused inputs from the UCF3x Simscape 1-ms training data.
+""" Reduces unused inputs from the UCF3x Simscape 1-ms training data. Delays Ctrl signal, creates GIrms
 """
 
 import numpy as np
 import h5py
+import math
 
 PREFIX = 'ucf'
 input_path = 'd:/data/ucf3/ucf3x.hdf5'
 output_path = 'd:/data/ucf3/ucf9c.hdf5'
+KRMS = math.sqrt(1.5)
 
 if __name__ == '__main__':
   print ('Copying UCF3 training records from {:s} to {:s}'.format (input_path, output_path))
@@ -28,8 +30,17 @@ if __name__ == '__main__':
         ctl = np.interp(tbase, [0.0, 1.750, 1.751, 10.0], [0.0, 0.0, 1.0, 1.0])
       new_name = '{:s}{:d}'.format (PREFIX, idx)
       idx += 1
+      G = np.zeros(n)
+      Id = np.zeros(n)
+      Iq = np.zeros(n)
+      grp_in['G'].read_direct (G)
+      grp_in['Id'].read_direct (Id)
+      grp_in['Iq'].read_direct (Iq)
+      Irms = KRMS * np.sqrt (Id*Id + Iq*Iq)
+      GIrms = G * KRMS * Irms
       grp_out = f_out.create_group (new_name)
       grp_out.create_dataset ('Ctrl', data=ctl, compression='gzip')
+      grp_out.create_dataset ('GIrms', data=GIrms, compression='gzip')
       for tag in ['t', 'G', 'Ud', 'Uq', 'Vdc', 'Idc', 'Vd', 'Vq', 'GVrms', 'Id', 'Iq']:
         grp_out.create_dataset (tag, data=grp_in[tag], compression='gzip')
 

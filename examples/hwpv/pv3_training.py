@@ -9,13 +9,8 @@ import json
 import matplotlib.pyplot as plt
 import pecblocks.pv3_poly as pv3_model
 
-#data_path = 'c:/data/osg4_vdvq.hdf5'
-#model_path = './osg4_vdvq/osg4_vdvq_config.json'
-
-#data_path = 'c:/data/ucf2.hdf5'
-#model_path = './ucf2ac/ucf2ac_config.json'
-
 bWantMAE = False
+bWantPlot = False
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
@@ -56,15 +51,17 @@ if __name__ == '__main__':
     valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
     print ('                          MAE Errors: {:s}'.format (valstr))
 
-  plt.figure()
-  plt.title(model_root)
-  plt.plot(np.log10(LOSS), label='Training Loss')
-  plt.plot(np.log10(VALID), label='Validation Loss')
-  if np.min(SENS) > 0.0:
-    plt.plot(np.log10(SENS), label='Sensitivity Loss')
-  plt.ylabel ('Log10')
-  plt.xlabel ('Epoch')
-  plt.legend()
-  plt.grid(True)
-  plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(model_root)))
-  plt.show()
+  if bWantPlot:
+    plt.figure()
+    plt.title(model_root)
+    plt.plot(np.log10(LOSS), label='Training Loss')
+    plt.plot(np.log10(VALID), label='Validation Loss')
+    if np.min(SENS) > 0.0:
+      plt.plot(np.log10(SENS), label='Sensitivity Loss')
+    plt.ylabel ('Log10')
+    plt.xlabel ('Epoch')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(os.path.join(model_folder, '{:s}_train_loss.pdf'.format(model_root)))
+    plt.show()
+

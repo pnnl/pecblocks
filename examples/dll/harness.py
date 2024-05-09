@@ -11,7 +11,28 @@ import matplotlib.pyplot as plt
 hdf5_filename = 'harness.hdf5'
 KRMS = math.sqrt(1.5)
 
+RGRID = 82.0
+
 cases = [
+  {
+    'model': '../hwpv/ucf10ciirs2/ucf10ciirs2_fhf.json',
+    'tmax': 4.0,
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1,    2.0,   3.0, 100.0], 
+           [0.0, 0.0, 900.0, 900.0, 850.0, 850.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.8, 2.510, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [1.05, 1.05, 1.05, 1.05]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.051, 0.051, 0.051, 0.051]],
+    'Rg': [[-1.0, 3.0,   3.010, 100.0], 
+           [100.0, 100.0, RGRID, RGRID]]
+  },
   {
     'model': '../hwpv/ucf10c/ucf10c_fhf.json',
     'tmax': 4.0,
@@ -484,7 +505,7 @@ if __name__ == '__main__':
     Vq = Rg * Iq
     Vrms = KRMS * math.sqrt(Vd*Vd + Vq*Vq)
     GVrms = G * Vrms * kGVrms
-    Vq *= 0.30
+ #   Vq *= 0.30
 
     if 'T' in model.COL_U and 'Fc' in model.COL_U:
       step_vals = [T, G, Fc, Md, Mq, Vd, Vq, GVrms, Ctl]
@@ -495,7 +516,7 @@ if __name__ == '__main__':
     Vdc, Idc, Id, Iq = model.step_simulation (step_vals, nsteps=nsteps)
     nsteps = 1
 
-#    Id = max(0.0, Id)
+    Id = max(0.0, Id)
 
 #    print ('{:6.3f} {:6.2f} {:6.2f} {:6.1f} {:8.1f} {:6.3f} {:6.3f} {:6.1f} {:6.2f} {:6.3f} {:6.3f} {:6.3f}'.format(t, 
 #            Vd, Vq, G, GVrms, Md, Mq, Ctl, Vdc, Idc, Id, Iq))

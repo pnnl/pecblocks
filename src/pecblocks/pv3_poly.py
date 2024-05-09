@@ -69,6 +69,8 @@ class pv3():
     self.h5grp_prefix = None
     self.clamps = None
     self.sensitivity = None
+    self.d_key = None
+    self.q_key = None
 
   def load_training_config(self, filename):
     fp = open (filename, 'r')
@@ -209,6 +211,14 @@ class pv3():
       self.idx_out[i] = i + len(self.COL_U)
     print ('idx_in', self.idx_in)
     print ('idx_out', self.idx_out)
+    if 'Id' in self.COL_Y:
+      self.d_key = 'Id'
+    elif 'Vd' in self.COL_Y:
+      self.d_key = 'Vd'
+    if 'Iq' in self.COL_Y:
+      self.q_key = 'Iq'
+    elif 'Vq' in self.COL_Y:
+      self.q_key = 'Vq'
 
   def set_sim_config(self, config, model_only=True):
     self.name = config['name']
@@ -574,9 +584,9 @@ class pv3():
     y_non = self.F1 (ub)
     ysum = torch.sum (y_non * self.sens_mat, dim=1)
     y_hat = self.F2 (ysum)
-    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
-    return Id, Iq
+    ACd = self.de_normalize (y_hat[2], self.normfacs[self.d_key])
+    ACq = self.de_normalize (y_hat[3], self.normfacs[self.q_key])
+    return ACd, ACq
 
   # coefficients as trainable tensors instead of numpy, use self.H1.b as they are, but pad self.H1.a with ones
   def start_sensitivity_simulation(self, bPrint=False):
@@ -1005,9 +1015,9 @@ class pv3():
 
     Vdc = self.de_normalize (y_hat[npad:,0], self.normfacs['Vdc'])
     Idc = self.de_normalize (y_hat[npad:,1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[npad:,2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[npad:,3], self.normfacs['Iq'])
-    return Vdc, Idc, Id, Iq
+    ACd = self.de_normalize (y_hat[npad:,2], self.normfacs[self.d_key])
+    ACq = self.de_normalize (y_hat[npad:,3], self.normfacs[self.q_key])
+    return Vdc, Idc, ACd, ACq
 
   def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
@@ -1378,24 +1388,24 @@ class pv3():
 
     if len(y_hat) < 4:
       Idc = y_hat[0].item()
-      Id = y_hat[1].item()
-      Iq = y_hat[2].item()
+      ACd = y_hat[1].item()
+      ACq = y_hat[2].item()
       Idc = self.de_normalize (Idc, self.normfacs['Idc'])
-      Id = self.de_normalize (Id, self.normfacs['Id'])
-      Iq = self.de_normalize (Iq, self.normfacs['Iq'])
-      return Idc, Id, Iq
+      ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
+      ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
+      return Idc, ACd, ACq
 
     Vdc = y_hat[0].item()
     Idc = y_hat[1].item()
-    Id = y_hat[2].item()
-    Iq = y_hat[3].item()
+    ACd = y_hat[2].item()
+    ACq = y_hat[3].item()
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])
-    Id = self.de_normalize (Id, self.normfacs['Id'])
-    Iq = self.de_normalize (Iq, self.normfacs['Iq'])
+    ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
+    ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
 
-    return Vdc, Idc, Id, Iq
+    return Vdc, Idc, ACd, ACq
 
   def step_simulation (self, vals, nsteps=1):
 #   Vc = np.complex (Vrms+0.0j)
@@ -1427,22 +1437,22 @@ class pv3():
 
     if len(y_hat) < 4:
       Idc = y_hat[0].item()
-      Id = y_hat[1].item()
-      Iq = y_hat[2].item()
+      ACd = y_hat[1].item()
+      ACq = y_hat[2].item()
       Idc = self.de_normalize (Idc, self.normfacs['Idc'])
-      Id = self.de_normalize (Id, self.normfacs['Id'])
-      Iq = self.de_normalize (Iq, self.normfacs['Iq'])
-      return Idc, Id, Iq
+      ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
+      ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
+      return Idc, ACd, ACq
 
     Vdc = y_hat[0].item()
     Idc = y_hat[1].item()
-    Id = y_hat[2].item()
-    Iq = y_hat[3].item()
+    ACd = y_hat[2].item()
+    ACq = y_hat[3].item()
 
     Vdc = self.de_normalize (Vdc, self.normfacs['Vdc'])
     Idc = self.de_normalize (Idc, self.normfacs['Idc'])
-    Id = self.de_normalize (Id, self.normfacs['Id'])
-    Iq = self.de_normalize (Iq, self.normfacs['Iq'])
+    ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
+    ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
 
 #   if self.Lf is not None:
 #     Ic = np.complex (Irms+0.0j)
@@ -1454,5 +1464,5 @@ class pv3():
 #     Vs = Vc
 #     Is = np.complex (Irms+0.0j)
 
-    return Vdc, Idc, Id, Iq
+    return Vdc, Idc, ACd, ACq
 
