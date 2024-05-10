@@ -100,8 +100,8 @@ bWantMAE = False
 #model_path = './ucf10c_config.json'
 
 def plot_case(model, idx, bPNG=False):
-#  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
-  rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
+  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
+  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
   if not bPNG:
     print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
@@ -137,7 +137,8 @@ def plot_case(model, idx, bPNG=False):
       scale = 1.0
       offset = 0.0
     ax[row,col].set_title ('Input {:s}'.format (key))
-    ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
+#    ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
+    ax[row,col].plot (model.t[i1:], (u[i1:,j] - u2[i1:,j])*scale)
     ax[row,col].grid()
 #    ax[row,col].ticklabel_format(useOffset=False)
     #print ('initial {:s}={:.6f}'.format (key, u[i1,j]*scale + offset))
@@ -154,8 +155,10 @@ def plot_case(model, idx, bPNG=False):
       scale = 1.0
       offset = 0.0
     ax[2,j].set_title ('Output {:s}'.format (key))
-    ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
-    ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
+#    ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
+#    ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
+    ax[2,j].plot (model.t[i1:], (y_hat[i1:,j] - y_hat2[i1:,j])*scale, label='difference y_hat')
+    ax[2,j].plot (model.t[i1:], (y_true[i1:,j] - y_true2[i1:,j])*scale, label='difference y')
     ax[2,j].legend()
     ax[2,j].grid()
 #    ax[row,col].ticklabel_format(useOffset=False)
