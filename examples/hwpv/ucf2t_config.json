@@ -1,7 +1,8 @@
 {
   "model_folder": "./ucf2t/",
   "model_root": "ucf2t",
-  "data_path": "d:/data/ucf2t.hdf5",
+  "win_data_path": "d:/data/ucf2t.hdf5",
+  "data_path": "/Users/tom/Documents/data/ucf2t.hdf5",
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Md1", "Mq1", "Id", "Iq", "GIrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Vod", "Voq"],

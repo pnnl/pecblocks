@@ -2,6 +2,7 @@
   "model_folder": "./ucf10t1/",
   "model_root": "ucf10t1",
   "data_path": "d:/data/ucf3/ucf9c.hdf5",
+  "mac_data_path": "/Users/tom/Documents/data/ucf9c.hdf5",
   "COL_T": ["t"],
   "COL_U": ["G", "Ud", "Uq", "Id", "Iq", "GIrms", "Ctrl"],
   "COL_Y": ["Vdc", "Idc", "Vd", "Vq"],

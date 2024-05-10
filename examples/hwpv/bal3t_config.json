@@ -2,6 +2,7 @@
   "model_folder": "./bal3t/",
   "model_root": "bal3t",
   "data_path": "d:/data/big3t.hdf5",
+  "mac_data_path": "/Users/tom/Documents/data/big3t.hdf5",
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Md", "Mq", "Id", "Iq", "GIrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Vd", "Vq"],
