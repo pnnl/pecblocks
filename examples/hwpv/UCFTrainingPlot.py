@@ -16,16 +16,17 @@ import os
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
-plot_defs = [
+plot_defs = [ # ucf2t
     {'row':0, 'col':0, 'tag':'T',    'title':'Temperature',    'ylabel':'C'},
     {'row':0, 'col':1, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
     {'row':0, 'col':2, 'tag':'Fc',   'title':'Control Frequency', 'ylabel':'Hz'},
     {'row':0, 'col':3, 'tag':'Ctl',  'title':'Control Mode',      'ylabel':''},
-    {'row':0, 'col':4, 'tag':'GVrms','title':'Polynomial Feature','ylabel':''},
+    {'row':0, 'col':4, 'tag':'GVrms','title':'Polynomial GVrms',  'ylabel':''},
     {'row':1, 'col':0, 'tag':'Md1',  'title':'Ud',                'ylabel':'V'},
     {'row':1, 'col':1, 'tag':'Mq1',  'title':'Uq',                'ylabel':'V'},
     {'row':1, 'col':2, 'tag':'Vod',  'title':'Vd',                'ylabel':'V'},
     {'row':1, 'col':3, 'tag':'Voq',  'title':'Vq',                'ylabel':'V'},
+    {'row':1, 'col':4, 'tag':'GIrms','title':'Polynomial GIrms',  'ylabel':''},
     {'row':2, 'col':0, 'tag':'Vdc',  'title':'DC Voltage',        'ylabel':'V'},
     {'row':2, 'col':1, 'tag':'Idc',  'title':'DC Current',        'ylabel':'A'},
     {'row':2, 'col':2, 'tag':'Id',   'title':'Id',                'ylabel':'A'},
@@ -65,7 +66,7 @@ plot_defs = [
     {'row':2, 'col':3, 'tag':'Iq',   'title':'Iq',                'ylabel':'A'}
   ]
 
-# this is for the May 8, 2024 data sets, augmented with GIrms, Vd and Vq outputs
+# this is for the May 8, 2024 data sets, augmented with GIrms, Vd and Vq outputs: ucf9, ucf9c
 plot_defs = [
     {'row':0, 'col':0, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
     {'row':0, 'col':1, 'tag':'Ctrl', 'title':'Control Mode',      'ylabel':''},
@@ -82,7 +83,14 @@ plot_defs = [
   ]
 
 def start_plot(case_title, idx):
-  fig, ax = plt.subplots(3, 4, sharex = 'col', figsize=(15,6), constrained_layout=True)
+  last_col = 0
+  last_row = 0
+  for plot in plot_defs:
+    if plot['row'] > last_row:
+      last_row = plot['row']
+    if plot['col'] > last_col:
+      last_col = plot['col']
+  fig, ax = plt.subplots(last_row + 1, last_col + 1, sharex = 'col', figsize=(15,6), constrained_layout=True)
   if idx < 0:
     fig.suptitle ('Dataset: ' + case_title)
   else:
@@ -121,14 +129,14 @@ def finish_plot(ax, plot_file = None):
   plt.show()
 
 
-pathname = 'd:/data/'
+#pathname = 'd:/data/'
 pathname = 'd:/data/ucf3/'
 
 if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf9c']: # ucf3z. ucf2, ucf3, ucf7, ucf9
+  for root in ['ucf9c']: # ucf3z. ucf2t, ucf3, ucf7, ucf9, ucf9c
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)

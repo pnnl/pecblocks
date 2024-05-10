@@ -1,0 +1,101 @@
+# Copyright (C) 2018-2021 Battelle Memorial Institute
+# file: HDF5TrainingPlot.py
+""" Plots the the merged unbalanced training set.
+
+Paragraph.
+
+Public Functions:
+    :main: does the work
+"""
+
+import sys
+import matplotlib.pyplot as plt
+import numpy as np
+import h5py
+
+input_defs = [
+    {'row':0, 'col':0, 'tag':'G', 'title':'Irradiance',  'ylabel':'W/m2'},
+    {'row':0, 'col':1, 'tag':'T', 'title':'Temperature', 'ylabel':'C'},
+    {'row':0, 'col':2, 'tag':'Vrms', 'title':'Vrms',  'ylabel':'V'},
+    {'row':0, 'col':3, 'tag':'GVrms', 'title':'GVrms',  'ylabel':'kVW/m2'},
+    {'row':1, 'col':0, 'tag':'Fc', 'title':'Control Frequency',  'ylabel':'Hz'},
+    {'row':1, 'col':1, 'tag':'Md', 'title':'Md', 'ylabel':'pu'},
+    {'row':1, 'col':2, 'tag':'Mq', 'title':'Mq', 'ylabel':'pu'},
+    {'row':1, 'col':3, 'tag':'Ctl', 'title':'Control Mode',  'ylabel':'[0,GFM,GFL]'}
+  ]
+
+input_defs = [
+    {'row':0, 'col':0, 'tag':'G', 'title':'Irradiance',  'ylabel':'W/m2'},
+    {'row':0, 'col':1, 'tag':'T', 'title':'Temperature', 'ylabel':'C'},
+    {'row':0, 'col':2, 'tag':'Vd', 'title':'Vd',  'ylabel':'V'},
+    {'row':0, 'col':3, 'tag':'Vq', 'title':'Vq',  'ylabel':'V'},
+    {'row':0, 'col':4, 'tag':'GVrms', 'title':'GVrms',  'ylabel':'kVW/m2'},
+    {'row':1, 'col':0, 'tag':'Fc', 'title':'Control Frequency',  'ylabel':'Hz'},
+    {'row':1, 'col':1, 'tag':'Md', 'title':'Md', 'ylabel':'pu'},
+    {'row':1, 'col':2, 'tag':'Mq', 'title':'Mq', 'ylabel':'pu'},
+    {'row':1, 'col':3, 'tag':'Ctl', 'title':'Control Mode',  'ylabel':'[0,GFM,GFL]'},
+    {'row':1, 'col':4, 'tag':'GIrms', 'title':'GIrms',  'ylabel':'kAW/m2'}
+  ]
+
+output_defs = [
+    {'row':0, 'col':0, 'tag':'Vdc', 'title':'DC Voltage',  'ylabel':'V'},
+    {'row':0, 'col':1, 'tag':'Id',  'title':'Id',          'ylabel':'A'},
+    {'row':1, 'col':0, 'tag':'Idc', 'title':'DC Current',  'ylabel':'A'},
+    {'row':1, 'col':1, 'tag':'Iq',  'title':'Iq',          'ylabel':'A'}
+  ]
+
+def start_plot(case_title, defs):
+  maxrow = 0
+  maxcol = 0
+  for plot in defs:
+    if plot['row'] > maxrow:
+      maxrow = plot['row']
+    if plot['col'] > maxcol:
+      maxcol = plot['col']
+  fig, ax = plt.subplots(maxrow+1, maxcol+1, sharex = 'col', figsize=(15,6), constrained_layout=True)
+  fig.suptitle ('Dataset: ' + case_title)
+  for plot in defs:
+    plt_ax = ax[plot['row'], plot['col']]
+    plt_ax.set_title (plot['title'])
+    plt_ax.set_ylabel (plot['ylabel'])
+  return ax
+
+def plot_group(ax, grp, defs):
+  dlen = grp['t'].len()
+  t = np.zeros(dlen)
+  y = np.zeros(dlen)
+  grp['t'].read_direct (t)
+  for plot in defs:
+    row = plot['row']
+    col = plot['col']
+    grp[plot['tag']].read_direct (y)
+    if 'scale' in plot:
+      scale = plot['scale']
+    else:
+      scale = 1.0
+    ax[row,col].plot (t, scale * y)
+
+def finish_plot(ax, plot_file = None):
+  for j in range(ax.shape[1]):
+    ax[1,j].set_xlabel ('Seconds')
+  if plot_file:
+    plt.savefig(plot_file)
+  plt.show()
+
+#filename = 'balanced.hdf5'
+filename = 'd:/data/big3t.hdf5'
+if len(sys.argv) > 1:
+  filename = sys.argv[1]
+
+with h5py.File(filename, 'r') as f:
+  ncases = len(f.items())
+  ax = start_plot ('Inputs from {:s} ({:d} cases)'.format(filename, ncases), input_defs)
+  for grp_name, grp in f.items():
+    plot_group (ax, grp, input_defs)
+  finish_plot (ax, 'BalInputs.png')
+
+  ax = start_plot ('Outputs from {:s} ({:d} cases)'.format(filename, ncases), output_defs)
+  for grp_name, grp in f.items():
+    plot_group (ax, grp, output_defs)
+  finish_plot (ax, 'BalOutputs.png')
+

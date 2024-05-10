@@ -21,7 +21,10 @@ if __name__ == '__main__':
 
   print ('Copying simulation records')
   with h5py.File(input_path, 'r') as f_in:
+    ncases = len(f_in.items())
     for grp_name, grp_in in f_in.items():
+      if idx % 10 == 0:
+        print ('building {:d} of {:d} records'.format (idx, ncases))
       if n < 0:
         n = grp_in['t'].len()
         tbase = np.zeros(n)
@@ -36,8 +39,7 @@ if __name__ == '__main__':
       grp_in['G'].read_direct (G)
       grp_in['Id'].read_direct (Id)
       grp_in['Iq'].read_direct (Iq)
-      Irms = KRMS * np.sqrt (Id*Id + Iq*Iq)
-      GIrms = G * KRMS * Irms
+      GIrms = G * KRMS * np.sqrt (Id*Id + Iq*Iq)
       grp_out = f_out.create_group (new_name)
       grp_out.create_dataset ('Ctrl', data=ctl, compression='gzip')
       grp_out.create_dataset ('GIrms', data=GIrms, compression='gzip')
