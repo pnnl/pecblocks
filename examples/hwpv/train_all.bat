@@ -1,7 +1,7 @@
-call train.bat ucf10t1
-call train.bat sdi5t
-call train.bat osg4t
-call train.bat ucf2t
-call train.bat unb3t
-call train.bat bal3t
+call train.bat ucf10t1iir
+call train.bat sdi5tiir
+call train.bat osg4tiir
+call train.bat ucf2tiir
+call train.bat unb3tiir
+call train.bat bal3tiir
 
