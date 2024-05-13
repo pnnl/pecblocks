@@ -9,7 +9,7 @@
   "h5grp_prefix":"case",
   "lr": 1.0e-3,
   "t_step": 0.002,
-  "num_iter": 1000,
+  "num_iter": 138,
   "continue_iterations": false,
   "print_freq": 2,
   "batch_size": 20,

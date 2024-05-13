@@ -1,8 +1,8 @@
 {
   "model_folder": "./osg4tiir/",
   "model_root": "osg4tiir",
-  "win_data_path": "d:/data/osg4t_vdvq.hdf5",
-  "data_path": "/Users/tom/Documents/data/osg4t_vdvq.hdf5",
+  "data_path": "d:/data/osg4t_vdvq.hdf5",
+  "mac_data_path": "/Users/tom/Documents/data/osg4t_vdvq.hdf5",
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Ud", "Uq", "Id", "Iq", "GIrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Vd", "Vq"],

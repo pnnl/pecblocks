@@ -1,8 +1,8 @@
 {
   "model_folder": "./sdi5tiir/",
   "model_root": "sdi5tiir",
-  "win_data_path": "d:/data/sdi5.hdf5",
-  "data_path": "/Users/tom/Documents/data/sdi5.hdf5",
+  "data_path": "d:/data/sdi5.hdf5",
+  "win_data_path": "/Users/tom/Documents/data/sdi5.hdf5",
   "COL_T": ["t"],
   "COL_U": ["Fc", "Ud", "Uq", "Vdc", "Id", "Iq"],
   "COL_Y": ["Idc", "Vd", "Vq"],
