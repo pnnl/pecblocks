@@ -2134,10 +2134,10 @@ Total,0.0096,0.0373,0.0478,0.0146
 2098,0.0140,0.0253,0.0426,0.0059
 2099,0.0111,0.0318,0.0333,0.0054
 Highest RMSE Cases
-Vdc  Max RMSE=  0.0196 at Case 1146
-Idc  Max RMSE=  0.0905 at Case 2034
-Id   Max RMSE=  0.1246 at Case 2034
-Iq   Max RMSE=  0.0740 at Case 96
+Vdc  Max RMSE=  0.0196 at Case 1146; 0 > 0.05
+Idc  Max RMSE=  0.0905 at Case 2034; 222 > 0.05
+Id   Max RMSE=  0.1246 at Case 2034; 537 > 0.05
+Iq   Max RMSE=  0.0740 at Case 96; 34 > 0.05
 Total Error Summary
 Vdc  RMSE=  0.0096
 Idc  RMSE=  0.0373

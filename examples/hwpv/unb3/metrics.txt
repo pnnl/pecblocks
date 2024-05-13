@@ -2512,14 +2512,14 @@ Total,0.0097,0.0058,0.0078,0.0032,0.0026,0.0048,0.0045,0.0031
 2428,0.0093,0.0056,0.0073,0.0017,0.0023,0.0025,0.0022,0.0025
 2429,0.0093,0.0056,0.0073,0.0017,0.0024,0.0023,0.0024,0.0024
 Highest RMSE Cases
-Vdc  Max RMSE=  0.0121 at Case 1064
-Idc  Max RMSE=  0.0085 at Case 1109
-Idlo Max RMSE=  0.0106 at Case 11
-Iqlo Max RMSE=  0.0079 at Case 1425
-I0lo Max RMSE=  0.0061 at Case 1411
-Idhi Max RMSE=  0.0186 at Case 1572
-Iqhi Max RMSE=  0.0189 at Case 1544
-I0hi Max RMSE=  0.0119 at Case 1538
+Vdc  Max RMSE=  0.0121 at Case 1064; 0 > 0.05
+Idc  Max RMSE=  0.0085 at Case 1109; 0 > 0.05
+Idlo Max RMSE=  0.0106 at Case 11; 0 > 0.05
+Iqlo Max RMSE=  0.0079 at Case 1425; 0 > 0.05
+I0lo Max RMSE=  0.0061 at Case 1411; 0 > 0.05
+Idhi Max RMSE=  0.0186 at Case 1572; 0 > 0.05
+Iqhi Max RMSE=  0.0189 at Case 1544; 0 > 0.05
+I0hi Max RMSE=  0.0119 at Case 1538; 0 > 0.05
 Total Error Summary
 Vdc  RMSE=  0.0097
 Idc  RMSE=  0.0058
