@@ -558,12 +558,20 @@ class pv3():
     print ('inputs', self.sensitivity['inputs'], self.sensitivity['idx_in'])
     print ('outputs', self.sensitivity['outputs'], self.sensitivity['idx_out'])
     print ('sets', self.sensitivity['idx_set'])
-    self.sensitivity['idx_g_rms'] = self.COL_U.index (self.sensitivity['GVrms']['G'])
-    self.sensitivity['idx_vd_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vd'])
-    self.sensitivity['idx_vq_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vq'])
-    self.sensitivity['idx_gvrms'] = self.COL_U.index ('GVrms')
-    print ('GVrms', self.sensitivity['idx_g_rms'], self.sensitivity['idx_vd_rms'], self.sensitivity['idx_vq_rms'], 
-           self.sensitivity['GVrms']['k'], self.sensitivity['idx_gvrms'])
+    if 'GVrms' in self.sensitivity:
+      self.sensitivity['idx_g_rms'] = self.COL_U.index (self.sensitivity['GVrms']['G'])
+      self.sensitivity['idx_d_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vd'])
+      self.sensitivity['idx_q_rms'] = self.COL_U.index (self.sensitivity['GVrms']['Vq'])
+      self.sensitivity['idx_gdqrms'] = self.COL_U.index ('GVrms')
+      self.sensitivity['k'] = self.sensitivity['GVrms']['k']
+    elif 'GIrms' in self.sensitivity:
+      self.sensitivity['idx_g_rms'] = self.COL_U.index (self.sensitivity['GIrms']['G'])
+      self.sensitivity['idx_d_rms'] = self.COL_U.index (self.sensitivity['GIrms']['Id'])
+      self.sensitivity['idx_q_rms'] = self.COL_U.index (self.sensitivity['GIrms']['Iq'])
+      self.sensitivity['idx_gdqrms'] = self.COL_U.index ('GIrms')
+      self.sensitivity['k'] = self.sensitivity['GIrms']['k']
+    print ('GDQrms', self.sensitivity['idx_g_rms'], self.sensitivity['idx_d_rms'], self.sensitivity['idx_q_rms'], 
+      self.sensitivity['k'], self.sensitivity['idx_gdqrms'])
 
     self.sens_bases = []
     vals = np.zeros (len(self.COL_U))
@@ -627,43 +635,45 @@ class pv3():
       print ('  mat=\n', self.sens_mat)
 
   def calc_sensitivity_losses(self, bPrint=False):
-    idx_vd = self.sensitivity['idx_vd_rms']
-    idx_vq = self.sensitivity['idx_vq_rms']
-    idx_gvrms = self.sensitivity['idx_gvrms']
+    idx_d = self.sensitivity['idx_d_rms']
+    idx_q = self.sensitivity['idx_q_rms']
+    idx_gdqrms = self.sensitivity['idx_gdqrms']
     idx_g = self.sensitivity['idx_g_rms']
-    krms = self.sensitivity['GVrms']['k']
+    krms = self.sensitivity['k']
+    delta = self.sensitivity['delta']
     max_sens = torch.tensor (0.0, requires_grad=True)
     sens_floor = torch.tensor (1.0e-5, requires_grad=True)
     self.start_sensitivity_simulation ()
 
     for vals in self.sens_bases:
-      Vd0 = vals[idx_vd]
-      Vq0 = vals[idx_vq]
-      Vd1 = Vd0 + 1.0
-      Vq1 = Vq0 + 1.0
+      Ud0 = vals[idx_d]
+      Uq0 = vals[idx_q]
+      Ud1 = Ud0 + delta
+      Uq1 = Uq0 + delta
 
-      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd0*Vd0 + Vq0*Vq0)
-      Id0, Iq0 = self.sensitivity_response (vals.copy())
+      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq0*Uq0)
+      Yd0, Yq0 = self.sensitivity_response (vals.copy())
 
-      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd1*Vd1 + Vq0*Vq0)
-      vals[idx_vd] = Vd1
-      vals[idx_vq] = Vq0
-      Id1, Iq1 = self.sensitivity_response (vals.copy())
+      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud1*Ud1 + Uq0*Uq0)
+      vals[idx_d] = Ud1
+      vals[idx_q] = Uq0
+      Yd1, Yq1 = self.sensitivity_response (vals.copy())
 
-      vals[idx_gvrms] = vals[idx_g] * krms * math.sqrt (Vd0*Vd0 + Vq1*Vq1)
-      vals[idx_vd] = Vd0
-      vals[idx_vq] = Vq1
-      Id2, Iq2 = self.sensitivity_response (vals.copy())
+      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq1*Uq1)
+      vals[idx_d] = Ud0
+      vals[idx_q] = Uq1
+      Yd2, Yq2 = self.sensitivity_response (vals.copy())
       #prevent aliasing the base cases
-      vals[idx_vq] = Vq0
+      vals[idx_q] = Uq0
 
-      sens = torch.max (torch.stack ((torch.abs(Id1 - Id0), torch.abs(Iq1 - Iq0), torch.abs(Id2 - Id0), torch.abs(Iq2 - Iq0))))
+      sens = torch.max (torch.stack ((torch.abs(Yd1 - Yd0), torch.abs(Yq1 - Yq0), torch.abs(Yd2 - Yd0), torch.abs(Yq2 - Yq0)))) / delta
       max_sens = torch.max (torch.stack ((max_sens, sens)))
 
-#     if bPrint:
-#       print (' * Id=', Id0, Id1, Id2)
-#       print ('   Iq=', Iq0, Iq1, Iq2)
-#       print ('   sens=', sens, 'max=', max_sens)
+      if bPrint and False:
+        print (' * Yd=', Yd0, Yd1, Yd2)
+        print ('   Yq=', Yq0, Yq1, Yq2)
+        print ('   sens=', sens, 'max=', max_sens)
+        print ('   vals', vals)
 
     sens_loss = torch.max(max_sens - self.sensitivity['limit'], sens_floor)
     if bPrint:
@@ -743,7 +753,7 @@ class pv3():
         # Compute the sensitivity loss
         loss_sens = torch.tensor (0.0)
         if self.sensitivity is not None:
-          loss_sens = self.calc_sensitivity_losses (bPrint=False)
+          loss_sens = self.calc_sensitivity_losses (bPrint=True)
 
         # Optimize on this batch
         loss = loss_fit + loss_sens

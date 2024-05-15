@@ -15,6 +15,25 @@ RGRID = 82.0
 
 cases = [
   {
+    'model': '../hwpv/ucf10t1s/ucf10t1s_fhf.json',
+    'tmax': 4.0,
+    'kGIrms': 1.0,
+    'G':  [[-1.0, 0.1, 1.1,    2.0,   3.0, 100.0], 
+           [0.0, 0.0, 900.0, 900.0, 850.0, 850.0]],
+    'T':  [[-1.0, 100.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 100.0],
+           [60.0, 60.0]],
+    'Ctl':[[-1.0, 1.8, 2.510, 100.0],
+           [0.0, 0.0, 1.0, 1.0]],
+    'Ud': [[-1.0, 8.0, 8.010, 100.0], 
+           [1.05, 1.05, 1.05, 1.05]],
+    'Uq': [[-1.0, 8.0, 8.010, 100.0], 
+           [0.051, 0.051, 0.051, 0.051]],
+    'Rg': [[-1.0, 3.0,   3.010, 100.0], 
+           [100.0, 100.0, RGRID, RGRID]]
+  },
+  {
     'model': '../hwpv/ucf10t1/ucf10t1_fhf.json',
     'tmax': 4.0,
     'kGIrms': 1.0,
@@ -127,6 +146,9 @@ if __name__ == '__main__':
     Irms = KRMS * math.sqrt(Id*Id + Iq*Iq)
     GIrms = G * Irms * kGIrms
 
+    Vrms = KRMS * math.sqrt(Vd*Vd + Vq*Vq)
+    GVrms = G * Vrms * kGIrms
+
     if 'GIrms' in model.COL_U:
       if 'T' in model.COL_U and 'Fc' in model.COL_U:
         step_vals = [T, G, Fc, Md, Mq, Id, Iq, GIrms, Ctl]
@@ -134,6 +156,13 @@ if __name__ == '__main__':
         step_vals = [G, Md, Mq, Id, Iq, GIrms, Ctl]
       else:
         step_vals = [G, Md, Mq, Id, GIrms, Ctl]
+    elif 'GVrms' in model.COL_U:
+      if 'T' in model.COL_U and 'Fc' in model.COL_U:
+        step_vals = [T, G, Fc, Md, Mq, Id, Iq, GVrms, Ctl]
+      elif 'Iq' in model.COL_U:
+        step_vals = [G, Md, Mq, Id, Iq, GVrms, Ctl]
+      else:
+        step_vals = [G, Md, Mq, Id, GVrms, Ctl]
     else:
       if 'T' in model.COL_U and 'Fc' in model.COL_U:
         step_vals = [T, G, Fc, Md, Mq, Id, Iq, Ctl]
@@ -145,7 +174,7 @@ if __name__ == '__main__':
     Vdc, Idc, Vd, Vq = model.step_simulation (step_vals, nsteps=nsteps)
     nsteps = 1
 
-#    Id = max(0.0, Id)
+#    Vd = max(0.0, Id)
 
     dict = {'t':t,'G':G,'T':T,'Md':Md,'Mq':Mq,'Fc':Fc,'Ctl':Ctl,'Rg':Rg,'Vd':Vd,'Vq':Vq,'GIrms':GIrms,'Vdc':Vdc,'Idc':Idc,'Id':Id,'Iq':Iq}
     rows.append (dict)
