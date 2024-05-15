@@ -945,32 +945,39 @@ class pv3():
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
-  def testOneCase(self, case_idx, npad):
-    case_data = self.data_train[[case_idx],:,:]
-    udata = case_data[0,:,self.idx_in].squeeze().transpose()
+  def testOneCase(self, case_idx, npad, bUseTorchDS=True):
+    if bUseTorchDS:
+      total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), self.n_pad)
+      case_data = total_ds[case_idx]
+      print ('case_data shape', len(case_data))
+      print ('case_data[0]', case_data[0].shape)
+      print ('case_data[1]', case_data[1].shape)
+      ub = torch.unsqueeze(case_data[0], dim=0)
+      y_true = case_data[1].detach().numpy()[npad:,:]
+      udata = case_data[0].detach().numpy()[npad:,:]
+      print (ub.shape, y_true.shape, udata.shape)
+    else:
+      case_data = self.data_train[[case_idx],:,:]
+      udata = case_data[0,:,self.idx_in].squeeze().transpose()
+      # padding initial conditions
+      ic = np.zeros((npad, len(self.idx_in)), dtype=case_data.dtype)
+      for i in range(len(self.idx_in)):
+        ic[:,i] = udata[0,i]
+      udata = np.concatenate ((ic, udata))
+      ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
+      y_true = np.transpose(case_data[0,:,self.idx_out]).squeeze()
+      udata = udata[npad:,:]
+      print (ub.shape, y_true.shape, udata.shape)
 
-    # padding initial conditions
-    ic = np.zeros((npad, len(self.idx_in)))
-    for i in range(len(self.idx_in)):
-      ic[:,i] = udata[0,i]
-#    print (case_data.shape, udata.shape, ic.shape)
-#    print (ic)
-    udata = np.concatenate ((ic, udata))
-
-    ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
+    # model evaluation
     y_non = self.F1 (ub)
     y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
-#    print (ub.shape, y_non.shape, y_lin.shape, y_hat.shape)
-#    self.printStateDicts()
-#    print (y_lin)
 
+    # error metrics
     y_hat = y_hat.detach().numpy()[[0], npad:, :].squeeze()
-    y_true = np.transpose(case_data[0,:,self.idx_out]).squeeze()
     rmse = dynonet.metrics.error_rmse(y_true, y_hat)
     mae = dynonet.metrics.error_mae(y_true, y_hat)
-    udata = udata[npad:,:]
-#    print (rmse.shape, mae.shape, y_hat.shape, y_true.shape, udata.shape)
     return rmse, mae, y_hat, y_true, udata
 
   def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad):
@@ -1022,7 +1029,7 @@ class pv3():
   def stepOneCase(self, case_idx):
     case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
-    y_hat = np.zeros(shape=(n,len(self.idx_out)))
+    y_hat = np.zeros(shape=(n,len(self.idx_out)), dtype=case_data.dtype)
     ub = torch.zeros((1, 1, len(self.idx_in)), dtype=torch.float)
     self.start_simulation()
     # establish initial conditions of the normalized data
@@ -1056,6 +1063,7 @@ class pv3():
     udata = case_data[:,self.idx_in].squeeze()
     rmse = dynonet.metrics.error_rmse(y_true, y_hat)
     mae = dynonet.metrics.error_mae(y_true, y_hat)
+
     return rmse, mae, y_hat, y_true, udata
 
   def setup_clamping_losses(self):

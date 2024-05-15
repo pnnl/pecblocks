@@ -102,6 +102,7 @@ bWantMAE = False
 def plot_case(model, idx, bPNG=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
   rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
+  print ('Difference in RMSE', rmse - rmse2)
   if not bPNG:
     print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
@@ -113,10 +114,6 @@ def plot_case(model, idx, bPNG=False):
     j += 1
   icstr = ' '.join('{:.4f}'.format(val) for val in y_ic)
 
-#  print ('y_hat shape', y_hat.shape)
-#  print ('y_true shape', y_true.shape)
-#  print ('u shape', u.shape)
-
   i1 = 1 # 2*model.n_loss_skip
 
   nrows = 3 # first two rows for inputs, last row for outputs
@@ -126,7 +123,6 @@ def plot_case(model, idx, bPNG=False):
 
   fig, ax = plt.subplots (nrows, ncols, sharex = 'col', figsize=(18,8), constrained_layout=True)
   fig.suptitle ('Model {:s} Case {:d} Simulation; Output RMSE = {:s}, Output Y(0) = {:s}'.format(model.model_root, idx, valstr, icstr))
-#  fig.suptitle ('Case {:d} Simulation; Output RMSE = {:s}; Output MAE = {:s}'.format(idx, valstr, maestr))
   j = 0
   row = 0
   col = 0
@@ -141,7 +137,6 @@ def plot_case(model, idx, bPNG=False):
     ax[row,col].plot (model.t[i1:], (u[i1:,j] - u2[i1:,j])*scale)
     ax[row,col].grid()
 #    ax[row,col].ticklabel_format(useOffset=False)
-    #print ('initial {:s}={:.6f}'.format (key, u[i1,j]*scale + offset))
     j += 1
     col += 1
     if col >= ncols:
