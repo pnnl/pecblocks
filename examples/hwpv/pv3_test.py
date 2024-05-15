@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 import pecblocks.pv3_poly as pv3_model
 import json
 
-#nrows = 3 # 2
-#ncols = 4 # 5 # 7 # 9
 bNormalized = False
 
 bWantMAE = False
@@ -100,9 +98,9 @@ bWantMAE = False
 #model_path = './ucf10c_config.json'
 
 def plot_case(model, idx, bPNG=False):
-  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
-  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
-  print ('Difference in RMSE', rmse - rmse2)
+  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500) # RMSE calc includes pre-padding, as in training
+  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx) # RMSE calc excludes pre-padding, won't match training metrics
+  print ('Test-Step Difference in RMSE', rmse - rmse2)
   if not bPNG:
     print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
@@ -114,7 +112,7 @@ def plot_case(model, idx, bPNG=False):
     j += 1
   icstr = ' '.join('{:.4f}'.format(val) for val in y_ic)
 
-  i1 = 1 # 2*model.n_loss_skip
+  i1 = 0 # 1 # 2*model.n_loss_skip
 
   nrows = 3 # first two rows for inputs, last row for outputs
   ncols = len(model.COL_Y)
@@ -133,8 +131,9 @@ def plot_case(model, idx, bPNG=False):
       scale = 1.0
       offset = 0.0
     ax[row,col].set_title ('Input {:s}'.format (key))
-#    ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
-    ax[row,col].plot (model.t[i1:], (u[i1:,j] - u2[i1:,j])*scale)
+    ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
+#    ax[row,col].plot (model.t[i1:], (u[i1:,j] - u2[i1:,j])*scale)
+#    ax[row,col].set_xlim (model.t[0], model.t[-1])
     ax[row,col].grid()
 #    ax[row,col].ticklabel_format(useOffset=False)
     j += 1
@@ -150,11 +149,12 @@ def plot_case(model, idx, bPNG=False):
       scale = 1.0
       offset = 0.0
     ax[2,j].set_title ('Output {:s}'.format (key))
-#    ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
-#    ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
-    ax[2,j].plot (model.t[i1:], (y_hat[i1:,j] - y_hat2[i1:,j])*scale, label='difference y_hat')
-    ax[2,j].plot (model.t[i1:], (y_true[i1:,j] - y_true2[i1:,j])*scale, label='difference y')
+    ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
+    ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
+#    ax[2,j].plot (model.t[i1:], (y_hat[i1:,j] - y_hat2[i1:,j])*scale, label='difference y_hat')
+#    ax[2,j].plot (model.t[i1:], (y_true[i1:,j] - y_true2[i1:,j])*scale, label='difference y')
     ax[2,j].legend()
+#    ax[2,j].set_xlim (model.t[0], model.t[-1])
     ax[2,j].grid()
 #    ax[row,col].ticklabel_format(useOffset=False)
     print ('initial {:s}={:.6f}'.format (key, y_hat[i1,j]*scale + offset))
@@ -168,7 +168,7 @@ def plot_case(model, idx, bPNG=False):
 
 def add_case(model, idx, bTrueOutput=False):
   rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
-  i1 = 1 # 2*model.n_loss_skip
+  i1 = 0 # 1 # 2*model.n_loss_skip
   for j in range(len(model.COL_Y)):
     key = model.COL_Y[j]
     scale = model.normfacs[key]['scale']

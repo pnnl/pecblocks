@@ -945,17 +945,18 @@ class pv3():
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
-  def testOneCase(self, case_idx, npad, bUseTorchDS=True):
-    if bUseTorchDS:
-      total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), self.n_pad)
+  def testOneCase(self, case_idx, npad, bUseTorchDS=False):
+    if bUseTorchDS: # TODO: this doesn't match the correct Y[0] values
+      total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), npad)
       case_data = total_ds[case_idx]
       print ('case_data shape', len(case_data))
       print ('case_data[0]', case_data[0].shape)
       print ('case_data[1]', case_data[1].shape)
       ub = torch.unsqueeze(case_data[0], dim=0)
-      y_true = case_data[1].detach().numpy()[npad:,:]
-      udata = case_data[0].detach().numpy()[npad:,:]
-      print (ub.shape, y_true.shape, udata.shape)
+      y_true_ret = case_data[1].detach().numpy()[npad:,:]
+      y_true_err = case_data[1].detach().numpy()[self.n_loss_skip:,:]
+      u_ret = case_data[0].detach().numpy()[npad:,:]
+      print ('Using PVInvDataset for IC padding', ub.shape, y_true_ret.shape, y_true_err.shape, u_ret.shape)
     else:
       case_data = self.data_train[[case_idx],:,:]
       udata = case_data[0,:,self.idx_in].squeeze().transpose()
@@ -965,20 +966,26 @@ class pv3():
         ic[:,i] = udata[0,i]
       udata = np.concatenate ((ic, udata))
       ub = torch.tensor (np.expand_dims (udata, axis=0), dtype=torch.float)
-      y_true = np.transpose(case_data[0,:,self.idx_out]).squeeze()
-      udata = udata[npad:,:]
-      print (ub.shape, y_true.shape, udata.shape)
+      u_ret = udata[npad:,:]
+      y_true_ret = np.transpose(case_data[0,:,self.idx_out]).squeeze()
+      # padding initial conditions on the output vector for error metrics
+      ic = np.zeros((self.n_loss_skip, len(self.idx_out)), dtype=case_data.dtype)
+      for i in range(len(self.idx_out)):
+        ic[:,i] = y_true_ret[0,i]
+      y_true_err = np.concatenate ((ic, y_true_ret))
+      print ('Using data_train for IC padding', ub.shape, y_true_ret.shape, y_true_err.shape, u_ret.shape)
 
-    # model evaluation
+    # model evaluation on the padded data
     y_non = self.F1 (ub)
     y_lin = self.make_mimo_ylin (y_non)
     y_hat = self.F2 (y_lin)
 
     # error metrics
-    y_hat = y_hat.detach().numpy()[[0], npad:, :].squeeze()
-    rmse = dynonet.metrics.error_rmse(y_true, y_hat)
-    mae = dynonet.metrics.error_mae(y_true, y_hat)
-    return rmse, mae, y_hat, y_true, udata
+    y_hat_ret = y_hat.detach().numpy()[[0], npad:, :].squeeze()
+    y_hat_err = y_hat.detach().numpy()[[0], self.n_loss_skip:, :].squeeze()
+    rmse = dynonet.metrics.error_rmse(y_true_err, y_hat_err)
+    mae = dynonet.metrics.error_mae(y_true_err, y_hat_err)
+    return rmse, mae, y_hat_ret, y_true_ret, u_ret
 
   def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad):
     T = self.normalize (T, self.normfacs['T'])
