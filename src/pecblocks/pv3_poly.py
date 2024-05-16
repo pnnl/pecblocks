@@ -529,6 +529,8 @@ class pv3():
     ary = cfg['sets'][key]
     idx = cfg['idx_set'][key]
 
+#    print ('baseline', self.sens_counter, level, key, idx, step_vals)
+
     if level+1 == len(keys): # add basecases at the lowest level
       for i in range(lens[level]):
         step_vals[idx] = ary[i]
@@ -581,6 +583,7 @@ class pv3():
     for i in range(len(keys)):
       lens[i] = len(self.sensitivity['sets'][keys[i]])
     self.sens_counter = 0
+#    print (keys, indices, lens)
     self.build_sens_baselines (self.sens_bases, vals, self.sensitivity, keys, indices, lens, 0)
     print (len(self.sens_bases), 'sensitivity base cases constructed in', self.sens_counter, 'function calls')
 
@@ -678,7 +681,7 @@ class pv3():
     sens_loss = torch.max(max_sens - self.sensitivity['limit'], sens_floor)
     if bPrint:
       print ('  sens=', max_sens, 'loss=', sens_loss)
-    return sens_loss
+    return sens_loss, max_sens
 
   def trainModelCoefficients(self, bMAE = False):
     if self.sensitivity is not None:
@@ -721,6 +724,7 @@ class pv3():
       epoch_loss = 0.0
       epoch_sens = 0.0
       epoch_clamp = 0.0
+      epoch_sigma = 0.0
       self.F1.train()
       self.H1.train()
       self.F2.train()
@@ -753,7 +757,9 @@ class pv3():
         # Compute the sensitivity loss
         loss_sens = torch.tensor (0.0)
         if self.sensitivity is not None:
-          loss_sens = self.calc_sensitivity_losses (bPrint=True)
+          loss_sens, sigma = self.calc_sensitivity_losses (bPrint=False)
+          if sigma > epoch_sigma:
+            epoch_sigma = sigma
 
         # Optimize on this batch
         loss = loss_fit + loss_sens
@@ -802,7 +808,7 @@ class pv3():
 
       VALID.append(valid_loss.item())
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Training Clamp {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_clamp))
+        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Clamp {:12.6f} | Sigma {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_clamp, epoch_sigma))
         self.saveModelCoefficients()
         np.save (lossfile, [LOSS, VALID, SENS])
 
