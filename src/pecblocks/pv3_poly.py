@@ -720,6 +720,7 @@ class pv3():
     SENS = []
     lossfile = os.path.join(self.model_folder, "Loss.npy")
     start_time = time.time()
+    best_loss = 1.0e9
     for itr in range(0, self.num_iter):
       epoch_loss = 0.0
       epoch_sens = 0.0
@@ -807,6 +808,11 @@ class pv3():
         valid_loss += loss_fit * validation_scale
 
       VALID.append(valid_loss.item())
+      total_loss = valid_loss + epoch_loss
+      if total_loss < best_loss:
+        best_loss = total_loss
+        print (' == Saving the best model so far at iteration {:d}'.format (itr))
+        self.saveModelCoefficients('best')
       if itr % self.print_freq == 0:
         print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Clamp {:12.6f} | Sigma {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_clamp, epoch_sigma))
         self.saveModelCoefficients()
@@ -816,10 +822,10 @@ class pv3():
     np.save (lossfile, [LOSS, VALID, SENS])
     return train_time, LOSS, VALID, SENS
 
-  def saveModelCoefficients(self):
-    torch.save(self.F1.state_dict(), os.path.join(self.model_folder, "F1.pkl"))
-    torch.save(self.H1.state_dict(), os.path.join(self.model_folder, "H1.pkl"))
-    torch.save(self.F2.state_dict(), os.path.join(self.model_folder, "F2.pkl"))
+  def saveModelCoefficients(self, prefix=''):
+    torch.save(self.F1.state_dict(), os.path.join(self.model_folder, prefix + "F1.pkl"))
+    torch.save(self.H1.state_dict(), os.path.join(self.model_folder, prefix + "H1.pkl"))
+    torch.save(self.F2.state_dict(), os.path.join(self.model_folder, prefix + "F2.pkl"))
 
   def loadModelCoefficients(self):
     B1 = torch.load(os.path.join(self.model_folder, "F1.pkl"))
