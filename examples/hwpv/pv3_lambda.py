@@ -102,73 +102,129 @@ def clamp_loss (model, bPrint):
       print ('{:4s} Loss={:8.6f}'.format (model.COL_Y[j], total[j]))
   return np.sum(total)
 
-def sensitivity_analysis (model, bPrint, bLog = False):
+def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
+  if math.isnan(T0):
+    if math.isnan(F0):
+      return [G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
+    else:
+      return [G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
+  elif math.isnan(F0):
+    return [T0, G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
+  return [T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
+
+def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
   maxdIdVd = 0.0
   maxdIdVq = 0.0
   maxdIqVd = 0.0
   maxdIqVq = 0.0
+  delta = 0.01
 
-  G_range = np.linspace (100.0, 1000.0, 10)
-  Ud_range = np.linspace (0.8, 1.2, 5)
-  Uq_range = np.linspace (-0.5, 0.5, 5)
-  Ctl_range = np.linspace (0.0, 1.0, 2)
-  Vd_range = np.linspace (170.0, 340.0, 5)
-  Vq_range = np.linspace (-140.0, 140.0, 5)
-  ncases = len(G_range) * len(Ud_range) * len(Uq_range) * len(Ctl_range) * len(Vd_range) * len(Vq_range)
+  T_range = [math.nan]
+  Fc_range = [math.nan]
+  if bAutoRange:
+    print ('Autoranging:')
+    print ('Column       Min       Max      Mean     Range')
+    idx = 0
+    for c in model.COL_U + model.COL_Y:
+      fac = model.normfacs[c]
+      dmax = model.de_normalize (np.max (model.data_train[:,:,idx]), fac)
+      dmin = model.de_normalize (np.min (model.data_train[:,:,idx]), fac)
+      dmean = model.de_normalize (np.mean (model.data_train[:,:,idx]), fac) # mean over scenarios and time
+      drange = dmax - dmin
+      if abs(drange) <= 0.0:
+        drange = 1.0
+      print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
+      if c in ['G']:
+        G_range = np.linspace (max (dmin, 50.0), dmax, 7) # 11)
+      elif c in ['Ud', 'Md']:
+        Ud_range = np.linspace (dmin, dmax, 5) # 5)
+      elif c in ['Uq', 'Mq']:
+        Uq_range = np.linspace (dmin, dmax, 5) # 5)
+      elif c in ['Ctl']:
+        Ctl_range = np.linspace (0.0, 1.0, 2)
+      elif c in ['Vd']:
+        Vd_range = np.linspace (dmin, dmax, 5) # 11)
+      elif c in ['Vq']:
+        Vq_range = np.linspace (dmin, dmax, 5) # 11)
+      elif c in ['T']:
+        T_range = np.linspace (dmin, dmax, 2)
+      elif c in ['Fc']:
+        Fc_range = np.linspace (dmin, dmax, 3) # 5)
+      idx +=     1
+  else:
+    G_range = np.linspace (100.0, 1000.0, 10)
+    Ud_range = np.linspace (0.8, 1.2, 5)
+    Uq_range = np.linspace (-0.5, 0.5, 5)
+    Ctl_range = np.linspace (0.0, 1.0, 2)
+    Vd_range = np.linspace (170.0, 340.0, 5)
+    Vq_range = np.linspace (-140.0, 140.0, 5)
+  ncases = len(G_range) * len(Ud_range) * len(Uq_range) * len(Ctl_range) * len(Vd_range) * len(Vq_range) * len(T_range) * len(Fc_range)
   print ('Using {:d} sensitivity cases'.format (ncases))
+  print (' T_range', T_range)
+  print (' Fc_range', Fc_range)
+  print (' G_range', G_range)
+  print (' Ud_range', Ud_range)
+  print (' Uq_range', Uq_range)
+  print (' Ctl_range', Ctl_range)
+  print (' Vd_range', Vd_range)
+  print (' Vq_range', Vq_range)
+
   if bLog:
     print ('   G0   Ud0   Uq0   Vd0    Vq0 Ctl   dIdVd   dIdVq   dIqVd   dIqVq')
   model.start_simulation (bPrint=False)
-  for G0 in G_range:
-    for Ud0 in Ud_range:
-      for Uq0 in Uq_range:
-        for Ctl in Ctl_range:
-          for Vd0 in Vd_range:
-            for Vq0 in Vq_range:
-              # baseline
-              Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
-              GVrms = G0 * Vrms
-              step_vals = [G0, Ud0, Uq0, Vd0, Vq0, GVrms, Ctl]
-              Vdc0, Idc0, Id0, Iq0 = model.steady_state_response (step_vals)
+  for T0 in T_range:
+    for F0 in Fc_range:
+      for G0 in G_range:
+        print ('checking G={:.2f}'.format(G0), 'T=', T0, 'Fc=', F0)
+        for Ud0 in Ud_range:
+          for Uq0 in Uq_range:
+            for Ctl in Ctl_range:
+              for Vd0 in Vd_range:
+                for Vq0 in Vq_range:
+                  # baseline
+                  Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
+                  GVrms = G0 * Vrms
+                  step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq0, GVrms, Ctl)
+                  Vdc0, Idc0, Id0, Iq0 = model.steady_state_response (step_vals)
 
-              # change Vd and GVrms
-              Vd1 = Vd0 + 1.0
-              Vrms = KRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
-              GVrms = G0 * Vrms
-              step_vals = [G0, Ud0, Uq0, Vd1, Vq0, GVrms, Ctl]
-              Vdc1, Idc1, Id1, Iq1 = model.steady_state_response (step_vals)
+                  # change Vd and GVrms
+                  Vd1 = Vd0 + delta
+                  Vrms = KRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
+                  GVrms = G0 * Vrms
+                  step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd1, Vq0, GVrms, Ctl)
+                  Vdc1, Idc1, Id1, Iq1 = model.steady_state_response (step_vals)
 
-              # change Vq and GVrms
-              Vq1 = Vq0 + 1.0
-              Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
-              GVrms = G0 * Vrms
-              step_vals = [G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
-              Vdc2, Idc2, Id2, Iq2 = model.steady_state_response (step_vals)
+                  # change Vq and GVrms
+                  Vq1 = Vq0 + delta
+                  Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
+                  GVrms = G0 * Vrms
+                  step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl)
+                  Vdc2, Idc2, Id2, Iq2 = model.steady_state_response (step_vals)
 
-              # calculate the changes
-              dIdVd = Id1 - Id0
-              dIqVd = Iq1 - Iq0
-              dIdVq = Id2 - Id0
-              dIqVq = Iq2 - Iq0
-              if bLog:
-                print ('{:6.1f} {:4.2f} {:5.2f} {:5.1f} {:6.1f} {:3.1f} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format (G0, Ud0, Uq0, Vd0, Vq0, Ctl,
-                                                                                                                 dIdVd, dIdVq, dIqVd, dIqVq))
-              # track the global maxima
-              dIdVd = abs(dIdVd)
-              if dIdVd > maxdIdVd:
-                maxdIdVd = dIdVd
+                  # calculate the changes
+                  dIdVd = (Id1 - Id0) / delta
+                  dIqVd = (Iq1 - Iq0) / delta
+                  dIdVq = (Id2 - Id0) / delta
+                  dIqVq = (Iq2 - Iq0) / delta
+                  if bLog:
+                    print ('{:6.1f} {:4.2f} {:5.2f} {:5.1f} {:6.1f} {:3.1f} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format (G0, Ud0, Uq0, Vd0, Vq0, Ctl,
+                                                                                                                     dIdVd, dIdVq, dIqVd, dIqVq))
+                  # track the global maxima
+                  dIdVd = abs(dIdVd)
+                  if dIdVd > maxdIdVd:
+                    maxdIdVd = dIdVd
 
-              dIdVq = abs(dIdVq)
-              if dIdVq > maxdIdVq:
-                maxdIdVq = dIdVq
+                  dIdVq = abs(dIdVq)
+                  if dIdVq > maxdIdVq:
+                    maxdIdVq = dIdVq
 
-              dIqVd = abs(dIqVd)
-              if dIqVd > maxdIqVd:
-                maxdIqVd = dIqVd
+                  dIqVd = abs(dIqVd)
+                  if dIqVd > maxdIqVd:
+                    maxdIqVd = dIqVd
 
-              dIqVq = abs(dIqVq)
-              if dIqVq > maxdIqVq:
-                maxdIqVq = dIqVq
+                  dIqVq = abs(dIqVq)
+                  if dIqVq > maxdIqVq:
+                    maxdIqVq = dIqVq
   if bPrint:
     print ('                                     dIdVd   dIdVq   dIqVd   dIqVq')
     print ('{:34s} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format ('Maximum Magnitudes', maxdIdVd, maxdIdVq, maxdIqVd, maxdIqVq))
@@ -318,6 +374,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
     print ('   G0   Ud0   Uq0   Id0    Iq0 Ctl   dVdId   dVdIq   dVqId   dVqIq')
   model.start_simulation (bPrint=False)
   for G0 in G_range:
+    print (' checking G0={:.2f}'.format (G0))
     for Ud0 in Ud_range:
       for Uq0 in Uq_range:
         # estimate GVrms, ignoring any feedback effects from Id and Iq
@@ -430,7 +487,7 @@ if __name__ == '__main__':
   print (len(model.COL_U), 'inputs:', model.COL_U)
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
   if 'Vd' in model.COL_U and 'Vq' in model.COL_U and 'Id' in model.COL_Y and 'Iq' in model.COL_Y:
-    sens = sensitivity_analysis (model, bPrint=True)
+    sens = sensitivity_analysis (model, bPrint=True, bAutoRange=True)
     print ('Maximum Norton Sensitivity = {:.6f}'.format (sens))
     clamp = clamp_loss (model, bPrint=True)
     print ('Total Norton Clamping Loss = {:.6f}'.format (clamp))
@@ -438,7 +495,9 @@ if __name__ == '__main__':
     sens = thevenin_sensitivity_analysis (model, bPrint=True)
     print ('Maximum Thevenin Sensitivity = {:.6f}'.format (sens))
   else:
-    print ('No Thevenin or Norton columns found: skipping sensitivity and clamping analysis')
+    print ('No Thevenin or Norton columns found: skipping sensitivity analysis')
+    #sens = sensitivity_analysis (model, bPrint=True, bLog=False, bAutoRange=True)
+    #print ('Maximum Auto Sensitivity = {:.6f}'.format (sens))
 
   quit()
 
