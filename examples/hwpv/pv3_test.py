@@ -98,9 +98,23 @@ bWantMAE = False
 #model_path = './ucf10c_config.json'
 
 def plot_case(model, idx, bPNG=False):
-  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500) # RMSE calc includes pre-padding, as in training
-  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx) # RMSE calc excludes pre-padding, won't match training metrics
-  print ('Test-Step Difference in RMSE', rmse - rmse2)
+#  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500) # RMSE calc includes pre-padding, as in training
+#  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
+  rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
+#  print ('Test-Step Difference in RMSE', rmse - rmse2)
+  print ('Ranges of case {:d}:'.format(idx))
+  print ('Column       Min       Max      Mean     Range')
+  col_idx = 0
+  for c in model.COL_U + model.COL_Y:
+    fac = model.normfacs[c]
+    dmax = model.de_normalize (np.max (model.data_train[:,:,col_idx]), fac)
+    dmin = model.de_normalize (np.min (model.data_train[:,:,col_idx]), fac)
+    dmean = model.de_normalize (np.mean (model.data_train[:,:,col_idx]), fac) # mean over scenarios and time
+    drange = dmax - dmin
+    if abs(drange) <= 0.0:
+      drange = 1.0
+    print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
+    col_idx += 1
   if not bPNG:
     print ('column', model.COL_Y, 'RMS errors', rmse)
   valstr = ' '.join('{:.4f}'.format(rms) for rms in rmse)
