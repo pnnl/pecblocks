@@ -814,7 +814,7 @@ class pv3():
         print (' == Saving the best model so far at iteration {:d}'.format (itr))
         self.saveModelCoefficients('best')
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Clamp {:12.6f} | Sigma {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_clamp, epoch_sigma))
+        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Sigma {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_sigma))
         self.saveModelCoefficients()
         np.save (lossfile, [LOSS, VALID, SENS])
 
