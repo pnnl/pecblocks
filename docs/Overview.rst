@@ -12,6 +12,11 @@ Power Electronic Converter Blocks (pecblocks) use the output of detailed electro
 
 Models will run in both time domain and frequency domain. The scope includes not only the power electronic converter, but also the photovoltaic (PV) array, maximum power point tracking (MPPT), phase-lock loop (PLL) control, output filter circuits, battery storage if present, etc. The applications include but may not be limited to solar power inverters, energy storage converters, motor drives, and other power electronics equipment.
 
+Installation::
 
+    pip install pecblocks
+
+
+`Examples <https://github.com/pnnl/pecblocks/tree/master/examples>`_
 
 
