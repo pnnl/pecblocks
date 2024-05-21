@@ -1,0 +1,55 @@
+{
+  "model_folder": "./ucf3ts/",
+  "model_root": "ucf3ts",
+  "data_path": "d:/data/ucf3/ucf3t.hdf5",
+  "COL_T": ["t"],
+  "COL_U": ["G", "Ud", "Uq", "Id", "Iq", "GIrms", "Ctrl"],
+  "COL_Y": ["Vdc", "Idc", "Vd", "Vq"],
+  "sensitivity": {
+     "limit": 45.0,
+     "weight": 0.0005,
+     "delta": 0.01,
+     "inputs": ["Id", "Iq"],
+     "outputs": ["Vd", "Vq"],
+     "GIrms": {"G": "G", "Id": "Id", 
+               "Iq": "Iq", "k": 1.2247449
+     },
+     "big_sets": {
+         "G": [100.0, 600.0, 999.0],
+         "Ud": [0.8, 1.0, 1.2],
+         "Uq": [-0.5, 0.0, 0.5],
+         "Id": [2.8, 5.6],
+         "Iq": [-2.6, 0.0, 2.3],
+         "Ctrl": [0.0, 1.0]
+     },
+     "sets": {
+         "G": [300.0, 800.0],
+         "Ud": [0.9, 1.1],
+         "Uq": [-0.4, 0.4],
+         "Id": [2.8, 5.6],
+         "Iq": [-2.6, 2.3],
+         "Ctrl": [0.0, 1.0]
+     }
+  },
+  "h5grp_prefix":"case",
+  "lr": 1.0e-3,
+  "t_step": 0.01,
+  "num_iter": 200,
+  "continue_iterations": false,
+  "print_freq": 10,
+  "batch_size": 150,
+  "n_validation_pct": 10,
+  "n_validation_seed": 99,
+  "n_skip": 0,
+  "n_trunc": 0,
+  "n_dec": 1,
+  "n_loss_skip": 50,
+  "n_pad": 100,
+  "gtype": "iir",
+  "na": 2,
+  "nb": 2,
+  "nk": 0,
+  "activation": "tanh",
+  "nh1": 80,
+  "nh2": 60
+}

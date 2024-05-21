@@ -11,7 +11,8 @@ cases = [
 #  {"path":"d:/data/", "infile":"osg4_vdvq", "outfile":"osg4t_vdvq", "group":"case", "krms":0.001, "Id":"Id", "Iq":"Iq", "GIrms":"GIrms"},
 #  {"path":"d:/data/", "infile":"ucf2", "outfile":"ucf2t", "group":"", "krms":math.sqrt(1.5), "Id":"Id", "Iq":"Iq", "GIrms":"GIrms"},
 #  {"path":"d:/data/", "infile":"unb3", "outfile":"unb3t", "group":"case", "krms":0.001 * math.sqrt(1.5), "Id":"Idlo", "Iq":"Iqlo", "GIrms":"GIlo"},
-   {"path":"d:/data/", "infile":"big3", "outfile":"big3t", "group":"case", "krms":0.001*math.sqrt(1.5), "Id":"Id", "Iq":"Iq", "GIrms":"GIrms"}
+#  {"path":"d:/data/", "infile":"big3", "outfile":"big3t", "group":"case", "krms":0.001*math.sqrt(1.5), "Id":"Id", "Iq":"Iq", "GIrms":"GIrms"},
+   {"path":"d:/data/ucf3/", "infile":"ucf3", "outfile":"ucf3t", "group":"case", "krms":math.sqrt(1.5), "Id":"Id", "Iq":"Iq", "GIrms":"GIrms"}
   ]
 
 if __name__ == '__main__':

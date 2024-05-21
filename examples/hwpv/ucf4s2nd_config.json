@@ -1,0 +1,59 @@
+{
+  "model_folder": "./ucf4s2nd/",
+  "model_root": "ucf4s2nd",
+  "data_path": "d:/data/ucf3/ucf9c.hdf5",
+  "mac_data_path": "/Users/tom/Documents/data/ucf9c.hdf5",
+  "COL_T": ["t"],
+  "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctrl"],
+  "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
+  "sensitivity": {
+     "limit": 0.01,
+     "weight": 0.5,
+     "delta": 0.01,
+     "inputs": ["Vd", "Vq"],
+     "outputs": ["Id", "Iq"],
+     "GVrms": {
+         "G": "G", 
+         "Vd": "Vd", 
+         "Vq": "Vq", 
+         "k": 1.2247449
+     },
+     "big_sets": {
+         "G": [100.0, 600.0, 999.0],
+         "Ud": [0.8, 1.0, 1.2],
+         "Uq": [-0.5, 0.0, 0.5],
+         "Vd": [170.0, 335.0],
+         "Vq": [-145.0, 0.0, 135.0],
+         "Ctrl": [0.0, 1.0]
+     },
+     "sets": {
+         "G": [300.0, 800.0],
+         "Ud": [0.9, 1.1],
+         "Uq": [-0.4, 0.4],
+         "Vd": [170.0, 330.0],
+         "Vq": [-125.0, 125.0],
+         "Ctrl": [0.0, 1.0]
+     }
+  },
+  "h5grp_prefix":"ucf",
+  "lr": 1.0e-3,
+  "t_step": 0.001,
+  "num_iter": 1000,
+  "continue_iterations": false,
+  "print_freq": 1,
+  "batch_size": 105,
+  "n_validation_pct": 15,
+  "n_validation_seed": 99,
+  "n_skip": 0,
+  "n_trunc": 0,
+  "n_dec": 1,
+  "n_loss_skip": 250,
+  "n_pad": 500,
+  "gtype": "stable2ndx",
+  "na": 2,
+  "nb": 3,
+  "nk": 0,
+  "activation": "tanh",
+  "nh1": 80,
+  "nh2": 60
+}

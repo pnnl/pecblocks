@@ -645,7 +645,7 @@ class pv3():
     krms = self.sensitivity['k']
     delta = self.sensitivity['delta']
     max_sens = torch.tensor (0.0, requires_grad=True)
-    sens_floor = torch.tensor (1.0e-5, requires_grad=True)
+    sens_floor = torch.tensor (1.0e-8, requires_grad=True)
     self.start_sensitivity_simulation ()
 
     for vals in self.sens_bases:
@@ -678,7 +678,8 @@ class pv3():
         print ('   sens=', sens, 'max=', max_sens)
         print ('   vals', vals)
 
-    sens_loss = torch.max(max_sens - self.sensitivity['limit'], sens_floor)
+    sens_loss = max_sens * self.sensitivity['weight']
+    #sens_loss = torch.max(max_sens - self.sensitivity['limit'], sens_floor)
     if bPrint:
       print ('  sens=', max_sens, 'loss=', sens_loss)
     return sens_loss, max_sens
@@ -710,6 +711,10 @@ class pv3():
     validation_scale = float(len(train_ds)) / float(len(valid_ds))
     sensitivity_scale = float(self.batch_size) / float(len(train_ds))
     print ('Dataset split:', len(total_ds), len(train_ds), len (valid_ds), 'validation_scale={:.3f}'.format(validation_scale))
+    average_loss_divisor = 2.0 * float(ntraining) / float(self.batch_size)
+    print ('Average loss scaling: ntrain={:d}, nbatch={:d}, average_loss_divisor={:.3f}'.format (ntraining, self.batch_size, average_loss_divisor))
+    if self.sensitivity is not None:
+      print ('Sensitivity scale={:.3f}'.format(sensitivity_scale))
 
     if self.continue_iterations:
       print ('continuing iterations on existing model coefficients')
@@ -776,7 +781,7 @@ class pv3():
 #        print ('  fit,sens,loss = [{:12.6f} {:12.6f} {:12.6f}]'.format (loss_fit, loss_sens, loss))
 
 #      print ('  last batch loss_fit, loss_sens, loss:', loss_fit, loss_sens, loss)
-      epoch_sens *= sensitivity_scale
+      # epoch_sens *= sensitivity_scale
       LOSS.append(epoch_loss.item())
       SENS.append(epoch_sens.item())
 
@@ -808,13 +813,15 @@ class pv3():
         valid_loss += loss_fit * validation_scale
 
       VALID.append(valid_loss.item())
-      total_loss = valid_loss + epoch_loss
+      total_loss = valid_loss.item() + epoch_loss.item()
+      total_rmse = math.sqrt (total_loss / average_loss_divisor)
+      total_loss += epoch_sens.item()
       if total_loss < best_loss:
         best_loss = total_loss
-        print (' == Saving the best model so far at iteration {:d}'.format (itr))
+#        print (' == Saving the best model so far at iteration {:d}'.format (itr))
         self.saveModelCoefficients('best')
       if itr % self.print_freq == 0:
-        print('Epoch {:4d} of {:4d} | Training {:12.6f} | Validation {:12.6f} | Sensitivity {:12.6f} | Sigma {:12.6f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, epoch_sigma))
+        print('Epoch {:4d} of {:4d} | TrLoss {:12.6f} | VldLoss {:12.6f} | SensLoss {:12.6f} | RMSE {:12.4f} | Sigma {:12.4f}'.format (itr, self.num_iter, epoch_loss, valid_loss, epoch_sens, total_rmse, epoch_sigma))
         self.saveModelCoefficients()
         np.save (lossfile, [LOSS, VALID, SENS])
 
