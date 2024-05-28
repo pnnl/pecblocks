@@ -1,7 +1,5 @@
-call train.bat ucf4siir
-call train.bat ucf4s2nd
-call train.bat ucf4tsiir
-call train.bat ucf4ts2nd
+rem call train.bat ucfB_n_2nd_Ctrl
+call train.bat ucfB_t_2nd_Ctrl
 rem call train.bat sdi5
 rem call train.bat osg4
 rem call train.bat ucf2

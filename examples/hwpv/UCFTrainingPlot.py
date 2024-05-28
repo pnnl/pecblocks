@@ -16,6 +16,15 @@ import os
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
+lsize = 14
+plt.rc('font', family='serif')
+plt.rc('xtick', labelsize=lsize)
+plt.rc('ytick', labelsize=lsize)
+plt.rc('axes', labelsize=lsize)
+plt.rc('legend', fontsize=lsize)
+pWidth = 6.0
+pHeight = pWidth / 1.618
+
 plot_defs = [ # ucf2t
     {'row':0, 'col':0, 'tag':'T',    'title':'Temperature',    'ylabel':'C'},
     {'row':0, 'col':1, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
@@ -82,6 +91,27 @@ plot_defs = [
     {'row':2, 'col':3, 'tag':'Vq',   'title':'Vq',                'ylabel':'V'}
   ]
 
+# this is for the May 23, 2024 data sets, augmented with GIrms and GVrms, Step, Ramp: ucf4
+plot_defs = [
+    {'row':0, 'col':0, 'tag':'G',    'title':'Irradiance',        'ylabel':'W/m2'},
+    {'row':0, 'col':1, 'tag':'Ctrl', 'title':'Control Mode',      'ylabel':''},
+    {'row':0, 'col':2, 'tag':'Step', 'title':'Control Step',      'ylabel':''},
+    {'row':0, 'col':3, 'tag':'Ramp', 'title':'Control Ramp',      'ylabel':''},
+    {'row':0, 'col':4, 'tag':'Rload', 'title':'$R_{load}$',            'ylabel':'$\Omega$'},
+
+    {'row':1, 'col':0, 'tag':'Vdc',  'title':'DC Voltage',        'ylabel':'V'},
+    {'row':1, 'col':1, 'tag':'Vd',   'title':'$V_d$',                'ylabel':'V'},
+    {'row':1, 'col':2, 'tag':'Vq',   'title':'$V_q$',                'ylabel':'V'},
+    {'row':1, 'col':3, 'tag':'Ud',   'title':'$U_d$',                'ylabel':''},
+    {'row':1, 'col':4, 'tag':'GVrms','title':'Polynomial $G_{Vrms}$',  'ylabel':''},
+
+    {'row':2, 'col':0, 'tag':'Idc',  'title':'DC Current',        'ylabel':'A'},
+    {'row':2, 'col':1, 'tag':'Id',   'title':'$I_d$',                'ylabel':'A'},
+    {'row':2, 'col':2, 'tag':'Iq',   'title':'$I_q$',                'ylabel':'A'},
+    {'row':2, 'col':3, 'tag':'Uq',   'title':'$U_q$',                'ylabel':''},
+    {'row':2, 'col':4, 'tag':'GIrms','title':'Polynomial $G_{Irms}$',  'ylabel':''}
+  ]
+
 def start_plot(case_title, idx):
   last_col = 0
   last_row = 0
@@ -90,7 +120,7 @@ def start_plot(case_title, idx):
       last_row = plot['row']
     if plot['col'] > last_col:
       last_col = plot['col']
-  fig, ax = plt.subplots(last_row + 1, last_col + 1, sharex = 'col', figsize=(15,6), constrained_layout=True)
+  fig, ax = plt.subplots(last_row + 1, last_col + 1, sharex = 'col', figsize=(3*(last_col+1),2.5*(last_row+1)), constrained_layout=True)
   if idx < 0:
     fig.suptitle ('Dataset: ' + case_title)
   else:
@@ -122,8 +152,10 @@ def plot_group(ax, grp):
     ax[row,col].plot (t, scale * y + offset)
 
 def finish_plot(ax, plot_file = None):
-  for j in range(4):
-    ax[2,j].set_xlabel ('Seconds')
+  last_row = len(ax) - 1
+  n_col = len(ax[0])
+  for j in range(n_col):
+    ax[last_row,j].set_xlabel ('Seconds')
   if plot_file:
     plt.savefig(plot_file)
   plt.show()
@@ -136,7 +168,7 @@ if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf9c']: # ucf3z. ucf2t, ucf3, ucf7, ucf9, ucf9c
+  for root in ['ucf4']: # ucf3z. ucf2t, ucf3, ucf7, ucf9, ucf9c
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)

@@ -430,7 +430,7 @@ class pv3():
       if abs(drange) <= 0.0:
         drange = 1.0
       print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
-      self.normfacs[c] = {'scale':float(drange), 'offset':float(dmean)}
+      self.normfacs[c] = {'scale':float(drange), 'offset':float(dmean), 'max':float(dmax), 'min':float(dmin)}
       self.data_train[:,:,idx] -= dmean
       self.data_train[:,:,idx] /= drange
       idx += 1
