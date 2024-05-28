@@ -1,4 +1,4 @@
-remcall export.bat ucfB_n_2nd_Ctrl
+rem call export.bat ucfB_n_2nd_Ctrl
 call export.bat ucfB_t_2nd_Ctrl
 rem call export.bat sdi5
 rem call export.bat osg4
