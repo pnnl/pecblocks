@@ -102,14 +102,14 @@ def plot_case(model, idx, bPNG=False):
 #  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
   rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
 #  print ('Test-Step Difference in RMSE', rmse - rmse2)
-  print ('Ranges of case {:d}:'.format(idx))
+  print ('Variable Ranges for Case {:d}:'.format(idx))
   print ('Column       Min       Max      Mean     Range')
   col_idx = 0
   for c in model.COL_U + model.COL_Y:
     fac = model.normfacs[c]
-    dmax = model.de_normalize (np.max (model.data_train[:,:,col_idx]), fac)
-    dmin = model.de_normalize (np.min (model.data_train[:,:,col_idx]), fac)
-    dmean = model.de_normalize (np.mean (model.data_train[:,:,col_idx]), fac) # mean over scenarios and time
+    dmax = model.de_normalize (np.max (model.data_train[idx,:,col_idx]), fac)
+    dmin = model.de_normalize (np.min (model.data_train[idx,:,col_idx]), fac)
+    dmean = model.de_normalize (np.mean (model.data_train[idx,:,col_idx]), fac)
     drange = dmax - dmin
     if abs(drange) <= 0.0:
       drange = 1.0

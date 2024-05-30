@@ -127,9 +127,13 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
     idx = 0
     for c in model.COL_U + model.COL_Y:
       fac = model.normfacs[c]
-      dmax = model.de_normalize (np.max (model.data_train[:,:,idx]), fac)
-      dmin = model.de_normalize (np.min (model.data_train[:,:,idx]), fac)
-      dmean = model.de_normalize (np.mean (model.data_train[:,:,idx]), fac) # mean over scenarios and time
+      dmean = fac['offset']
+      if 'max' in fac and 'min' in fac:
+        dmax = fac['max']
+        dmin = fac['min']
+      else:
+        dmax = model.de_normalize (np.max (model.data_train[:,:,idx]), fac)
+        dmin = model.de_normalize (np.min (model.data_train[:,:,idx]), fac)
       drange = dmax - dmin
       if abs(drange) <= 0.0:
         drange = 1.0
