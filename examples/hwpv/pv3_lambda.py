@@ -144,7 +144,7 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
         Ud_range = np.linspace (dmin, dmax, 5) # 5)
       elif c in ['Uq', 'Mq']:
         Uq_range = np.linspace (dmin, dmax, 5) # 5)
-      elif c in ['Ctl', 'Ctrl']:
+      elif c in ['Ctl', 'Ctrl', 'Step', 'Ramp']:
         Ctl_range = np.linspace (0.0, 1.0, 2)
       elif c in ['Vd']:
         Vd_range = np.linspace (dmin, dmax, 5) # 11)

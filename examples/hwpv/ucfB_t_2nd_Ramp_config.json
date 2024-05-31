@@ -1,10 +1,10 @@
 {
-  "model_folder": "./ucfB_t_2nd_Ctrl/",
-  "model_root": "ucfB_t_2nd_Ctrl",
+  "model_folder": "./ucfB_t_2nd_Ramp/",
+  "model_root": "ucfB_t_2nd_Ramp",
   "data_path": "d:/data/ucf3/ucf4.hdf5",
   "mac_data_path": "/Users/tom/Documents/data/ucf4.hdf5",
   "COL_T": ["t"],
-  "COL_U": ["G", "Ud", "Uq", "Id", "Iq", "GIrms", "Ctrl"],
+  "COL_U": ["G", "Ud", "Uq", "Id", "Iq", "GIrms", "Ramp"],
   "COL_Y": ["Vdc", "Idc", "Vd", "Vq"],
   "sensitivity": {
      "limit": 70.0,
@@ -21,7 +21,7 @@
          "Uq": [-0.4, 0.4],
          "Id": [2.3, 4.6],
          "Iq": [-2.0, 2.0],
-         "Ctrl": [0.0, 1.0]
+         "Ramp": [0.0, 1.0]
      }
   },
   "h5grp_prefix":"ucf",
