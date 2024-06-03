@@ -16,7 +16,7 @@ q=np.linalg.solve(A,B)
 print ('A', A)
 print ('B', B)
 print ('Direct q', q)
-print ('Check', np.matmul(A, q))
+print ('Check B', np.matmul(A, q))
 
 L=np.linalg.cholesky(A)
 #U=L.T
@@ -37,5 +37,5 @@ for i in range(n,0,-1):
   q[i-1] = (y[i-1] - np.dot(L[i:,i-1],q[i:])) / L[i-1,i-1]
 
 print ('Cholesky q', q)
-print ('Check', np.matmul(A, q))
+print ('Check B', np.matmul(A, q))
 

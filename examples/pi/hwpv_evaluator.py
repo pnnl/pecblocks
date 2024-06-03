@@ -3,6 +3,8 @@
 
 import numpy as np
 
+CHOLESKY = False
+
 class model():
   def __init__(self):
     self.init_to_none()
@@ -48,7 +50,7 @@ class model():
         D[i,j] = Q['D_{:d}_{:d}'.format(i,j)]
     return A, B, C, D
 
-  def set_sim_config(self, config):
+  def set_sim_config(self, config, log=False):
     self.name = config['name']
     self.blocks = config['type']
     self.normfacs = config['normfacs']
@@ -88,24 +90,48 @@ class model():
     self.nout = len(self.F2_n2b)
     self.nin = self.F1_n0w.shape[1]
 
-    print ('HWPV Model Structure (dt={:.6f}):'.format (self.t_step))
-    print ('  Hza shape', self.za.shape)
-    print ('  Hzb shape', self.zb.shape)
-    print ('  Hsa shape', self.sa.shape)
-    print ('  Hsb shape', self.sb.shape)
-    print ('  QA shape', self.A.shape)
-    print ('  QB shape', self.B.shape)
-    print ('  QC shape', self.C.shape)
-    print ('  QD shape', self.D.shape)
-    print ('  F1 shapes 0w, 0b, 2w, 2b = ', self.F1_n0w.shape, self.F1_n0b.shape, 
-           self.F1_n2w.shape, self.F1_n2b.shape, config['F1']['activation'])
-    print ('  F2 shapes 0w, 0b, 2w, 2b = ', self.F2_n0w.shape, self.F2_n0b.shape, 
-           self.F2_n2w.shape, self.F2_n2b.shape, config['F2']['activation'])
-    print ('  {:d} inputs from {:s}'.format (self.nin, str(self.COL_U)))
-    print ('  {:d} outputs from {:s}'.format (self.nout, str(self.COL_Y)))
+    if log:
+      print ('HWPV Model Structure (dt={:.6f}):'.format (self.t_step))
+      print ('  Hza shape', self.za.shape)
+      print ('  Hzb shape', self.zb.shape)
+      print ('  Hsa shape', self.sa.shape)
+      print ('  Hsb shape', self.sb.shape)
+      print ('  QA shape', self.A.shape)
+      print ('  QB shape', self.B.shape)
+      print ('  QC shape', self.C.shape)
+      print ('  QD shape', self.D.shape)
+      print ('  F1 shapes 0w, 0b, 2w, 2b = ', self.F1_n0w.shape, self.F1_n0b.shape, 
+             self.F1_n2w.shape, self.F1_n2b.shape, config['F1']['activation'])
+      print ('  F2 shapes 0w, 0b, 2w, 2b = ', self.F2_n0w.shape, self.F2_n0b.shape, 
+             self.F2_n2w.shape, self.F2_n2b.shape, config['F2']['activation'])
+      print ('  {:d} inputs from {:s}'.format (self.nin, str(self.COL_U)))
+      print ('  {:d} outputs from {:s}'.format (self.nout, str(self.COL_Y)))
 
-  def start_simulation_z(self):
+  def make_ub (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
+    T = self.normalize (T, self.normfacs['T'])
+    G = self.normalize (G, self.normfacs['G'])
+    Fc = self.normalize (Fc, self.normfacs['Fc'])
+    Md = self.normalize (Md, self.normfacs['Md'])
+    Mq = self.normalize (Mq, self.normfacs['Mq'])
+    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
+    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
+    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
+    ub = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl])
+    return ub
+
+  def extract_y_hat(self, y_hat, log=False):
+    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
+    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
+    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
+    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+    if log:
+      print ('Vdc, Idc, Id, Iq = {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format (Vdc, Idc, Id, Iq))
+    return Vdc, Idc, Id, Iq
+
+  def start_simulation_z(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
 # set up IIR filters for time step simulation, nin == nout for H1
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
+    y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.uhist = {}
     self.yhist = {}
     self.ysum = np.zeros(self.nout)
@@ -113,8 +139,9 @@ class model():
       self.uhist[i] = {}
       self.yhist[i] = {}
       for j in range(self.nout):
-        self.uhist[i][j] = np.zeros(self.nb)
-        self.yhist[i][j] = np.zeros(self.na)
+        ynew = y_non[j] * np.sum(self.zb[i,j,:]) / (np.sum(self.za[i,j,:]+1.0))
+        self.uhist[i][j] = np.ones(self.nb) * y_non[j]
+        self.yhist[i][j] = np.ones(self.na) * ynew
                                              
   def normalize (self, val, fac):
     return (val - fac['offset']) / fac['scale']
@@ -128,16 +155,7 @@ class model():
     return output
 
   def step_simulation_z (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl):
-    T = self.normalize (T, self.normfacs['T'])
-    G = self.normalize (G, self.normfacs['G'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Md = self.normalize (Md, self.normfacs['Md'])
-    Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
-
-    ub = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl])
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.ysum[:] = 0.0
     for i in range(self.nout):
@@ -151,30 +169,31 @@ class model():
         yh[0] = ynew
         self.ysum[i] += ynew
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
+    return self.extract_y_hat (y_hat)
 
-    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
-    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+  def start_simulation_sfe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, log=False):
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
+    y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
+    rhs = -self.B * y_non
+    lhs = np.linalg.solve (self.A, rhs)
+    if log:
+      print ('SFE IC ub\n', ub)
+      print ('SFE IC y_non\n', y_non)
+      print ('SFE IC RHS\n', rhs)
+      print ('SFE IC LHS\n', lhs)
 
-    return Vdc, Idc, Id, Iq
-
-  def start_simulation_sfe (self):
     self.q = np.zeros((self.nout, self.nout, self.nout))
+    self.q = lhs
     self.qdot = np.zeros(self.nout)
     self.ysum = np.zeros(self.nout)
+    if log:
+      print ('SFE A\n', self.A)
+      print ('SFE B\n', self.B)
+      print ('SFE C\n', self.C)
+      print ('SFE q\n', self.q)
 
   def step_simulation_sfe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
-    T = self.normalize (T, self.normfacs['T'])
-    G = self.normalize (G, self.normfacs['G'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Md = self.normalize (Md, self.normfacs['Md'])
-    Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
-
-    ub = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl])
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     if log:
       print ('\nub = {:s}'.format (str(ub)))
@@ -190,66 +209,62 @@ class model():
           if log:
             print ('  Q[{:d},{:d}] = {:s}'.format (i, j, str(self.q[i,j])))
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
-
-    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
-    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
     if log:
       print ('Ysum = {:s}'.format(str(self.ysum)))
       print ('y_hat = {:s}'.format(str(y_hat)))
-      print ('Vdc, Idc, Id, Iq = {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format (Vdc, Idc, Id, Iq))
+    return self.extract_y_hat (y_hat, log)
 
-    return Vdc, Idc, Id, Iq
+  def start_simulation_sbe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
+    y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
+    self.q = np.linalg.solve (self.A, -self.B * y_non)
+    if log:
+      print ('Backward Euler Method, Cholesky=', CHOLESKY, ', initial states:\n', self.q)
 
-  def start_simulation_sbe (self, h):
-    self.q = np.zeros((self.nout, self.nout, self.nout))
     self.ysum = np.zeros(self.nout)
     self.lhs = {}
     for i in range(self.nout):
       self.lhs[i] = {}
       for j in range(self.nout):
-        self.lhs[i,j] = np.linalg.cholesky(np.eye(self.nout) - h*self.A[i,j])
+        if CHOLESKY:
+          local_A = np.eye(self.nout) - h*self.A[i,j]
+          self.lhs[i,j] = np.linalg.cholesky(local_A)
+          cdTest = np.allclose (local_A, np.dot(self.lhs[i,j], self.lhs[i,j].T))
+          if not cdTest:
+            print ('*** Cholesky Decomposition Invalid at [{:d},{:d}]'.format(i,j))
+        else:
+          self.lhs[i,j] = np.eye(self.nout) - h*self.A[i,j]
+#       if log:
+#         print ('SBE IC LHS[{:d},{:d}]\n'.format (i, j), self.lhs[i,j])
 
   def step_simulation_sbe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
-    T = self.normalize (T, self.normfacs['T'])
-    G = self.normalize (G, self.normfacs['G'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Md = self.normalize (Md, self.normfacs['Md'])
-    Mq = self.normalize (Mq, self.normfacs['Mq'])
-    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
-
-    ub = np.array([T, G, Fc, Md, Mq, Vrms, GVrms, Ctl])
+    ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.ysum[:] = 0.0
-#    qold = np.copy(self.q)
-    for i in range(self.nout):
-      for j in range(self.nout):
-        rhs = self.q[i,j] + self.B[i,j] * y_non[j] * h
-        lhs = self.lhs[i,j]
-        # forward substitutions
-        for row in range(self.nout):
-          for col in range(row):
-            rhs[row] -= (lhs[row,col] * rhs[col])
-          rhs[row] /= lhs[row,row]
-        # back substitutions
-        self.q[i,j,:] = 0.0
-        for row in range(self.nout,0,-1):
-          self.q[i,j,row-1] = (rhs[row-1] - np.dot(lhs[row:,row-1],self.q[i,j,row:])) / lhs[row-1,row-1]
-        self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+    if CHOLESKY:
+      for i in range(self.nout):
+        for j in range(self.nout):
+          rhs = self.q[i,j] + self.B[i,j] * y_non[j] * h
+          lhs = self.lhs[i,j]
+          # forward substitutions
+          for row in range(self.nout):
+            for col in range(row):
+              rhs[row] -= (lhs[row,col] * rhs[col])
+            rhs[row] /= lhs[row,row]
+          # back substitutions
+          self.q[i,j,:] = 0.0
+          for row in range(self.nout,0,-1):
+            self.q[i,j,row-1] = (rhs[row-1] - np.dot(lhs[row:,row-1],self.q[i,j,row:])) / lhs[row-1,row-1]
+          self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+    else:
+      for i in range(self.nout):
+        for j in range(self.nout):
+          self.q[i,j] = np.linalg.solve (self.lhs[i,j], self.q[i,j] + self.B[i,j] * y_non[j] * h)
+          self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
-#    print ('max qdot', np.max(np.abs(qold - self.q)))
 
-    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
-    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
     if log:
       print ('Ysum = {:s}'.format(str(self.ysum)))
       print ('y_hat = {:s}'.format(str(y_hat)))
-      print ('Vdc, Idc, Id, Iq = {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format (Vdc, Idc, Id, Iq))
-
-    return Vdc, Idc, Id, Iq
+    return self.extract_y_hat (y_hat, log)
 

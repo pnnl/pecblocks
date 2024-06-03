@@ -7,6 +7,8 @@ import numpy as np
 import math
 import hwpv_evaluator as hwpv
 
+METHOD = 'SBE'
+
 Ctl_t = [-1.0, 2.50, 2.51, 200.0]
 Ctl_y = [0.00, 0.00, 1.00, 1.00]
 
@@ -40,14 +42,18 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
 
   mdl = hwpv.model ()
   mdl.set_sim_config (cfg)
-  print ('Running {:s} model from {:s}'.format (mdl.name, cfg_filename))
+  print ('Running {:s} model from {:s} using {:s}'.format (mdl.name, cfg_filename, METHOD))
   print ('  Input Channels: ', mdl.COL_U)
   print ('  Output Channels:', mdl.COL_Y)
   print ('  Training dt = {:.6f}s'.format (mdl.t_step))
   print ('  Running dt =  {:.6f}s to {:.4f}s for {:d} steps'.format (dt, tmax, n))
-#  mdl.start_simulation_z ()
-  mdl.start_simulation_sfe ()
-#  mdl.start_simulation_sbe (dt)
+  # construct initial conditions, assuming Id=Iq=0, hence Vrms=GVrms=0
+  if METHOD == 'Z':
+    mdl.start_simulation_z (T=T_y[0], G=G_y[0], Fc=Fc_y[0], Md=Md_y[0], Mq=Mq_y[0], Vrms=0.0, GVrms=0.0, Ctl=Ctl_y[0])
+  elif METHOD == 'SFE':
+    mdl.start_simulation_sfe (T=T_y[0], G=G_y[0], Fc=Fc_y[0], Md=Md_y[0], Mq=Mq_y[0], Vrms=0.0, GVrms=0.0, Ctl=Ctl_y[0])
+  elif METHOD == 'SBE':
+    mdl.start_simulation_sbe (T=T_y[0], G=G_y[0], Fc=Fc_y[0], Md=Md_y[0], Mq=Mq_y[0], Vrms=0.0, GVrms=0.0, Ctl=Ctl_y[0], h=dt, log=True)
   Id = 0.0
   Iq = 0.0
   vals = np.zeros((n,13)) # t, 8 inputs, 4 outputs
@@ -64,9 +70,12 @@ def evaluation_loop(cfg_filename, hdf5_filename, dt, tmax):
     Irms = math.sqrt(1.5) * math.sqrt(Id*Id + Iq*Iq)
     Vrms = Irms * R
     GVrms = G * Vrms
-#    Vdc, Idc, Id, Iq = mdl.step_simulation_z (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
-    Vdc, Idc, Id, Iq = mdl.step_simulation_sfe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
-#    Vdc, Idc, Id, Iq = mdl.step_simulation_sbe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+    if METHOD == 'Z':
+      Vdc, Idc, Id, Iq = mdl.step_simulation_z (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms)
+    elif METHOD == 'SFE':
+      Vdc, Idc, Id, Iq = mdl.step_simulation_sfe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
+    elif METHOD == 'SBE':
+      Vdc, Idc, Id, Iq = mdl.step_simulation_sbe (G=G, T=T, Md=Md, Mq=Mq, Fc=Fc, Vrms=Vrms, Ctl=Ctl, GVrms=GVrms, h=dt)
     vals[i,:] = [t, G, T, Md, Mq, Fc, Ctl, Vrms, GVrms, Vdc, Idc, Id, Iq]
     i += 1
 
@@ -84,5 +93,5 @@ if __name__ == '__main__':
   cfg_filename = 'balanced_fhf.json'
   hdf5_filename = 'hwpv_pi.hdf5'
 
-  evaluation_loop (cfg_filename, hdf5_filename, dt=0.03, tmax=8.0)
+  evaluation_loop (cfg_filename, hdf5_filename, dt=0.005, tmax=8.0)
 
