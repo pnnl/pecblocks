@@ -3,7 +3,10 @@
 
 import numpy as np
 
-CHOLESKY = False
+LU_DECOMP = True
+
+if LU_DECOMP:
+  import scipy.linalg as la
 
 class model():
   def __init__(self):
@@ -219,42 +222,33 @@ class model():
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.q = np.linalg.solve (self.A, -self.B * y_non)
     if log:
-      print ('Backward Euler Method, Cholesky=', CHOLESKY, ', initial states:\n', self.q)
+      print ('Backward Euler Method, LU Decomposition = {:s}, initial states:\n'.format (str(LU_DECOMP)), self.q)
 
     self.ysum = np.zeros(self.nout)
-    self.lhs = {}
-    for i in range(self.nout):
-      self.lhs[i] = {}
-      for j in range(self.nout):
-        if CHOLESKY:
+    if LU_DECOMP:
+      self.lu = {}
+      self.piv = {}
+      for i in range(self.nout):
+        self.lu[i] = {}
+        self.piv[i] = {}
+        for j in range(self.nout):
           local_A = np.eye(self.nout) - h*self.A[i,j]
-          self.lhs[i,j] = np.linalg.cholesky(local_A)
-          cdTest = np.allclose (local_A, np.dot(self.lhs[i,j], self.lhs[i,j].T))
-          if not cdTest:
-            print ('*** Cholesky Decomposition Invalid at [{:d},{:d}]'.format(i,j))
-        else:
+          self.lu[i,j], self.piv[i,j] = la.lu_factor(local_A)
+    else:
+      self.lhs = {}
+      for i in range(self.nout):
+        for j in range(self.nout):
           self.lhs[i,j] = np.eye(self.nout) - h*self.A[i,j]
-#       if log:
-#         print ('SBE IC LHS[{:d},{:d}]\n'.format (i, j), self.lhs[i,j])
 
   def step_simulation_sbe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
     ub = self.make_ub (T, G, Fc, Md, Mq, Vrms, GVrms, Ctl)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.ysum[:] = 0.0
-    if CHOLESKY:
+    if LU_DECOMP:
       for i in range(self.nout):
         for j in range(self.nout):
           rhs = self.q[i,j] + self.B[i,j] * y_non[j] * h
-          lhs = self.lhs[i,j]
-          # forward substitutions
-          for row in range(self.nout):
-            for col in range(row):
-              rhs[row] -= (lhs[row,col] * rhs[col])
-            rhs[row] /= lhs[row,row]
-          # back substitutions
-          self.q[i,j,:] = 0.0
-          for row in range(self.nout,0,-1):
-            self.q[i,j,row-1] = (rhs[row-1] - np.dot(lhs[row:,row-1],self.q[i,j,row:])) / lhs[row-1,row-1]
+          self.q[i,j] = la.lu_solve ((self.lu[i,j], self.piv[i,j]), rhs)
           self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
     else:
       for i in range(self.nout):
