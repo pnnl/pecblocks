@@ -1,16 +1,8 @@
 # copyright 2021-2024 Battelle Memorial Institute
-# tabulates estimates of Req and lambda
-#  arg1: case number to plot 1..ncases (default 100)
-#
-# example: python pv3_lambda.py 200
 
-import pandas as pd
 import numpy as np
-import os
-import sys
 import pecblocks.pv3_poly as pv3_model
 import math
-import json
 import torch
 
 KRMS = math.sqrt(1.5)
