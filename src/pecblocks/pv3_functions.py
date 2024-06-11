@@ -1,5 +1,10 @@
 # copyright 2021-2024 Battelle Memorial Institute
 
+"""
+  Functions to perform sensitivity analysis on Thevenin and Norton controlled
+  sources containing generalized block diagram models.
+"""
+
 import numpy as np
 import pecblocks.pv3_poly as pv3_model
 import math

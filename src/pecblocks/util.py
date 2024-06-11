@@ -1,6 +1,8 @@
 # copyright 2021-2024 Battelle Memorial Institute
 # HW model training and simulation code for 3-phase inverters
-
+"""
+  File support functions.
+"""
 import numpy as np
 import pandas as pd
 import os
@@ -10,6 +12,16 @@ import math
 
 '''adds each group to a list of Pandas dataframes'''
 def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0, prefix=None):
+  """
+  Return a list of random ingredients as strings.
+
+  :param kind: Optional "kind" of ingredients.
+  :type kind: list[str] or None
+  :raise lumache.InvalidKindError: If the kind is invalid.
+  :return: The ingredients list.
+  :rtype: list[str]
+
+  """
   pdata=[]
   with h5py.File(filename, 'r') as f:
     ngroups = len(f.items())
