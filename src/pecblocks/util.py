@@ -10,17 +10,22 @@ import zipfile
 import h5py
 import math
 
-'''adds each group to a list of Pandas dataframes'''
 def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0, prefix=None):
-  """
-  Return a list of random ingredients as strings.
+  """Adds each group to a list of Pandas dataframes.
 
-  :param kind: Optional "kind" of ingredients.
-  :type kind: list[str] or None
-  :raise lumache.InvalidKindError: If the kind is invalid.
-  :return: The ingredients list.
-  :rtype: list[str]
+  The HDF5 file should include 0..n groups, each with the same column
+  keys, record length, and sample interval. One column key should be 't'.
 
+  Args:
+    filename (str): name of HDF5 file, one group per event record, groups indexed from 0
+    cols (list(str)): list of column keys to extract from each group
+    n_dec (int): decimation, i.e., take every n_dec point
+    n_skip (int): number of samples, after decimation, to exclude from beginning of each event
+    n_trunc (int): number of samples, after decimation, to exclude from end of each event
+    prefix (str): optional prefix to the group number
+
+  Returns:
+    list(DataFrame): List of Pandas DataFrames, one per group.
   """
   pdata=[]
   with h5py.File(filename, 'r') as f:
@@ -47,6 +52,18 @@ def read_hdf5_file(filename, cols, n_dec=1, n_skip=0, n_trunc=0, prefix=None):
   return pdata
 
 def read_csv_files(path, pattern=".csv"):
+  """Adds a set of CSV files to a list of Pandas dataframes.
+
+  Each CSV file should use the comma as separator, column names in the first row.
+  The Pandas read_csv function is called on each CSV file.
+
+  Args:
+    path (str): this can be the name of a zip file, or a path to glob for files with *pattern* in the name.
+    pattern (list(str)): the file extension to look for. Ignored for zip file input, and not a regular expression.
+
+  Returns:
+    list(DataFrame): List of Pandas DataFrames, one per CSV file.
+  """
   if zipfile.is_zipfile (path):
     zf = zipfile.ZipFile (path)
     pdata =[]

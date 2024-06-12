@@ -12,17 +12,38 @@ import torch
 
 KRMS = math.sqrt(1.5)
 
-minRd = 1.0e9
+minRd = 1.0e9 
+"""Minimum resistance *Rd* found in a model's training dataset"""
 maxRd = 0.0
+"""Maximum resistance *Rd* found in a model's training dataset"""
 minRq = 1.0e9
+"""Minimum resistance *Rq* found in a model's training dataset"""
 maxRq = 0.0
+"""Maximum resistance *Rq* found in a model's training dataset"""
 
-nRd = 0
+nRd = 0 
+"""Number of *Rd* changes found in a model's training dataset"""
 nG = 0
+"""Number of *G* changes found in a model's training dataset"""
 nUd = 0
+"""Number of *Ud* changes found in a model's training dataset"""
 nUq = 0
+"""Number of *Uq* changes found in a model's training dataset"""
 
 def analyze_case(model, idx, bPrint=False):
+  """Scans a case to update the ranges of grid resistance and parameter changes in a model's training dataset. *Internal*
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized.
+    idx (int): the zero-based case number to scan.
+    bPrint (bool): request diagnostic output of step changes identified in this case.
+
+  Yields:
+    Updates to global module variables *minRd*, *maxRd*, *minRq*, *maxRq*, *nRd*, *nG*, *nUd*, and *nUq*.
+
+  Returns:
+    None
+  """
   global minRd, maxRd, minRq, maxRq
   global nRd, nG, nT, nFc, nUd, nUq
   i1 = 180 # 990
@@ -81,6 +102,18 @@ def analyze_case(model, idx, bPrint=False):
 #    print ('  t={:6.3f} Id={:.3f} Iq={:6.3f} Vod={:8.3f} Voq={:8.3f} Rd={:8.2f} Rq={:8.2f}'.format (t, Id, Iq, Vod, Voq, Rd, Rq))
 
 def clamp_loss (model, bPrint):
+  """Estimates the clamping loss for a model.
+
+  Clamping loss occurs when a forward-evaluated output channel exceeds its configured limits.
+  If *clamp* is not part of the *model* configuration, there is no clamping loss. 
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized, and the model previously exported.
+    bPrint (bool): request diagnostic output of clamping loss by case and output channel.
+
+  Returns:
+    float: sum of clamping loss over all cases and output channels
+  """
   if not hasattr (model, 'clamp'):
     return 0.0
   total, cases = model.clampingErrors (bByCase=True)
@@ -100,6 +133,22 @@ def clamp_loss (model, bPrint):
   return np.sum(total)
 
 def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
+  """Assembles input values into a properly ordered array for a model's forward evaluation, excluding any not provided, as indicated by *NaN*. *Internal*
+
+  Args:
+    T0 (float): temperature, may be *NaN*
+    G0 (float): solar irradiance
+    F0 (float): control frequency, may be *NaN*
+    Ud0 (float): direct-axis voltage control index
+    Uq0 (float): quadrature-axis voltage control index
+    Vd0 (float): direct-axis terminal voltage
+    Vq1 (float): quadrature-axis terminal voltage
+    GVrms (float): polynomial input feature
+    Ctl (float): control-mode input feature
+
+  Returns:
+    list(float): array of input values for *model.steady_state_response*
+  """
   if math.isnan(T0):
     if math.isnan(F0):
       return [G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
@@ -110,6 +159,27 @@ def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
   return [T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
 
 def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
+  """Estimates the sensitivity of an exported model in z domain.
+
+  The sensitivity is estimated for grid interface output variables (Id, Iq) with
+  respect to the closed loop feedback variables (Vd, Vq). The sensitivity is examined
+  over a set of operating points in *G*, *Ctl*, *Ud*, *Uq*, *Fc*, *Vd*, and *Vq*. At
+  each operating point, *Vd* and *Vq* is perturbed separately by a small amount, and then
+  *GVrms* is updated. The *model.steady_state_response* function is used to estimate
+  the changes in *Id* and *Iq* for the perturbations in *Vd* and *Vq*. 
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized, and the model previously exported.
+    bPrint (bool): print the maximum values of the four partial derivatives of *Id*, *Iq* with respect to *Vd*, *Vq*.
+    bLog (bool): print diagnostics of the operating points and perturbations over the sensitivity evaluation set.
+    bAutoRange (bool): if *True*, use the minima and maxima of the *model* training set to establish the input channel bounds. If *False*, use a built-in set of bounds for the GridLink SDI lab tests.
+
+  Yields:
+    Printed output of the auto-range boundaries and the sensitivity evaluation set.
+
+  Returns:
+    float: the maximum of four partial derivatives of Id, Iq with respect to Vd, Vq.
+  """
   maxdIdVd = 0.0
   maxdIdVq = 0.0
   maxdIqVd = 0.0
@@ -232,6 +302,16 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
   return max(maxdIdVd, maxdIdVq, maxdIqVd, maxdIqVq)
 
 def find_channel_indices (targets, available):
+  """Pick out the training dataset channel numbers used in sensitivity evaluations. Call separately for the input channels and the output channesl. *Internal*
+
+  Args:
+    targets (list(str)): array of channel names used in the sensitivity evaluation set
+    available (list(str)): array of channel names available in a model's training dataset
+
+  Returns:
+    int: length of the next return array, equal to *len(targets)*
+    list(int): array of training dataset channel numbers
+  """
   n = len(targets)
   idx = []
   for i in range(n):
@@ -239,8 +319,27 @@ def find_channel_indices (targets, available):
   return n, idx
 
 counter = 0
+"""Tracks the number of recursive calls to *build_baselines*
+"""
 
 def build_baselines (bases, step_vals, cfg, keys, indices, lens, level):
+  """Recursive function to add a set of operating points to the sensitivity evaluation set. Uses a depth-first approach. When the last channel number is processed, the recursion will back up to a previous channel number that was not fully processed yet. *Internal*
+
+  Args:
+    bases (list(float)[]): array of *step_vals* for operating points in the sensitivity evaluation set 
+    step_vals (list(float)): input channel values for a *pv3_poly* model steady-state operating point 
+    cfg (dict): the *sensitivity* member of a *pv3_poly* configuration, which incluces a member *sets* contained keyed channel names
+    keys (list(str)): list of channel names from the *sets* member of *cfg*, each of these corresponds to a *level* of recursion
+    indices (list(int)): keeps track of the channel number to resume processing whenever *level* reachs the last *key* 
+    lens (list(int)): the number of operating point values for each named channel in *keys*
+    level (int): enters with 0, backs up at the length of *keys* minus 1
+
+  Yields:
+    Appending to *bases*. Updates *counter* in each call.
+
+  Returns:
+    None
+  """
   global counter
   counter += 1
 
@@ -269,9 +368,38 @@ def build_baselines (bases, step_vals, cfg, keys, indices, lens, level):
         build_baselines (bases, step_vals, cfg, keys, indices, lens, level)
 
 def get_gvrms (G, Vd, Vq, k):
+  """Calculates the polynomial feature *GVrms*. *Internal*
+
+  Args:
+    G (float): solar irradiance.
+    Vd (float): direct-axis voltage.
+    Vq (float): quadrature-axis voltage.
+    k (float): sqrt(1.5) for three-phase inverters, 1.0 for single-phase inverters.
+
+  Returns:
+    float: value of *GVrms*
+  """
   return G * k * math.sqrt(Vd*Vd + Vq*Vq)
 
 def model_sensitivity (model, bPrint):
+  """Calculates the maximum sensitivity of an exported *Norton* model in z domain.
+
+  The model configuration must include a *sensitivy* structure that was used
+  in training. This determines the sensitivity evaluation set.
+
+  See Also:
+    :func:`sensitivity_analysis`
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized, and the model previously exported.
+    bPrint (bool): print the maximum sensitivity (return value).
+
+  Yields:
+    Printed information about the sensitivity evaluation set and columns.
+
+  Returns:
+    float: The maximum derivative of *Id*, *Iq* with respect to *Vd*, *Vq*.
+  """
   cfg = model.sensitivity
   cfg['n_in'], cfg['idx_in'] = find_channel_indices (cfg['inputs'], model.COL_U)
   cfg['n_out'], cfg['idx_out'] = find_channel_indices (cfg['outputs'], model.COL_Y)
@@ -340,6 +468,25 @@ def model_sensitivity (model, bPrint):
   return np.max(max_sens)
 
 def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = False):
+  """Calculates the maximum sensitivity of an exported *Thevenin* model in z domain.
+
+  This function uses a fixed sensitivity evaluation set for the GridLink SDI lab tests.
+
+  See Also:
+    :func:`sensitivity_analysis`
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized, and the model previously exported.
+    bPrint (bool): print the maximum values of each partial derivative of *Vd*, *Vq* with respect to *Id*, *Iq*
+    bLog (bool): print the four partial derivatives of *Vd*, *Vq*, w.r.t. *Id*, *Iq* sat each operating point in the sensitivity evaluation set.
+    bReducedSet (bool): use a reduced sensitivity evaluation set of 72 cases instead of the full set of 60,500 cases
+
+  Yields:
+    Printed information about the sensitivity evaluation set and columns.
+
+  Returns:
+    float: The maximum derivative of *Vd*, *Vq* with respect to *Id*, *Iq*.
+  """
   maxdVdId = 0.0
   maxdVdIq = 0.0
   maxdVqId = 0.0
@@ -459,67 +606,3 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
     print ('worst case dVqIq [G, Ud, Uq, Id, Iq]:', worst_dVqIq)
   return max(maxdVdId, maxdVdIq, maxdVqId, maxdVqIq)
 
-if __name__ == '__main__':
-  if len(sys.argv) > 1:
-    config_file = sys.argv[1]
-    fp = open (config_file, 'r')
-    cfg = json.load (fp)
-    fp.close()
-    data_path = cfg['data_path']
-    model_folder = cfg['model_folder']
-    model_root = cfg['model_root']
-  else:
-    print ('Usage: python pv3_lambda.py config.json')
-    quit()
-
-  print ('model_folder =', model_folder)
-  print ('model_root =', model_root)
-  print ('data_path =', data_path)
-
-  case_idx = 100 # 36 # 189
-  if len(sys.argv) > 2:
-    case_idx = int(sys.argv[2])
-
-  model = pv3_model.pv3(training_config=config_file)
-  model.loadTrainingData(data_path)
-  model.loadAndApplyNormalization(filename=None, bSummary=True)
-  model.initializeModelStructure()
-  model.loadModelCoefficients()
-  print (len(model.COL_U), 'inputs:', model.COL_U)
-  print (len(model.COL_Y), 'outputs:', model.COL_Y)
-  if 'Vd' in model.COL_U and 'Vq' in model.COL_U and 'Id' in model.COL_Y and 'Iq' in model.COL_Y:
-    sens = sensitivity_analysis (model, bPrint=True, bAutoRange=True)
-    print ('Maximum Norton Sensitivity = {:.6f}'.format (sens))
-    clamp = clamp_loss (model, bPrint=True)
-    print ('Total Norton Clamping Loss = {:.6f}'.format (clamp))
-  elif 'Id' in model.COL_U and 'Iq' in model.COL_U and 'Vd' in model.COL_Y and 'Vq' in model.COL_Y:
-    sens = thevenin_sensitivity_analysis (model, bPrint=True)
-    print ('Maximum Thevenin Sensitivity = {:.6f}'.format (sens))
-  else:
-    print ('No Thevenin or Norton columns found: skipping sensitivity analysis')
-    #sens = sensitivity_analysis (model, bPrint=True, bLog=False, bAutoRange=True)
-    #print ('Maximum Auto Sensitivity = {:.6f}'.format (sens))
-
-  quit()
-
-  #print ('model.clamps', model.clamps)
-  if 'sensitivity' in cfg:
-    print ('model.sensitivity', model.sensitivity)
-    sens = model_sensitivity (model, bPrint=True)
-    print ('Maximum Sensitivity = {:.6f}'.format (sens))
-    sens_loss = max (sens - model.sensitivity['limit'], 0.0)
-    print ('Sensitivity Loss = {:.6f}'.format (sens_loss))
-    rmse, mae, case_rmse, case_mae = model.trainingErrors(True)
-    loss_rmse = model.n_cases * rmse * rmse
-    print ('RMSE =', rmse, 'Loss RMSE =', loss_rmse)
-    print ('Total Loss =', model.trainingLosses())
-
-#  if case_idx < 0:
-#    for idx in range(model.n_cases):
-#      analyze_case (model, idx, bPrint=False)
-#  else:
-#    analyze_case (model, case_idx, bPrint=True)
-
-#  print ('Rd range [{:.3f}-{:.3f}]'.format(minRd, maxRd))
-#  print ('Rq range [{:.3f}-{:.3f}]'.format(minRq, maxRq))
-#  print ('Event counts: G={:d} Ud={:d} Uq={:d} R={:d} Total={:d}'.format (nG, nUd, nUq, nRd, nG+nUd+nUq+nRd))

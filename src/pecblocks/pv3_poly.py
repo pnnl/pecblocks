@@ -2,7 +2,7 @@
 # HW model training and simulation code for 3-phase inverters
 
 """
-  The pv3 class to support training and evaluation of generalized
+  The **pv3_poly** class supports training and evaluation of generalized
   block diagram models of three-phase and single-phase inverters.
 """
 
@@ -27,7 +27,72 @@ import control
 import harold
 
 class pv3():
+  """Implementation of HWPV model training, export, and forward evaluation.
+
+  This class is configured from a JSON file. The normal usage is to load a 
+  training dataset and normalize it. Then perform one or more of the 
+  following operations: 
+
+  - Train the model
+  - Export the model
+  - Evaluate model metrics
+  - Forward evaluation, or simulation
+
+  Attributes:
+    eps (float): numerical stability parameter for the Adam optimizer in PyTorch
+    lr (float): learning rate for PyTorch
+    num_iter (int): number of iterations (epochs) to perform in the next training run
+    continue_iterations (bool): if *True*, start the next set of training epochs from the existing model saved in *pkl* files. If *False*, reset the initial model to randomized parameters.
+    print_freq (int): epoch interval for printing status information during model training
+    batch_size (int): the data loader's batch size for training in PyTorch
+    n_validation_pct (int): percentage of cases in *data_train* to reserve for validation loss
+    n_validation_seed (int): a random number to choose the cases reserved for validation loss
+    n_loss_skip (int): number of decimated-in-time points to exclude from loss evaluation during training, used to exclude the initialization transients.
+    n_pad (int): number of decimated-in-time points to pre-pad the training data with *t=0* initial values, used to mitigate *dynoNet*'s behavior of always starting H1 from rest. Due to bias coefficients from F1, the initial H1 inputs are generally non-zero.
+    gtype (str): type of H1 block, may be *iir*, *fir*, *stable2ndx*. (*stable2nd* is deprecated because it does not allow distinct real poles, only complex conjugates.)
+    n_skip (int): number of decimated-in-time points to exclude from the beginning of each event in *data_train*
+    n_trunc (int): number of decimated-in-time points to exclude from the end of each event in *data_train*
+    n_dec (int): decimation-in-time interval for *data_train*, e.g., 1 for every point, 5 for every fifth point. Decimation may have already been done in preparing the input data for the HDF5 file.
+    na (int): number of learnable denominator coefficients in H1, not including a0=1
+    nb (int): number of learnable numerator coefficients in H1
+    nk (int): number of delay cells in H1 (never tested in pecblocks)
+    activation (str): activation function for the F1 and F2 blocks, may be *tanh* (preferred), *sigmoid* or *relu*
+    nh1 (int): number of hidden cells in F1
+    nh2 (int): number of hidden cells in F2
+    COL_T (list(str)): time channel name of *data_train*; should be an array of length 1
+    COL_U (list(str)): input channel names of *data_train*
+    COL_Y (list(str)): output channel names of *data_train*
+    idx_in (list(int)): channel indices of *data_train* corresponding to *COL_U*
+    idx_out (list(int)): channel indices of *data_train* corresponding to *COL_Y*
+    data_train (array_like(float, ndim=3)): three-dimensional Numpy array of training data loaded from an HDF5 file. First dimension is the case number, second dimension is the time point index, third dimension is the channel index.
+    normfacs (dict): the min, max, mean, offset, and scaling factor for each channel in *data_train*
+    t (float): the series of time points in *data_train*
+    n_cases (int): number of cases (or events) in *data_train*
+    t_step (float): the decimated time step in *data_train*
+    Lf (float): inverter's output filter inductance, before *Cf*
+    Lc (float): inverter's output filter inductance, at the PCC
+    Cf (float): inverter's output filter capacitance
+    model_folder (str): folder to save trained and exported model data
+    model_root (str): base name for the exported model
+    data_path (str): path and file name to the hdf5 input data for *data_train*
+    h5grp_prefix (str): prefix for the 0-based indexing of cases in *data_train*
+    clamps (dict): configuration for clamping losses
+    sensitivity (dict): configuration for dV/dI or dI/dV sensitivity losses
+    d_key (str): automatically determined as *Id* for a Norton model or *Vd* for a Thevenin model
+    q_key (str): automatically determined as *Iq* for a Norton model or *Vq* for a Thevenin model
+    sens_counter (int): tracks the number of recursive function calls to build sensitivity evaluation sets
+  """
   def __init__(self, training_config=None, sim_config=None):
+    """Constructor method. If called with no parameters, then *load_training_config* or *load_sim_config* must be called later before use.
+
+    See Also:
+      :func:`load_training_config`
+      :func:`load_sim_config`
+
+    Args:
+      training_config (str): JSON file name with a configuration for model training.
+      sim_config (str): JSON file name with an exported configuration for model evaluation. These file nams generally end in *_fhf.json*
+    """
     self.init_to_none()
     if training_config is not None:
       self.load_training_config (training_config)
@@ -35,6 +100,8 @@ class pv3():
       self.load_sim_config (sim_config)
 
   def init_to_none(self):
+    """Initializes class attributes to a default value, usually *None*
+    """
     self.eps = 1e-8
     self.lr = None
     self.num_iter = None
@@ -76,8 +143,24 @@ class pv3():
     self.sensitivity = None
     self.d_key = None
     self.q_key = None
+    self.sens_counter = 0
 
   def load_training_config(self, filename):
+    """Loads a configuration set for model training.
+
+    The configuration may include optional *sensitivity* and *clamps* members
+    for enhanced loss evaluations. The JSON file may include other members
+    that will be ignored here, e.g., differently named *data_path* attributes
+    from differeng computing platforms. For another example, a *sensitivity* member
+    could be renamed as *disable_sensitivity*, which has the effect of excluding
+    *sensitivity* from the loss function without discarding its configuration data
+    from the JSON file. This function does not load exported model parameters
+    from the JSON file, but these parameters may be available from existing *pkl*
+    files in the *model_folder* 
+
+    Args:
+      filename(str): JSON file name with the configuration parameters
+    """
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
@@ -139,6 +222,23 @@ class pv3():
     self.n_cases = 0
 
   def make_mimo_block(self, gtype, n_in, n_out, n_a, n_b, n_k):
+    """Create the H1 block of a requested type and dimension.
+
+    The multiple-input multiple-output block will comprise a matrix of
+    discrete H(z) transfer functions between each input and output pair,
+    each having the same order.
+
+    Args:
+      gtype(str): use *stable2ndx* for stable 2nd-order, *iir* for infinite impulse response, or *fir* for finite impulse response
+      n_in(int): number of input channels (F1 outputs)
+      n_out(int): number of output channels (F2 inputs)
+      n_a(int): number of learnable denominator coefficients for each H(z)
+      n_b(int): number of learnable numerator coefficients for each H(z)
+      n_k(int): number of delay cells for each H(z)
+
+    Returns:
+      MimoLinearDynamicalOperator: a subclass from *dynoNet*
+    """
     print ('make_mimo_block', gtype)
     if gtype == 'fir':
       block = MimoFirLinearDynamicalOperator(in_channels=n_in, out_channels=n_out, n_b=n_b)
@@ -164,6 +264,14 @@ class pv3():
     return block
 
   def make_mimo_ylin(self, y_non):
+    """Evaluates *H1* from the *F1* output, used in training or evaluation. The *dynoNet* function signature depends on *gtype*.
+
+    Args:
+      y_non(MimoStaticNonLinearity): F1 evaluated
+
+    Returns:
+      MimoLinearDynamicalOperator: H1 evaluated
+    """
     if self.gtype == 'iir':
       return self.H1 (y_non, self.y0, self.u0)
     elif self.gtype == 'fir':
@@ -175,6 +283,14 @@ class pv3():
     return None
 
   def read_lti(self, config):
+    """Creates *H1* from the JSON configuration
+
+    Args:
+      config(dict): configuration section for *H1* from JSON file, which must include the exported model members
+
+    Returns:
+      MimoLinearDynamicalOperator: *H1* of the correct subclass
+    """
     n_in = config['n_in']
     n_out = config['n_out']
     n_a = config['n_a']
@@ -195,6 +311,14 @@ class pv3():
     return block
 
   def read_net(self, config):
+    """Creates *F1* or *F2* from the JSON configuration
+
+    Args:
+      config(dict): configuration section for *F1* or *F2* from JSON file, which must include the exported model members
+
+    Returns:
+      MimoStaticNonLinearity: *F1* or *F2*
+    """
     n_in = config['n_in']
     n_out = config['n_out']
     n_hid = config['n_hid']
@@ -208,6 +332,12 @@ class pv3():
     return block
 
   def set_idx_in_out(self):
+    """Populates *idx_in*, *idx_out*, *d_key*, and *q_key*.
+
+    The indices are set sequentially for the channels as ordered in *COL_U* and *COL_Y*.
+    If *COL_Y* includes *Id* and *Iq*, *d_key = Id* and *q_key = Iq* for a Norton model.
+    If *COL_Y* includes *Vd* and *Vq*, *d_key = Vd* and *q_key = Vq* for a Thevenin model.
+    """
     self.idx_in = [0] * len(self.COL_U)
     self.idx_out = [0] * len(self.COL_Y)
     for i in range(len(self.COL_U)):
@@ -226,6 +356,12 @@ class pv3():
       self.q_key = 'Vq'
 
   def set_sim_config(self, config, model_only=True):
+    """Loads the attributes for simulation by forward evaluation
+
+    Args:
+      config(dict): configuration from JSON file, which must include the exported model parameters
+      model_only(bool): if *True*, don't load the original model training configuration. If *False*, load configuration parameters that are sufficient for testing against the original *data_train*
+    """
     self.name = config['name']
     self.blocks = config['type']
     self.H1 = self.read_lti(config['H1'])
@@ -258,6 +394,14 @@ class pv3():
         self.gtype = 'iir'
 
   def load_sim_config(self, filename, model_only=True):
+    """Loads a reduced configuration set for model evaluation.
+
+    Only the *name*, *type*, *H1*, *F1*, and *F2* members from model export
+    are essential.  If available, other configuration members will be included.
+
+    Args:
+      filename(str): JSON file name with the exported model configuration parameters. It will generally end with *_fhf.json*.
+    """
     fp = open (filename, 'r')
     config = json.load (fp)
     fp.close()
@@ -275,6 +419,13 @@ class pv3():
 #-------------------------------------
 
   def append_net(self, model, label, F):
+    """Adds *F1* or *F2* to the model export.
+
+    Args:
+      model(dict): configuration that will be exported to a JSON file
+      label(str): either 'F1' or 'F2' to label the block
+      F(MimoStaticNonLinearity): either *F1* or *F2* containing the parameters
+    """
     block = F.state_dict()
     n_in = F.net[0].in_features
     n_hid = F.net[0].out_features
@@ -291,6 +442,13 @@ class pv3():
     model[label][key] = block[key][:].numpy().tolist()
 
   def append_fir(self, model, label, H):
+    """Adds *H1* as a finite impulse response block to the model export.
+
+    Args:
+      model(dict): configuration that will be exported to a JSON file
+      label(str): should be 'H1' to label the block
+      H(MimoFirLinearDynamicalOperator): *H1* containing the parameters
+    """
     n_in = H.in_channels
     n_out = H.out_channels
     model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': H.n_b, 'n_a': H.n_a, 'n_k':0}
@@ -303,6 +461,13 @@ class pv3():
         model[label][key] = ary.tolist()
 
   def append_2nd(self, model, label, H):
+    """Adds *H1* as a stable 2nd-order block to the model export, limited to complex conjugate poles.
+
+    Args:
+      model(dict): configuration that will be exported to a JSON file
+      label(str): should be 'H1' to label the block
+      H(StableSecondOrderMimoLinearDynamicalOperator): *H1* containing the parameters
+    """
     n_in = H.b_coeff.shape[1]
     n_out = H.b_coeff.shape[0]
     model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 3, 'n_a': 2, 'n_k':0}
@@ -333,6 +498,13 @@ class pv3():
         model[label][key] = float(psi[i,j])
 
   def append_2ndx(self, model, label, H):
+    """Adds *H1* as a stable 2nd-order block to the model export, allows distinct real and complex conjugate poles.
+
+    Args:
+      model(dict): configuration that will be exported to a JSON file
+      label(str): should be 'H1' to label the block
+      H(StableSecondOrderMimoLinearDynamicalOperatorX): *H1* containing the parameters
+    """
     n_in = H.b_coeff.shape[1]
     n_out = H.b_coeff.shape[0]
     model[label] = {'n_in': n_in, 'n_out': n_out, 'n_b': 3, 'n_a': 2, 'n_k':0}
@@ -362,6 +534,15 @@ class pv3():
         model[label][key] = float(alpha2[i,j])
 
   def append_lti(self, model, label, H):
+    """Adds *H1* to the model export. 
+
+    Checks *gtype* and if not FIR or stable 2nd-order, treat as IIR.
+
+    Args:
+      model(dict): configuration that will be exported to a JSON file
+      label(str): should be 'H1' to label the block
+      H(MimoLinearDynamicalOperator): *H1* containing the IIR parameters
+    """
     if self.gtype == 'fir':
       self.append_fir(model, label, H)
       return
@@ -389,6 +570,14 @@ class pv3():
         model[label][key] = ary.tolist()
 
   def loadTrainingData(self, data_path):
+    """Read the HDF5 training records into a NumPy array.
+
+    Args:
+      data_path(str): path and file name to the HDF5 data file.
+
+    Yields:
+      data_train loaded as a 3-dimensional NumPy array.
+    """
     df_list = pecblocks.util.read_hdf5_file (data_path, self.COL_T + self.COL_Y + self.COL_U, 
                                              self.n_dec, self.n_skip, self.n_trunc, prefix=self.h5grp_prefix)
     print ('read', len(df_list), 'dataframes')
@@ -416,6 +605,13 @@ class pv3():
     print (self.COL_U, self.COL_Y, self.data_train.shape)
 
   def applyAndSaveNormalization(self):
+    """Scans *data_train* to identify the range of each channel, then normalize them.
+
+    Yields:
+
+      - Each channel normalized to vary from 0.0 to 1.0 over all cases and times.
+      - Normalization factors and ranges saved in *normfacs*
+    """
     # Normalize the data; save the normalization factors
     self.normfacs = {}
     in_size = len(self.COL_U)
@@ -458,6 +654,14 @@ class pv3():
     fp.close()
 
   def loadNormalization(self, filename=None):
+    """Retrieves the saved normalization facgtors
+
+    Args:
+      filename(str): name of JSON file with a 'normfacs' section. If *None*, try 'normfacs.json'
+
+    Yields:
+      *normfacs* will be updated but not applied to the data.
+    """
     if filename is None:
       filename = os.path.join(self.model_folder,'normfacs.json')
     fp = open (filename, 'r')
@@ -469,6 +673,15 @@ class pv3():
       self.normfacs = cfg
 
   def loadAndApplyNormalization(self, filename=None, bSummary=False):
+    """Reads *normfacs* from a JSON file, then applies them to *data_train*
+
+    Args:
+      filename(str): name of JSON file with a 'normfacs' section. If *None*, try 'normfacs.json'
+      bSummary(bool): if *True*, print a summary of the unnormalized and normalized data
+
+    Yields:
+      *normfacs* will be updated and applied to *data_train*.
+    """
     if bSummary:
       print ('Before Scaling:')
       print ('Column       Min       Max      Mean     Range')
@@ -496,6 +709,8 @@ class pv3():
           dmin, dmax, dmean, drange, self.normfacs[c]['scale'], self.normfacs[c]['offset']))
 
   def applyNormalization(self):
+    """Normalizes *data_train* using *normfacs*
+    """
     idx = 0
     for c in self.COL_U + self.COL_Y:
       dmean = self.normfacs[c]['offset']
@@ -505,6 +720,11 @@ class pv3():
       idx += 1
 
   def initializeModelStructure(self):
+    """Set the blocks up for training or forward evaluation.
+
+    Yields:
+      *F1*, *H1*, and *F2* constructed to match numbers of channels and *gtype*, random initial coefficients.
+    """
     # Set seed for reproducibility
     np.random.seed(0)
     torch.manual_seed(0)
@@ -521,6 +741,16 @@ class pv3():
     self.F2 = MimoStaticNonLinearity(in_channels=len(self.idx_out), out_channels=len(self.idx_out), n_hidden=self.nh2, activation=self.activation)
 
   def find_sens_channel_indices (self, targets, available):
+    """Pick out the training dataset channel numbers used in sensitivity evaluations. Call separately for the input channels and the output channesl. *Internal*
+
+    Args:
+      targets (list(str)): array of channel names used in the sensitivity evaluation set
+      available (list(str)): array of channel names available in a model's training dataset
+
+    Returns:
+      int: length of the next return array, equal to *len(targets)*
+      list(int): array of training dataset channel numbers
+    """
     n = len(targets)
     idx = []
     for i in range(n):
@@ -528,6 +758,23 @@ class pv3():
     return n, idx
 
   def build_sens_baselines (self, bases, step_vals, cfg, keys, indices, lens, level):
+    """Recursive function to add a set of operating points to the sensitivity evaluation set. Uses a depth-first approach. When the last channel number is processed, the recursion will back up to a previous channel number that was not fully processed yet. *Internal*
+
+    Args:
+      bases (list(float)[]): array of *step_vals* for operating points in the sensitivity evaluation set 
+      step_vals (list(float)): input channel values for a *pv3_poly* model steady-state operating point 
+      cfg (dict): the *sensitivity* member of a *pv3_poly* configuration, which incluces a member *sets* contained keyed channel names
+      keys (list(str)): list of channel names from the *sets* member of *cfg*, each of these corresponds to a *level* of recursion
+      indices (list(int)): keeps track of the channel number to resume processing whenever *level* reachs the last *key* 
+      lens (list(int)): the number of operating point values for each named channel in *keys*
+      level (int): enters with 0, backs up at the length of *keys* minus 1
+
+    Yields:
+      Appending to *bases*. Updates *sens_counter* in each call.
+
+    Returns:
+      None
+    """
     self.sens_counter += 1
 
     key = keys[level]
@@ -557,6 +804,9 @@ class pv3():
           self.build_sens_baselines (bases, step_vals, cfg, keys, indices, lens, level)
 
   def setup_sensitivity_losses(self):
+    """Parses the *sensitivity* configuration data, constructs the operating points for the
+    sensitivity evaluation set. The existence of *sensitivity* should be checked before calling.
+    """
     self.sensitivity['n_in'], self.sensitivity['idx_in'] = self.find_sens_channel_indices (self.sensitivity['inputs'], self.COL_U)
     self.sensitivity['n_out'], self.sensitivity['idx_out'] = self.find_sens_channel_indices (self.sensitivity['outputs'], self.COL_Y)
     self.sensitivity['idx_set'] = {}
@@ -593,6 +843,15 @@ class pv3():
     print (len(self.sens_bases), 'sensitivity base cases constructed in', self.sens_counter, 'function calls')
 
   def sensitivity_response (self, vals):
+    """Calculate the maximum d-axis and q-axis model sensitivity, using pre-calculated *sens_mat* for *H1*
+
+    Args:
+      vals (list(float)): input vector for *ub*
+
+    Returns:
+      float: maximum d-axis sensitivity, de-normalized
+      float: maximum q-axis sensitivity, de-normalized
+    """
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
 
@@ -606,6 +865,11 @@ class pv3():
 
   # coefficients as trainable tensors instead of numpy, use self.H1.b as they are, but pad self.H1.a with ones
   def start_sensitivity_simulation(self, bPrint=False):
+    """Build *sens_mat* from the *H1* coefficients with z=-1, for efficiency in the sensitivity evaluations.
+
+    Args:
+      bPrint (bool): if *True*, print out the *H1* coefficients and *sens_mat*
+    """
     if bPrint:
       print ('  start_sensitivity_simulation [n_a, n_b, n_in, n_out]=[{:d} {:d} {:d} {:d}]'.format (self.H1.n_a, self.H1.n_b, self.H1.in_channels, self.H1.out_channels))
     if self.gtype == 'stable2nd' and not hasattr(self.H1, 'a_coeff'): 
@@ -643,6 +907,19 @@ class pv3():
       print ('  mat=\n', self.sens_mat)
 
   def calc_sensitivity_losses(self, bPrint=False):
+    """Calculate a sensitivity loss term that can be added to the fitting loss.
+
+    The torch functions are used to facilitate optimization during training.
+    This function is called after the fitting of each batch, because the model coefficients were updated.
+    It is not called for each dataset, because the sensitivity only depends on model coefficients.
+
+    Args:
+      bPrint (bool): if *True*, print some diagnostics
+
+    Returns:
+      float: weighted sensitivity loss; add this to the fitting loss
+      float: maximum sensitivity, normalized
+    """
     idx_d = self.sensitivity['idx_d_rms']
     idx_q = self.sensitivity['idx_q_rms']
     idx_gdqrms = self.sensitivity['idx_gdqrms']
@@ -690,6 +967,27 @@ class pv3():
     return sens_loss, max_sens
 
   def trainModelCoefficients(self, bMAE = False):
+    """Supervises the model fitting and validation using Adam optimizer.
+
+    A *PVInvDataset* is created from *data_train*, which supports *DataLoader*s from *PyTorch* for training and validation.
+    Batch sizes, continuation from a previous training run, and other options may be configured in the JSON file.
+    Sensitivity and clamping may be added to the fitting loss, if configured in the JSON file.
+
+    Args:
+      bMAE (bool): if *True*, optimize the mean absolute error (MAE) instead of root mean square error (RMSE)
+
+    Yields:
+
+      - Block coefficients are trained in *pkl* files in the *model_folder*, and ready to export.
+      - Training loss components written to 'Loss.npy' in the *model_folder*
+      - After each epoch, if the current fitting loss is the best so far, model coefficients will be saved to *bestF1.pkl*, *bestF2.pkl*, and *bestH1.pkl*
+
+    Returns:
+      float: total training time elapsed between calls to *time.time()*
+      list(float): fitting loss for each epoch
+      list(float): validation loss for each epoch
+      list(float): sensitivity loss for each epoch
+    """
     if self.sensitivity is not None:
       self.setup_sensitivity_losses()
 
@@ -835,11 +1133,20 @@ class pv3():
     return train_time, LOSS, VALID, SENS
 
   def saveModelCoefficients(self, prefix=''):
+    """Save the current block coefficients
+
+    Default file names are *F1.pkl*, *F2.pkl*, and *H1.pkl* in *model_folder*.
+
+    Args:
+      prefix(str): set as 'best' for saving the epoch with lowest fitting loss.
+    """
     torch.save(self.F1.state_dict(), os.path.join(self.model_folder, prefix + "F1.pkl"))
     torch.save(self.H1.state_dict(), os.path.join(self.model_folder, prefix + "H1.pkl"))
     torch.save(self.F2.state_dict(), os.path.join(self.model_folder, prefix + "F2.pkl"))
 
   def loadModelCoefficients(self):
+    """Load the block coefficients from *F1.pkl*, *F2.pkl* and *H1.pkl* in *model_folder*.
+    """
     B1 = torch.load(os.path.join(self.model_folder, "F1.pkl"))
     self.F1.load_state_dict(B1)
     B2 = torch.load(os.path.join(self.model_folder, "H1.pkl"))
@@ -852,6 +1159,23 @@ class pv3():
     self.F2.load_state_dict(B3)
 
   def make_H1Q1s(self, Hz):
+    """Convert discrete-time H1(z) to continuous-time H1(s)
+
+    Uses the Harold package to convert each transfer function
+    between pairs of input and output channels. The transfer
+    functions are undiscretized using the 'forward euler' method.
+    Each continuous-time transfer function is checked for unstable poles,
+    and if any are found, a warning message is printed. If such
+    warning messages appear, the continuous-time model should not be used.
+    One option is to re-train the blocks using the 'stable2ndx' *gtype*. 
+
+    Args:
+      Hz(MimoLinearDynamicalOperator): should be *H1*
+
+    Returns:
+      dict: H1(s) as rational transfer function coefficient arrays, keyed by 'a_i_j' for denominator and 'b_i_j' for numerator, where *i* is the *H1* output channel number and *j* is the *H1* input channel number 
+      dict: Q1(s) as the state transition matrices for evaluating *x_dot = Ax + Bu; y = Cx + Du*, keyed by 'A_i_j', 'B_i_j', 'C_i_j', 'D_i_j', where *i* is the *H1* output channel number and *j* is the *H1* input channel number
+    """
     if self.gtype == 'fir':
       return None, None
     n_in = Hz.in_channels
@@ -924,6 +1248,14 @@ class pv3():
     return H1s, Q1s
 
   def exportModel(self, filename):
+    """Writes the trained model coefficients to a JSON file.
+
+    Includes all the training configuration parameters, and both continuous-time
+    and discrete-time variants of *H1*.
+
+    Args:
+      filename (str): path and file name to the exported JSON file; typically ends in *_fhf.json*
+    """
     config = {'name':'PV3', 'type':'F1+H1+F2', 't_step': self.t_step}
     config['normfacs'] = {}
     for key, val in self.normfacs.items():
@@ -974,12 +1306,33 @@ class pv3():
     fp.close()
 
   def printStateDicts(self):
+    """Debugging output of the *F1*, *F2*, and *H1* block parameters in memory.
+    """
     print ('F1', self.F1.state_dict())
     print ('F2', self.F2.state_dict())
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
   def testOneCase(self, case_idx, npad, bUseTorchDS=False):
+    """Compare the estimated and actual output for one of the cases used for training and validation.
+
+    This function uses *PyTorch* to evaluate *H1*.
+
+    See Also:
+      :func:`stepOneCase`
+
+    Args:
+      case_idx(int): zero-based case number from *data_train* to test
+      npad(int): number of decimated time points to pre-pad with initial condition values
+      bUseTorchDS(bool): if *True*, use the torch tensor *DataLoader*, which matches the training process but takes longer and does not properly match the initial conditions. If *False*, perform test on *data_train* directly.
+
+    Returns:
+      float: root mean square error for this case
+      float: mean absolute error for this case
+      array_like(float,ndim=2): estimated output (y_hat) for this case, first dimension is time, second dimension is channel 
+      array_like(float,ndim=2): true output (y) for this case, first dimension is time, second dimension is channel 
+      array_like(float,ndim=2): input (u) for this case, first dimension is time, second dimension is channel 
+    """
     if bUseTorchDS: # TODO: this doesn't match the correct Y[0] values
       total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), npad)
       case_data = total_ds[case_idx]
@@ -1022,6 +1375,28 @@ class pv3():
     return rmse, mae, y_hat_ret, y_true_ret, u_ret
 
   def simulateVectors(self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, npad):
+    """Forward evaluation by processing individual vectors of input.
+
+    *Deprecated*: this function was only used with early Norton models that used
+    *Vrms* instead of *Vd* and *Vq* inputs.
+
+    Args:
+      T(list(float)): array of input temperature vs. time
+      G(list(float)): array of input solar irradiance vs. time
+      Fc(list(float)): array of input frequency vs. time
+      Md(list(float)): array of input d-axis voltage control index vs. time
+      Mq(list(float)): array of input q-axis voltage control index vs. time
+      Vrms(list(float)): array of input RMS voltage vs. time
+      GVrms(list(float)): array of input polynomial feature vs. time
+      Ctl(list(float)): array of input control model vs. time
+      npad(int): number of decimated-in-time points to pre-pad with initial values
+
+    Return:
+      list(float): DC voltage vs. time
+      list(float): DC current vs. time
+      list(float): Id vs. time
+      list(float): Iq vs. time
+    """
     T = self.normalize (T, self.normfacs['T'])
     G = self.normalize (G, self.normfacs['G'])
     Fc = self.normalize (Fc, self.normfacs['Fc'])
@@ -1068,6 +1443,25 @@ class pv3():
     return Vdc, Idc, ACd, ACq
 
   def stepOneCase(self, case_idx):
+    """Compare the estimated and actual output for one of the cases used for training and validation.
+
+    This function uses the IIR filter coefficients and history terms to evaluate *H1*.
+    The history terms allow proper initialization of *H1* without pre-padding the data
+    with initial values.
+
+    See Also:
+      :func:`testOneCase`
+
+    Args:
+      case_idx(int): zero-based case number from *data_train* to test
+
+    Returns:
+      float: root mean square error for this case
+      float: mean absolute error for this case
+      array_like(float,ndim=2): estimated output (y_hat) for this case, first dimension is time, second dimension is channel 
+      array_like(float,ndim=2): true output (y) for this case, first dimension is time, second dimension is channel 
+      array_like(float,ndim=2): input (u) for this case, first dimension is time, second dimension is channel 
+    """
     case_data = self.data_train[case_idx,:,:]
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(self.idx_out)), dtype=case_data.dtype)
@@ -1108,6 +1502,8 @@ class pv3():
     return rmse, mae, y_hat, y_true, udata
 
   def setup_clamping_losses(self):
+    """Normalize the output channel clamping limits and identify the clamped channel numbers, in preparation for adding clamping losses to fitting losses in model training.
+    """
     sizes = (self.batch_size, self.data_train.shape[1], len(self.COL_Y))
     self.clamping_zeros = torch.zeros(sizes, requires_grad=True)
     lower_np = np.zeros(sizes)
@@ -1121,6 +1517,16 @@ class pv3():
     self.clamping_upper = torch.from_numpy (upper_np)
 
   def clamping_losses(self):
+    """ Calculate the clamping losses with torch functions that support optimization.
+
+    *Deprecated*. If any output channel departs from its clamped range, the clamping
+    losses are non-zero. However, this creates step changes that lead to oscillations
+    in the total loss. The normal fitting losses, together with improvements in the
+    initialization of *H1*, do a better job of constraining outputs to the expected range.
+
+    Returns:
+      list(float): total clamping loss over all cases and times, by output channel
+    """
     total_loss = torch.zeros (out_size, requires_grad=True)
 
     for ub, y_true in total_dl: # batch loop
@@ -1136,6 +1542,15 @@ class pv3():
     return total_loss
 
   def clampingErrors(self, bByCase=False):
+    """Summarize the clamping errors in a trained model
+
+    Args:
+      bByCase(bool): *True* if the individual clamping loss per case is desired, otherwise just the total is calculated.
+
+    Returns:
+      list(float): total clamping loss over all cases and times, by output channel
+      array_like(float,ndim=2): case clamping loss over all times. First dimension is case number, second dimension is output channel. *None* if *bByCase=False*
+    """
     self.n_cases = self.data_train.shape[0]
     npts = self.data_train.shape[1]
     in_size = len(self.COL_U)
@@ -1185,6 +1600,19 @@ class pv3():
     return total_loss, case_loss
 
   def trainingErrors(self, bByCase=False):
+    """Summarize the **fitting** errors in a trained model.
+
+    Evaluates both root mean square error (RMSE) and mean absolute error (MAE).
+
+    Args:
+      bByCase(bool): *True* if the individual fitting loss per case is desired, otherwise just the total is calculated.
+
+    Returns:
+      list(float): total fitting RMSE over all cases and times, by output channel
+      list(float): total fitting MAE over all cases and times, by output channel
+      array_like(float,ndim=2): case RMSE over all times. First dimension is case number, second dimension is output channel. *None* if *bByCase=False*
+      array_like(float,ndim=2): case MAE over all times. First dimension is case number, second dimension is output channel. *None* if *bByCase=False*
+    """
     self.n_cases = self.data_train.shape[0]
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
@@ -1236,6 +1664,11 @@ class pv3():
     return total_rmse, total_mae, case_rmse, case_mae
 
   def trainingLosses(self):
+    """Evaluates the **fitting** loss of a trained model.
+
+    Returns:
+      float: total RMSE over all cases, times, and output channels
+    """
     self.n_cases = self.data_train.shape[0]
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
@@ -1258,11 +1691,34 @@ class pv3():
     return rmse_loss.item()
 
   def set_LCL_filter(self, Lf, Cf, Lc):
+    """Set the inverter output filter parameters
+
+    These may be used to back-calculate voltages and currents at the voltage-source
+    converter (VSC) terminals, based on voltages and currents at the AC terminals, i.e.,
+    at the point of commong coupling. However, this is not a causal operation.
+
+    Args:
+      Lf(float): filter inductance between the VSC and filter capacitor
+      Cf(float): filter capacitance
+      Lc(float): filter inductance between the filter capacitor and the PCC
+    """
     self.Lf = Lf
     self.Cf = Cf
     self.Lc = Lc
 
   def check_poles(self):
+    """Verify that the H(z) transfer function poles are stable.
+
+    All poles must lie within the unit circle in the Z plane. This does not
+    guarantee that the poles of H1(s) will be stable. Uses the *control* package
+    *TransferFunction* class to check the poles.
+
+    See Also:
+      :func:`make_H1Q1s`
+
+    Yields:
+      Printed output will contain the word 'UNSTABLE' if any unstable poles were found.
+    """
     #----------------------------------------------
     # create a matrix of SISO transfer functions
     #----------------------------------------------
@@ -1347,6 +1803,14 @@ class pv3():
 #          print ('==H(z)[{:d}][{:d}] ({:s} from {:s}) pole magnitudes {:s}'.format(i, j, self.COL_Y[i], self.COL_Y[j], str(polemag)))
 
   def start_simulation(self, bPrint=False):
+    """Sets up the *H1* history terms for an efficient IIR simulation of the trained model
+
+    Args:
+      bPrint(bool): if *True*, print some information about the *H1* IIR setup
+
+    Returns:
+      list(str): names of input columns to help the user construct input vectors at each discrete time step
+    """
 #-------------------------------------------------------------------------------------------------------
 ## control MIMO TransferFunction, needs 'slycot' package for forced_response
 #    a_coeff = self.H1.a_coeff.detach().numpy()                                                         
@@ -1410,17 +1874,46 @@ class pv3():
         self.yhist[i][j] = np.zeros(self.H1.n_a)
     return self.COL_U
                                              
-# set up the static nonlinearity blocks for time step simulation                       
+# set up the static nonlinearity blocks for time step simulation (TODO) why after return value?
     self.F1.eval()
     self.F2.eval()
 
   def normalize (self, val, fac):
+    """Normalizes one channel for the trained blocks.
+
+    Args:
+      list(float): un-normalized channel data
+      fac(dict): a member of *normfacs* with *scale* and *offset*
+
+    Returns:
+      list(float): normalized channel data
+    """
     return (val - fac['offset']) / fac['scale']
 
   def de_normalize (self, val, fac):
+    """De-normalizes one channel from the trained blocks to the user.
+
+    Args:
+      list(float):normalized channel data
+      fac(dict): a member of *normfacs* with *scale* and *offset*
+
+    Returns:
+      list(float): de-normalized channel data
+    """
     return val * fac['scale'] + fac['offset']
 
   def steady_state_response (self, vals):
+    """Calculate steady-state block outputs using the IIR coefficients of *H1*.
+
+    Args:
+      vals(list(float)): vector of de-normalized inputs, in order to match *COL_U*
+
+    Returns:
+      float: steady-state DC voltage
+      float: steady-state DC current
+      float: steady-state *Id* for a Norton model or *Vd* for a Thevenin model
+      float: steady-state *Iq* for a Norton model or *Vq* for a Thevenin model
+    """
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
 
@@ -1457,6 +1950,18 @@ class pv3():
     return Vdc, Idc, ACd, ACq
 
   def step_simulation (self, vals, nsteps=1):
+    """Simulate one or more discrete time steps of a trained model using the IIR coefficients of *H1*
+
+    Args:
+      vals(list(float)): vector of de-normalized inputs, in order to match *COL_U*
+      nsteps(int): number of discrete time steps to simulate. This can be > 1 for brute-force initialization, but afterward it is usually 1.
+
+    Returns:
+      float: DC voltage
+      float: DC current
+      float: *Id* for a Norton model or *Vd* for a Thevenin model
+      float: *Iq* for a Norton model or *Vq* for a Thevenin model
+    """
 #   Vc = np.complex (Vrms+0.0j)
 #   if self.Lf is not None:
 #     omega = 2.0*math.pi*Fc

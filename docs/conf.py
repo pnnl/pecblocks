@@ -59,3 +59,5 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+napoleon_custom_sections = [('Returns', 'params_style')]
+
