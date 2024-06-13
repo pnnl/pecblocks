@@ -69,7 +69,8 @@ if __name__ == '__main__':
         if val > mval:
           idx = i
           mval = val
-      print ('{:4s} Max RMSE={:8.4f} at Case {:d}; {:d} > 0.05'.format (model.COL_Y[j], mval, idx, nmax))
+      print ('{:4s} Max RMSE={:8.4f} at Case {:d}; {:d} > 0.05'.format (model.COL_Y[j], 
+                                                                        mval, idx, nmax))
     print ('Total Error Summary')
     for j in range(out_size):
       print ('{:4s} RMSE={:8.4f}'.format (model.COL_Y[j], rmse[j]))

@@ -5,7 +5,7 @@ import sys
 
 plt.rcParams['savefig.directory'] = os.getcwd()
 
-data_path = 'ucf7s2nd'
+data_path = 'ucfB_t_2nd_Ctrl'
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:

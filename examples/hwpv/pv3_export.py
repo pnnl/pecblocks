@@ -19,10 +19,6 @@ if __name__ == '__main__':
   else:
     print ('Usage: python pv3_export.py config.json')
     quit()
-# model_root = config_file.rstrip('.json')
-# print (config_file, model_root)
-# model_root = model_root.rstrip('_config')
-# print (model_root)
   export_path = os.path.join(model_folder,'{:s}_fhf.json'.format(model_root))
   if len(sys.argv) > 2:
     export_path = sys.argv[2]
@@ -36,5 +32,4 @@ if __name__ == '__main__':
   model.loadModelCoefficients()
   model.exportModel(export_path)
   model.check_poles()
-#  model.printStateDicts()
 

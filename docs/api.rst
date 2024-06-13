@@ -3,9 +3,8 @@ API
 
 .. automodule:: pecblocks.__init__
 
----------------
 common
----------------
+------
 
 .. automodule:: pecblocks.common
    :members:
@@ -13,9 +12,8 @@ common
 ..   :member-order: bysource
    :exclude-members: forward
 
----------------
 pv3_functions
----------------
+-------------
 
 .. automodule:: pecblocks.pv3_functions
    :members:
@@ -23,9 +21,8 @@ pv3_functions
 ..   :member-order: bysource
    :exclude-members: __init__, forward
 
----------------
 pv3_poly
----------------
+--------
 
 .. automodule:: pecblocks.pv3_poly
    :members:
@@ -33,9 +30,8 @@ pv3_poly
 ..   :member-order: bysource
    :exclude-members: __weakref__, forward
 
----------------
 util
----------------
+----
 
 .. automodule:: pecblocks.util
    :members:

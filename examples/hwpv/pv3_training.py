@@ -35,12 +35,10 @@ if __name__ == '__main__':
   model.initializeModelStructure()
   train_time, LOSS, VALID, SENS = model.trainModelCoefficients(bMAE=False)
   model.saveModelCoefficients()
-#  quit()
   rmse, mae, case_rmse, case_mae = model.trainingErrors(bByCase=False)
 
-  nlookback = 10 #  * int(model.n_cases / model.batch_size)
+  nlookback = 10
   recent_loss = LOSS[len(LOSS)-nlookback:]
-#  print (nlookback, recent_loss)
 
   out_size = len(model.COL_Y)
   print ('COL_Y', model.COL_Y)

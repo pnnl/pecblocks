@@ -6,6 +6,8 @@ Power Electronic Converter Blocks (pecblocks)
    :caption: Contents:
 
    Overview
+   Examples
+   Data
    api
    schema
    LICENSE
