@@ -20,3 +20,6 @@ formats:
 python:
    install:
    - requirements: docs/requirements.txt
+   # install our package before building the docs
+   - method: pip
+     path: .
