@@ -20,7 +20,8 @@ See [ReadTheDocs Manual](https://pecblocks.readthedocs.io/en/latest/)
 ## Developer Instructions
 
 Familiarity with Python, `git` and `sphinx` is expected. The developer may need credentials for this
-project on GitHub, ReadTheDocs, and/or PyPi.
+project on GitHub, ReadTheDocs, and/or PyPi. The application program interface (API) and the schema
+for JSON files are documented in the [ReadTheDocs Manual](https://pecblocks.readthedocs.io/en/latest/).
 
 Python 3.7.6 and later have been used for testing. From a command prompt in this directory,
 Install the necessary Python modules with:
@@ -37,7 +38,7 @@ The project on ReadTheDocs will re-build automatically upon commits to the git r
 - `make html`
 - From a browser, open the file `docs\_build\html\index.html` from the directory of your git clone
 
-To deploy the project on PyPi, staring in the directory of your git clone, where ``setup.py`` is located:
+To deploy the project on PyPi, staring in the directory of your git clone, where `setup.py` is located:
 
 - Make sure that the version number in `setup.cfg` and `src\pecblocks\version.py` is new.
 - Invoke `rd /s /q dist` on Windows, or `rm -rf dist` on Linux or Mac OS X
@@ -46,72 +47,24 @@ To deploy the project on PyPi, staring in the directory of your git clone, where
 - `twine check dist/*` should not show any errors
 - `twine upload -r testpypi dist/*` requires project credentials for pecblocks on test.pypi.org (Note: this will reject if version already exists, also note that testpypi is a separate register to pypi)
 - `pip install -i https://test.pypi.org/simple/ pecblocks==0.0.3` for local testing of the deployable package, example version 0.0.3 (Note: consider doing this in a separate Python test environment)
-- `twine upload dist/*` for final deployment; requires project credentials for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs) to be used.
+- `twine upload dist/*` for final deployment; requires project credentials for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs to be used.
 
 ## Example Directories
 
-Directory roadmap.
+In the _examples_ subdirectory:
 
-## JSON Schema
-
-A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
-
-- There is only one top-level entry
-    - second-level _name_ attribute is limited to 6 characters for ATP
-    - second-level _type_ attribute indicates the block structure, e.g., "F1+G1+F2"
-    - second-level _t_step_ attribute is the discretization time step
-    - second-level _normfacs_ attribute contains the channel scaling factors
-        - the key is a column name
-        - _offset_ is the channel mean, in physical units
-        - _scale_ is the channel range, in physical units
-    - second-level _model_folder_ came from _pv1_config.json_ as described above
-    - second-level _model_root_ came from _pv1_config.json_ as described above
-    - second-level _data_path_ came from _pv1_config.json_ as described above
-    - second-level _lr_ came from _pv1_config.json_ as described above
-    - second-level _eps_ came from _pv1_config.json_ as described above
-    - second-level _h5grp_prefix_ came from _pv1_config.json_ as described above
-    - second-level _num_iter_ came from _pv1_config.json_ as described above
-    - second-level _continue_iterations_ came from _pv1_config.json_ as described above
-    - second-level _print_freq_ came from _pv1_config.json_ as described above
-    - second-level _batch_size_ came from _pv1_config.json_ as described above
-    - second-level _n_validation_pct_ came from _pv1_config.json_ as described above
-    - second-level _n_validation_seed_ came from _pv1_config.json_ as described above
-    - second-level _n_skip_ came from _pv1_config.json_ as described above
-    - second-level _n_trunc_ came from _pv1_config.json_ as described above
-    - second-level _n_dec_ came from _pv1_config.json_ as described above
-    - second-level _n_loss_skip_ came from _pv1_config.json_ as described above
-    - second-level _n_pad_ came from _pv1_config.json_ as described above
-    - second-level _gtype_ came from _pv1_config.json_ as described above
-    - second-level _na_ came from _pv1_config.json_ as described above
-    - second-level _nb_ came from _pv1_config.json_ as described above
-    - second-level _nk_ came from _pv1_config.json_ as described above
-    - second-level _activation_ came from _pv1_config.json_ as described above
-    - second-level _nh1_ came from _pv1_config.json_ as described above
-    - second-level _nh2_ came from _pv1_config.json_ as described above
-    - second-level _COL\_T_ is a vector from _pv1_config.json_ as described above
-    - second-level _COL\_U_ is a vector from _pv1_config.json_ as described above 
-    - second-level _COL\_Y_ is a vector from _pv1_config.json_ as described above
-    - second-level _H\*_ attribute indicates a linear block; this key should match the block position in _type_. There could be zero or more such blocks, but currently one. The discrete time step used for fitting is 1 ms.
-        - third_level _n_in_ attribute is the number of input channels, should match the overall number of HW inputs
-        - third_level _n_out_ attribute is the number of output channels, should match the overall number of HW outputs
-        - third_level _n_k_ attribute is an integer number of delay steps, i.e., number of _t_step_ delays in the output.  Zero or more.
-        - third_level _n_a_ attribute is the number of denominator coefficients
-        - third_level _n_b_ attribute is the number of numerator coefficients
-        - third-level _a_i_j_ attributes are arrays of denominator coefficients, of length equal to polynomial order, beginning with z-1. The implied z0 coefficient is always one.
-            - in the attribute name, _i_ is the output channel number, ranging from 0 to _n_out_ - 1
-            - in the attribute name, _j_ is the input channel number, ranging from 0 to _n_in_ - 1
-        - third-level _b_i_j_ attributes are arrays of numerator coefficients, of length equal to polynomial order, beginning with z-1. The implied z0 coefficient is always zero.
-            - in the attribute name, _i_ is the output channel number, ranging from 0 to _n_out_ - 1
-            - in the attribute name, _j_ is the input channel number, ranging from 0 to _n_in_ - 1
-    - second-level _F\*_ attribute indicates a nonlinear block; this key should match the block position in _type_. There are zero or more such blocks, but currently two.
-        - third_level _activation_ attribute may be _tanh_, _sigmoid_ or _relu_
-        - third_level _n_in_ attribute is the number of input channels
-        - third_level _n_hid_ attribute is the number of neurons in the hidden layer
-        - third_level _n_out_ attribute is the number of output channels
-        - third_level _net.0.weight_ attribute is a 2D array of input layer weight coefficients, one row for each hidden-layer neuron, one column for each input channel
-        - third_level _net.0.bias_ attribute is a 1D array of input layer bias coefficients, one for each hidden-layer neuron
-        - third_level _net.2.weight_ attribute is a 2D array of output layer weight coefficients, one row for each output channel, one column for each hidden-layer neuron
-        - third_level _net.2.bias_ attribute is a 1D array of output layer bias coefficients, one for each output channel
+- _data\_prep_ processes ATP, lab, and newer Simscape outputs into a format form pecblocks
+- _dev_ contains archived examples, scripts, and models for developing the deployable package, and investigating Thevenin vs. Norton model sensitivity (_no longer actively used_)
+- _dll_ contains C/C++ and Python code for standalone evaluation of HWPV models in continuous time domain, using Backward Euler integration
+- _ex1_ contains the first examples of inverter subsystem models (_no longer actively used_)
+- _helics_ contains a co-simulation example with Python federates
+- _hwpv_ contains the primary examples from project publications
+- _initialization_ was used to develop better initialization of the linear _H1_ block (_no longer actively used_).
+- _lcl_ uses phasor arithmetic to calculate voltages and currents at the inverter bridge terminals, from voltages and currents at the PCC. But this is an acausal operation, not good for control design. (_no longer actively used_)
+- _media_ contains graphics of training data sets and output comparisons.
+- _pi_ contains a lightweight model evaluation test for Raspberry Pi, using _numpy_ but not _torch_
+- _pv1_ contains single-phase inverter modeling code, later incorporated into the generalized package for deployment (_no longer actively used_)
+- _simscape_ processes MATLAB/Simscape outputs into a format for pecblocks (_no longer actively used_)
 
 ## License
 
