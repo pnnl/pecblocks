@@ -13,46 +13,105 @@ but also the photovoltaic (PV) array, maximum power point tracking (MPPT), phase
 circuits, battery storage if present, etc. The applications include but may not be limited to solar power inverters, energy
 storage converters, motor drives, and other power electronics equipment.
 
-## User Instructions
-
-See [ReadTheDocs Manual](https://pecblocks.readthedocs.io/en/latest/)
-
-## Developer Instructions
-
-Familiarity with Python, `git` and `sphinx` is expected. The developer may need credentials for this
-project on GitHub, ReadTheDocs, and/or PyPi.
+## Installation
 
 Python 3.7.6 and later have been used for testing. From a command prompt in this directory,
 Install the necessary Python modules with:
 
-- `git clone https://github.com/pnnl/pecblocks.git`
-- `cd pecblocks`
-- `pip install -r requirements.txt`
-- `pip install -e .`
+- ```pip install -r requirements.txt```
+- ```pip install -e .```
 
-The project on ReadTheDocs will re-build automatically upon commits to the git repository. To build and run the documentation locally:
+## Panels-to-Grid MIMO Test Case
 
-- Change to the `docs` subdirectory of your git clone 
-- The first time only, invoke `pip install -r requirements.txt --upgrade-strategy only-if-needed`
-- `make html`
-- From a browser, open the file `docs\_build\html\index.html` from the directory of your git clone
+In the directory _examples/hwpv_, a multiple-input, multiple-output HW model has been
+fitted to the PV panels, MPPT, DC/DC, inverter PWM switching, LCL output filter, and RMS measurements.
+It was based on ATP simulations with five inputs, _G_, _T_, _Ud_, _Fc_, and _Vrms_. A sixth input is
+created as a polynomial feature, defined as _GVrms_. The outputs are _Idc_, _Vdc_, and _Irms_. A
+seventh input is added to indicate the inverter control mode; 0=starting, 1=grid formed, 2=grid following.
 
-To deploy the project on PyPi, staring in the directory of your git clone, where ``setup.py`` is located:
+To run this example, comparing ATP to model output:
 
-- Make sure that the version number in `setup.cfg` and `src\pecblocks\version.py` is new.
-- Invoke `rd /s /q dist` on Windows, or `rm -rf dist` on Linux or Mac OS X
-- Invoke `pip install build` and `pip install twine` if necessary
-- `python -m build`
-- `twine check dist/*` should not show any errors
-- `twine upload -r testpypi dist/*` requires project credentials for pecblocks on test.pypi.org (Note: this will reject if version already exists, also note that testpypi is a separate register to pypi)
-- `pip install -i https://test.pypi.org/simple/ pecblocks==0.0.3` for local testing of the deployable package, example version 0.0.3 (Note: consider doing this in a separate Python test environment)
-- `twine upload dist/*` for final deployment; requires project credentials for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs) to be used.
+    python pv1_import.py
 
-## Example Directories
+To run the example LCL filter:
 
-Directory roadmap.
+    python pv1_lcl.py
 
-## JSON Schema
+### Example Results
+
+![Block Diagram](/examples/hwpv/BlockDiagram.png)
+
+**HW Block Diagram and Normalized RMS Error**
+
+![H1_0_0](/examples/hwpv/H1_0_0.png)
+![H1_0_1](/examples/hwpv/H1_0_1.png)
+![H1_0_2](/examples/hwpv/H1_0_2.png)
+![H1_1_0](/examples/hwpv/H1_1_0.png)
+![H1_1_1](/examples/hwpv/H1_1_1.png)
+![H1_1_2](/examples/hwpv/H1_1_2.png)
+![H1_2_0](/examples/hwpv/H1_2_0.png)
+![H1_2_1](/examples/hwpv/H1_2_1.png)
+![H1_2_2](/examples/hwpv/H1_2_2.png)
+
+**Bode Plots of the MIMO H1 Transfer Function**
+
+The figure below shows an 8-second simulation of inverter startup, followed
+by sequential disturbances in the weather, control variables, and grid resistance.
+Inputs appear on the top row. The AC RMS voltage, _Vrms_, comes from an electrical
+simulation in the Alternative Transients Program (ATP). In the infinite impulse
+response (IIR) simulation from the trained model, _Vrms_ is not available directly,
+but assumed to be _Rgrid_*_Irms_, where _Rgrid_ is pre-defined for the IIR simulation
+and _Irms_ is an IIR output variable. Hence, there is a lag of one time step, 1 ms,
+in _Vrms_ during the IIR simulation. Differences in the ATP and IIR Vrms are partly
+responsible for differences in the ATP and IIR output variables, _Vdc_, _Idc_, and _Irms_.
+
+| Variable | RMSE  |  Mean  |  Rel. Error |
+|:---      |   ---:|    ---:|         ---:|
+|Vdc  | 34.4120 | 365.9086 | 9.40%| 
+|Idc  | 0.4247  | 27.2002  | 1.56%| 
+|Irms | 6.5667  | 45.5142  | 14.43%|
+ 
+Notes to investigate:
+
+- The output variables do not start at zero output. Bias terms in F1 and F2 may cause this, regardless of any zeroed initial conditions on H1, or adjustments to the normalization factors. A back-initialization may fix the problem.
+- There is a change in control mode from "startup" to "grid formed" between 2.0 and 2.1 seconds. This disturbs the output before the first actual disturbance, in G, from 2.4 to 2.5 seconds.
+- The entire simulation could be repeated with control mode constant at 0, and again with control model constant at 1.
+- The discrete-time IIR filter should be replaced with a continuous-time transfer function.
+
+![IIR_Sim](/examples/hwpv/IIR_Filter_Simulation.png)
+
+**System Simulation Using Infinite Impulse Response Filters in Discrete Time Steps**
+
+The figure below shows the AC output variables with an LCL output filter. Because the
+grid impedance is purely resistive, the angle reference at the LCL output is zero
+degrees for the voltage and current, _Vc_ and _Ic_, respectively. The phasor voltage
+and current behind the filter, _Vs_ and _Is_, respectively, are calculated by complex
+arithmetic because the LCL circuit is completely determined. The LCL complex impedances
+are updated with _Fc_ at each time step. In this example, _Fc_ changes from 60 Hz to 63 Hz
+at approximately 4.5 seconds. There is a voltage drop through the LCL filter, from _Vs_ to
+_Vc_, with a small corresponding increase in the output current, _Ic_.
+
+| Case | Lf [mH] | Cf [uF] | Lc [mH] |
+|:---  |     ---:|     ---:|     ---:|
+|1-phs |  2.0000 |    20.0 |  0.4000 | 
+|3-phs |  0.0610 |    19.1 |  0.0367 | 
+
+The 3-phase circuit has parallel damping resistors, _Rf_=91.5 and _Rc_=55.05, providing
+a damping factor of 7.5 for each inductor. The _Cf_ has a series resistance of 0.01.
+
+![LCL_Sim](/examples/hwpv/LCL_Simulation.png)
+
+**System Simulation with LCL Output Filter**
+
+### File Directory
+
+The Python files currently used in this example are:
+
+- _pv1_poly.py_ implements a multi-channel Hammerstein-Wiener architecture.
+- _pv1_import.py_ reads the model for time-step simulation, produces Bode plots, and compares IIR simulation to ATP simulation
+- _pv1_lcl.py_ runs the same case as _pv1_import.py_, with an LCL output filter and plotting the LCL input and output variables.
+
+### JSON Schema
 
 A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains the following in a readable text format.
 
@@ -112,6 +171,17 @@ A sample trained model is provided in _models/pv1_fhf_poly.json_, which contains
         - third_level _net.0.bias_ attribute is a 1D array of input layer bias coefficients, one for each hidden-layer neuron
         - third_level _net.2.weight_ attribute is a 2D array of output layer weight coefficients, one row for each output channel, one column for each hidden-layer neuron
         - third_level _net.2.bias_ attribute is a 1D array of output layer bias coefficients, one for each output channel
+
+### Other Code Files
+
+These Python files are used to train and validate HW models, but the sample data to use them is not located in this repository:
+
+- _common.py_ implements a batch-oriented dataset loader for training.
+- _pv1_export.py_ writes the model coefficients and scaling factors to a single JSON file
+- _pv1_metrics.py_ writes the RMS errors for each output channel, by case and also for the total
+- _pv1_test.py_ plots one or more training datasets, comparing true and estimated outputs
+- _pv1_test_iir.py_ plots one or more training datasets, comparing true and estimated outputs, overlaying the IIR simulation
+- _pv1_training.py_ trains the HW model, determines channel scaling, saves the model to PKL files and a JSON file of scaling factors
 
 ## License
 
