@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "https://github.com/pnnl/pecblocks/docs/schema.json",
+  "$id": "https://github.com/pnnl/pecblocks/docs/config.json",
   "title": "HWPV Model Configuration",
-  "description": "Training and evaluation parameters, includes trained model coefficients.",
+  "description": "Training and evaluation parameters.",
   "type": "object",
   "properties": {
     "name": {
@@ -28,24 +28,6 @@
     "data_path": {
       "description":"",
       "type":"string"
-    },
-    "normfacs": {
-      "description":"Ranges and scaling factors for each channel",
-      "type":"object",
-      "properties": {
-        "key": {
-          "description": "channel name",
-          "type":"string"
-        },
-        "scale": {
-          "description": "scaling factor",
-          "type":"number"
-        },
-        "offset": {
-          "description": "mean",
-          "type":"number"
-        }
-      }
     },
     "lr": {
       "description":"",
@@ -151,10 +133,6 @@
       "items": {
         "type":"string"
       }
-    },
-    "H1": {
-      "description":"linear dynamical operator",
-      "type":"number"
     }
   }
 }

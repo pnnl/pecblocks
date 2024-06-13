@@ -6,10 +6,10 @@ Power Electronic Converter Blocks (pecblocks)
    :caption: Contents:
 
    Overview
-   Examples
    Data
-   api
    schema
+   Examples
+   api
    LICENSE
 
 Indices and tables

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/pnnl/pecblocks/docs/normalization.json",
+  "title": "Normalization Factors",
+  "description": "Map all channels to the range 0-1 per-unit.",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "channel name",
+      "type":"string"
+     },
+     "scale": {
+       "description": "scaling factor",
+       "type":"number"
+     },
+     "offset": {
+       "description": "mean",
+       "type":"number"
+     },
+    "min": {
+      "description": "min",
+      "type":"number"
+    },
+    "max": {
+      "description": "max",
+      "type":"number"
+    }
+  }
+}
+

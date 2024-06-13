@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/pnnl/pecblocks/docs/blockQ1s.json",
+  "title": "Block Q1s",
+  "description": "State transition matrices for H1(s) in continuous time domain.",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "channel name",
+      "type":"string"
+     }
+  }
+}
+

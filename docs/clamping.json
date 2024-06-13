@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/pnnl/pecblocks/docs/clamping.json",
+  "title": "Clamping Losses",
+  "description": "Add clamping losses to the fitting loss.",
+  "type": "object",
+  "properties": {
+    "limit": {
+      "description": "min",
+      "type":"number"
+    },
+    "weight": {
+      "description": "max",
+      "type":"number"
+    }
+  }
+}
+

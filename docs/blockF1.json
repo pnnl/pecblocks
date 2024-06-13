@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/pnnl/pecblocks/docs/blockF1.json",
+  "title": "Block F1 or F2",
+  "description": "Neural network layers for static nonlinearities.",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "channel name",
+      "type":"string"
+     }
+  }
+}
+

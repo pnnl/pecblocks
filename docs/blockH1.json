@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/pnnl/pecblocks/docs/blockH1.json",
+  "title": "Block H1",
+  "description": "Transfer functions for H1(z) in discrete time domain.",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "channel name",
+      "type":"string"
+     }
+  }
+}
+
