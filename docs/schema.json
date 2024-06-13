@@ -1,10 +1,161 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "JSON Schema",
-  "id": "http://example.com/schemas/example.json",
-  "description": "This is just a tiny example of a schema rendered by `sphinx-jsonschema <http://github.com/lnoor/sphinx-jsonschema>`_.\n\nYes that's right you can use *reStructuredText* in a description.",
-  "type": "string",
-  "minLength": 10,
-  "maxLength": 100,
-  "pattern": "^[A-Z]+$"
+  "$id": "https://github.com/pnnl/pecblocks/docs/schema.json",
+  "title": "HWPV Model Configuration",
+  "description": "Training and evaluation parameters, includes trained model coefficients.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description":"Name of this model, usually PV3. Limited to 6 characters for ATP.",
+      "type":"string"
+    },
+    "type": {
+      "description":"Indicates the block structure, typically F1+H1+F2",
+      "type":"string"
+    },
+    "t_step": {
+      "description":"Discretizaton time step",
+      "type":"number"
+    },
+    "model_folder": {
+      "description":"Path name to the exxported model files",
+      "type":"string"
+    },
+    "model_root": {
+      "description":"Root name for the exported model JSON file",
+      "type":"string"
+    },
+    "data_path": {
+      "description":"",
+      "type":"string"
+    },
+    "normfacs": {
+      "description":"Ranges and scaling factors for each channel",
+      "type":"object",
+      "properties": {
+        "key": {
+          "description": "channel name",
+          "type":"string"
+        },
+        "scale": {
+          "description": "scaling factor",
+          "type":"number"
+        },
+        "offset": {
+          "description": "mean",
+          "type":"number"
+        }
+      }
+    },
+    "lr": {
+      "description":"",
+      "type":"number"
+    },
+    "eps": {
+      "description":"",
+      "type":"number"
+    },
+    "h5grp_prefix": {
+      "description":"",
+      "type":"string"
+    },
+    "num_iter": {
+      "description":"",
+      "type":"integer"
+    },
+    "continue_iterations": {
+      "description":"",
+      "type":"boolean"
+    },
+    "print_freq": {
+      "description":"",
+      "type":"integer"
+    },
+    "batch_size": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_validation_pct": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_validation_seed": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_skip": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_trunc": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_dec": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_loss_skip": {
+      "description":"",
+      "type":"integer"
+    },
+    "n_pad": {
+      "description":"",
+      "type":"integer"
+    },
+    "gtype": {
+      "description":"",
+      "type":"string"
+    },
+    "na": {
+      "description":"",
+      "type":"integer"
+    },
+    "nb": {
+      "description":"",
+      "type":"integer"
+    },
+    "nk": {
+      "description":"",
+      "type":"integer"
+    },
+    "activation": {
+      "description":"",
+      "type":"string"
+    },
+    "nh1": {
+      "description":"",
+      "type":"integer"
+    },
+    "nh2": {
+      "description":"",
+      "type":"integer"
+    },
+    "COL_T": {
+      "description":"time point channel name",
+      "type":"array",
+      "items": {
+        "type":"string"
+      }
+    },
+    "COL_U": {
+      "description":"input channel names",
+      "type":"array",
+      "items": {
+        "type":"string"
+      }
+    },
+    "COL_Y": {
+      "description":"output channel names",
+      "type":"array",
+      "items": {
+        "type":"string"
+      }
+    },
+    "H1": {
+      "description":"linear dynamical operator",
+      "type":"number"
+    }
+  }
 }
+
