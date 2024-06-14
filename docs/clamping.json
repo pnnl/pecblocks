@@ -4,15 +4,14 @@
   "title": "Clamping Losses",
   "description": "Add clamping losses to the fitting loss.",
   "type": "object",
-  "properties": {
-    "limit": {
-      "description": "min",
+  "additionalProperties": {
+    "type":"array",
+    "minItems":2,
+    "maxItems":2,
+    "items": {
       "type":"number"
     },
-    "weight": {
-      "description": "max",
-      "type":"number"
-    }
+    "$$description":["Define one set of limits for each output channel.\n", "First value is minimum, second value is maximum."]
   }
 }
 

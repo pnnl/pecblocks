@@ -2,28 +2,33 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/normalization.json",
   "title": "Normalization Factors",
-  "description": "Map all channels to the range 0-1 per-unit.",
+  "description": "Map all channels to the range 0-1 per-unit. pu=val*scale + offset",
   "type": "object",
-  "properties": {
-    "key": {
-      "description": "channel name",
-      "type":"string"
-     },
-     "scale": {
-       "description": "scaling factor",
-       "type":"number"
-     },
-     "offset": {
-       "description": "mean",
-       "type":"number"
-     },
-    "min": {
-      "description": "min",
-      "type":"number"
-    },
-    "max": {
-      "description": "max",
-      "type":"number"
+  "additionalProperties": {
+    "type": "object",
+    "required" : [
+      "scale",
+      "offset",
+      "min",
+      "max"
+    ],
+    "properties": {
+      "scale": {
+        "$$description": ["Scaling factor or weight. After normalization,\n", "the range will be 1.0 over all times and records."],
+        "type":"number"
+      },
+      "offset": {
+        "$$description": ["Mean channel value over all times and records.\n", "Defines the bias or offset in normalization."],
+        "type":"number"
+      },
+      "min": {
+        "description": "Minimum channel value over all times and records.",
+        "type":"number"
+      },
+      "max": {
+        "description": "Maximum channel value over all times and records.",
+        "type":"number"
+      }
     }
   }
 }
