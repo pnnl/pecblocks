@@ -12,6 +12,30 @@
     "weight": {
       "description": "max",
       "type":"number"
+    },
+    "delta": {
+      "description": "max",
+      "type":"number"
+    },
+    "inputs": {
+      "description": "max",
+      "type":"number"
+    },
+    "outputs": {
+      "description": "max",
+      "type":"number"
+    },
+    "GIrms": {
+      "description": "max",
+      "type":"number"
+    },
+    "GVrms": {
+      "description": "max",
+      "type":"number"
+    },
+    "sets": {
+      "description": "max",
+      "type":"number"
     }
   }
 }

@@ -11,7 +11,8 @@
     "items": {
       "type":"number"
     },
-    "$$description":["Define one set of limits for each output channel.\n", "First value is minimum, second value is maximum."]
+    "$$description":["Define one set of limits for each output channel.\n", 
+                     "First value is minimum, second value is maximum."]
   }
 }
 

@@ -14,11 +14,13 @@
     ],
     "properties": {
       "scale": {
-        "$$description": ["Scaling factor or weight. After normalization,\n", "the range will be 1.0 over all times and records."],
+        "$$description": ["Scaling factor or weight. After normalization,\n", 
+                          "the range will be 1.0 over all times and records."],
         "type":"number"
       },
       "offset": {
-        "$$description": ["Mean channel value over all times and records.\n", "Defines the bias or offset in normalization."],
+        "$$description": ["Mean channel value over all times and records.\n", 
+                          "Defines the bias or offset in normalization."],
         "type":"number"
       },
       "min": {

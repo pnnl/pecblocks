@@ -10,126 +10,168 @@
       "type":"string"
     },
     "type": {
-      "description":"Indicates the block structure, typically F1+H1+F2",
+      "description":"Indicates the block structure, typically F1+H1+F2.",
       "type":"string"
     },
     "t_step": {
-      "description":"Discretizaton time step",
+      "description":"Discretization time step, to match the HDF5 file.",
       "type":"number"
     },
     "model_folder": {
-      "description":"Path name to the exxported model files",
+      "description":"Path name to the exported model files.",
       "type":"string"
     },
     "model_root": {
-      "description":"Root name for the exported model JSON file",
+      "description":"Root name for the exported model JSON file.",
       "type":"string"
     },
     "data_path": {
-      "description":"",
+      "description":"Path and filename to the HDF5 data.",
       "type":"string"
     },
     "lr": {
-      "description":"",
+      "description":"Learning rate for the Adam optimizer in *PyTorch*.",
       "type":"number"
     },
     "eps": {
-      "description":"",
+      "description":"Numerical stability parameter for the Adam optimizer in *PyTorch*.",
       "type":"number"
     },
     "h5grp_prefix": {
-      "description":"",
+      "$$description":["Optional prefix to the case or event number in the HDF5\n",
+                       "file, e.g., 'case', 'scope', or ''"],
       "type":"string"
     },
     "num_iter": {
-      "description":"",
+      "description":"Number of epochs to perform in the next training run.",
+      "minimum":1,
       "type":"integer"
     },
     "continue_iterations": {
-      "description":"",
+      "$$description":["Start with the most recently trained model coefficients\n",
+                     "rather than randomized initial model coefficients."],
       "type":"boolean"
     },
     "print_freq": {
-      "description":"",
+      "description":"Number of training epochs between status messages printed to console.",
       "type":"integer"
     },
     "batch_size": {
-      "description":"",
+      "$$description":["The batch size for more efficient training in *PyTorch*.\n",
+                       "Typically no larger than 10% of the number of training cases\n",
+                       "in the HDF5 file."],
+      "minimum":1,
       "type":"integer"
     },
     "n_validation_pct": {
-      "description":"",
+      "$$description":["Percentage of HDF5 cases to reserve for non-optimized validation\n",
+                       "in each epoch"],
+      "minimum":5,
       "type":"integer"
     },
     "n_validation_seed": {
-      "description":"",
+      "$$description":["A number to randomize the selection of HDF5 cases reserved\n",
+                       "for validation"],
       "type":"integer"
     },
     "n_skip": {
-      "description":"",
+      "$$description":["Number of data points to ignore from the start of the HDF5 data\n",
+                       "series, before decimation. Typically 0 unless there is\n",
+                       "a long startup period for each series, as in some EMT simulators."],
+      "minimum":0,
       "type":"integer"
     },
     "n_trunc": {
-      "description":"",
+      "$$description":["Number of data points to ignore from the end of the HDF5 data\n",
+                       "series, before decimation. Typically 0 unless there is\n",
+                       "extraneous data at the end of each series."],
+      "minimum":0,
       "type":"integer"
     },
     "n_dec": {
-      "description":"",
+      "$$description":["Decimation or down-sampling interval of the HDF5 data points\n",
+                       "to the data series used for training.\n",
+                       "Specify 1 for no down-smapling."],
+      "minimum":1,
       "type":"integer"
     },
     "n_loss_skip": {
-      "description":"",
+      "$$description":["Number of decimated points to skip at the beginning of each\n",
+                       "data series for the fitting and validation loss evaluation.\n",
+                       "Typically 50% the value of *n_pad*."],
+      "minimum":0,
       "type":"integer"
     },
     "n_pad": {
-      "description":"",
+      "$$description":["Number of decimated points to pre-pad the training data series\n",
+                       "with initial input and output values. This helps mitigate startup\n",
+                       "transients in the *H1* block. Typically 25% of the number of\n",
+                       "decimated points in the training data series."],
+      "minimum":0,
       "type":"integer"
     },
     "gtype": {
-      "description":"",
+      "description":"Linear filter form of the *H1* block.",
+      "enum":["iir", "fir", "stable2ndx", "stable2nd"],
       "type":"string"
     },
     "na": {
-      "description":"",
+      "$$description":["Number of trainable denominator coefficients in *H1*.\n",
+                       "Excludes *a0=1*. Specify *2* for the *stable2nd* or\n",
+                       "*stable2ndx* *gtype*."],
+      "minimum":1,
       "type":"integer"
     },
     "nb": {
-      "description":"",
+      "$$description":["Number of trainable numerator coefficients in *H1*.\n",
+                       "Specify *3* for the *stable2nd* or *stable2ndx* *gtype*."],
+      "minimum":1,
       "type":"integer"
     },
     "nk": {
-      "description":"",
+      "description":"Number of delay steps in the output of *H1*.",
+      "minimum":0,
       "type":"integer"
     },
     "activation": {
-      "description":"",
+      "description":"Nonlinear activation function in the *F1* and *F2* blocks.",
+      "enum":["tanh", "sigmoid", "relu"],
       "type":"string"
     },
     "nh1": {
-      "description":"",
+      "$$description":["Number of hidden layer cells in the *F1* block.\n",
+                       "Approximately equal to number of inputs, *len(COL_U)*."],
       "type":"integer"
     },
     "nh2": {
-      "description":"",
+      "$$description":["Number of hidden layer cells in the *F2* block.\n",
+                       "Approximately equal to number of outputs, *len(COL_Y)*."],
       "type":"integer"
     },
     "COL_T": {
-      "description":"time point channel name",
+      "description":"Time point channel name, usually *t*",
       "type":"array",
+      "minItems":1,
+      "maxItems":1,
       "items": {
         "type":"string"
       }
     },
     "COL_U": {
-      "description":"input channel names",
+      "$$description":["Input channel names, minimally *Vd* and *Vq* for a Norton model,\n",
+                       "or *Id* and *Iq* for a Thevenin model. Usually *G*, *T*, *Ctl*, *Fc*, *Ud*, *Uq*,\n",
+                       "*GVrms* for a Norton model, *GIrms* for a Thevenin model."],
       "type":"array",
+      "minItems":2,
       "items": {
         "type":"string"
       }
     },
     "COL_Y": {
-      "description":"output channel names",
+      "$$description":["Output channel names, minimally *Id* and *Iq* for a Norton model,\n",
+                       "or *Vd* and *Vq* for a Thevenin model. Usually *Vdc* and *Idc*."],
       "type":"array",
+      "minItems":2,
       "items": {
         "type":"string"
       }
