@@ -2,7 +2,9 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/normalization.json",
   "title": "Normalization Factors",
-  "description": "Map all channels to the range 0-1 per-unit. pu=val*scale + offset",
+  "$$description": ["Map all channels to the range 0-1 per-unit. *pu = val * scale + offset*\n",
+                    "This object is unnamed in a standalone *normfacs.json* file.\n",
+                    "Must be named **normfacs** when part of a *model_fhf.json* file."],
   "type": "object",
   "additionalProperties": {
     "type": "object",

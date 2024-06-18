@@ -5,10 +5,62 @@
   "description": "Neural network layers for static nonlinearities.",
   "type": "object",
   "properties": {
-    "key": {
-      "description": "channel name",
+    "n_in": {
+      "description": "Number of input channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_hid": {
+      "description": "Number of neurons in the hidden layer.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_out": {
+      "description": "Number of output channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "activation": {
+      "description": "Activation function type for the neurons.",
+      "enum":["tanh", "sigmoid", "relu"],
       "type":"string"
-     }
+    },
+    "net.0.weight": {
+      "description": "2D array of weights for the input layer, *n_hid* rows.",
+      "type":"array",
+      "items":{
+        "type":"array",
+        "description": "*n_in* columns",
+        "items":{
+          "type":"number"
+        }
+      }
+    },
+    "net.0.bias": {
+      "description": "1D array of bias values for the input layer, *n_hid* rows.",
+      "type":"array",
+      "items":{
+        "type":"number"
+      }
+    },
+    "net.2.weight": {
+      "description": "2D array of weights for the output layer, *n_out* rows.",
+      "type":"array",
+      "items":{
+        "type":"array",
+        "description": "*n_hid* columns",
+        "items":{
+          "type":"number"
+        }
+      }
+    },
+    "net.2.bias": {
+      "description": "1D array of bias values for the output layer, *n_out* rows.",
+      "type":"array",
+      "items":{
+        "type":"number"
+      }
+    }
   }
 }
 

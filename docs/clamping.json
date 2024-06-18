@@ -2,7 +2,8 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/clamping.json",
   "title": "Clamping Losses",
-  "description": "Add clamping losses to the fitting loss.",
+  "$$description": ["Add clamping losses to the fitting loss.\n",
+                    "The name of this object must be **clamping**."],
   "type": "object",
   "additionalProperties": {
     "type":"array",

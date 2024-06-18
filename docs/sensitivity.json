@@ -2,40 +2,120 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/sensitivity.json",
   "title": "Sensitivity Losses",
-  "description": "Add sensitivity losses to the fitting loss.",
+  "$$description": ["Add sensitivity losses to the fitting loss.\n",
+                    "The name of this object must be **sensitivity**."],
   "type": "object",
   "properties": {
     "limit": {
-      "description": "min",
+      "$$description": ["Maximum value for partial derivatives, *outputs* w.r.t. *inputs*\n",
+                        "Units are ohms for a Norton model, mhos for a Thevenin model.\n",
+                        "(**Deprecated** in favor of the *weight* attribute because\n",
+                        "a stiff limit causes discontinuity in fitting loss vs. epoch)."],
       "type":"number"
     },
     "weight": {
-      "description": "max",
+      "$$description": ["Per-unit multiplier for sensitivity loss added to fitting loss\n",
+                        "contributions to the total loss in each epoch. Use 0.001 as a\n",
+                        "starting value, then adjust so that contributions of the fitting\n",
+                        "and sensitivity losses, as shown in the log, are about equal."],
       "type":"number"
     },
     "delta": {
-      "description": "max",
+      "$$description": ["Change in the *input* values used to numerically estimate\n",
+                        "partial derivatives, *outputs* w.r.t. *inputs*. Units are the\n",
+                        "same as for *input* columns. Use about 0.001 of the *input* range."],
       "type":"number"
     },
     "inputs": {
       "description": "max",
-      "type":"number"
+      "type":"array",
+      "minItems":2,
+      "maxItems":2,
+      "items":{
+        "type":"string"
+      },
+      "$$description":["Column or channel names from *COL_U*.\n",
+                       "Typically *Vd* and *Vq* for a Norton model.\n",
+                       "Typically *Id* and *Iq* for a Thevenin model."]
     },
     "outputs": {
       "description": "max",
-      "type":"number"
+      "type":"array",
+      "minItems":2,
+      "maxItems":2,
+      "items":{
+        "type":"string"
+      },
+      "$$description":["Column or channel names from *COL_Y*.\n",
+                       "Typically *Id* and *Iq* for a Norton model.\n",
+                       "Typically *Vd* and *Vq* for a Thevenin model."]
     },
     "GIrms": {
-      "description": "max",
-      "type":"number"
+      "$$description": ["Defines the polynomial feature for Thevenin models.\n",
+                        "This input varies with *Id* and *Iq*.\n",
+                        "Unused for Norton models."],
+      "type":"object",
+      "properties": {
+        "G": {
+          "description": "Name of solar irradiance *input* channel, e.g., *G*",
+          "type":"string"
+        },
+        "Id": {
+          "description": "Name of d-axis current *input* channel, e.g., *Id*",
+          "type":"string"
+        },
+        "Iq": {
+          "description": "Name of q-axis current *input* channel, e.g., *Iq*",
+          "type":"string"
+        },
+        "k": {
+          "$$description": ["Multiplier for *Irms* from *Id* and *Iq*.\n",
+                            "Use *sqrt(3/2)* for three-phase, 1 for single-phase."],
+          "type":"number"
+        }
+      }
     },
     "GVrms": {
-      "description": "max",
-      "type":"number"
+      "$$description": ["Defines the polynomial feature for Norton models.\n",
+                        "This input varies with *Vd* and *Vq*.\n",
+                        "Unused for Thevenin models."],
+      "type":"object",
+      "properties": {
+        "G": {
+          "description": "Name of solar irradiance *input* channel, e.g., *G*",
+          "type":"string"
+        },
+        "Vd": {
+          "description": "Name of d-axis voltage *input* channel, e.g., *Vd*",
+          "type":"string"
+        },
+        "Vq": {
+          "description": "Name of q-axis voltage *input* channel, e.g., *Vq*",
+          "type":"string"
+        },
+        "k": {
+          "$$description": ["Multiplier for *Vrms* from *Vd* and *Vq*.\n",
+                            "Use *sqrt(3/2)* for three-phase, 1 for single-phase."],
+          "type":"number"
+        }
+      }
     },
     "sets": {
-      "description": "max",
-      "type":"number"
+      "$$description": ["Defines the baseline operating points for evaluating the model\n",
+                        "sensitivities, i.e., partial derivatives of the *outputs* w.r.t.\n",
+                        "*inputs* at each epoch. There should be one *set* for each\n",
+                        "channel in *COL_U*, excluding the polynomial feature *GVrms* or\n",
+                        "*GIrms*. Polynomial features are calculated from the other channels."],
+      "type": "object",
+      "additionalProperties": {
+        "type":"array",
+        "minItems":1,
+        "items": {
+          "type":"number"
+        },
+        "$$description":["Data values to use for this *input* channel in evaluating the\n", 
+                         "sensitivity. Use judiciously to avoid combinatorial explosion."]
+      }
     }
   }
 }

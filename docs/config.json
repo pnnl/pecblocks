@@ -2,7 +2,8 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/config.json",
   "title": "HWPV Model Configuration",
-  "description": "Training and evaluation parameters.",
+  "$$description": ["Training and evaluation parameters.\n",
+                    "This object is un-named, but it may have optional named objects **clamping** and **sensitivity**."],
   "type": "object",
   "properties": {
     "name": {

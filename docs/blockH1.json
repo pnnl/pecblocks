@@ -2,13 +2,53 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/blockH1.json",
   "title": "Block H1",
-  "description": "Transfer functions for H1(z) in discrete time domain.",
+  "$$description": ["Multiple-input multiple-output (MIMO)\n",
+                    "transfer functions for H1(z) in discrete time domain.\n",
+                    "Defined pair-wise between input and output channels."],
   "type": "object",
   "properties": {
-    "key": {
-      "description": "channel name",
-      "type":"string"
-     }
+    "n_in": {
+      "description": "Number of input channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_out": {
+      "description": "Number of output channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_b": {
+      "description": "Number of learnable numerator coefficients in each H(z).",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_a": {
+      "$$description": ["Number of learnable denominator coefficients in each H(z).\n",
+                        "In addition, *a0=1* should be included; it's not learnable."],
+      "type":"integer",
+      "minimum":1
+    },
+    "n_k": {
+      "description": "Number of delay steps in the output.",
+      "type":"integer",
+      "minimum":0
+    },
+    "additionalProperties": {
+      "type":"array",
+      "minItems":1,
+      "items": {
+        "type":"number"
+      },
+      "$$description":["Defines the coefficients by increasing order of *z^(-1)*.\n", 
+                       "Numerator coefficients are in objects named *b_i_j*, and\n",
+                       "Denominator coefficients are in objects named *a_i_j*, where\n",
+                       "*i* is the output channel number, *0..n_out-1*, and\n",
+                       "*j* is the input channel number, *0..n_in-1*.\n",
+                       "(For *stable2nd* and *stable2ndx* models, the named objects\n",
+                       "*alpha1_i_j* and *alpha2_i_j* also appear. These are defined\n",
+                       "for model training only, and not necessary for model evaluation.\n",
+                       "Their types are *number*, not *array*.)"]
+    }
   }
 }
 

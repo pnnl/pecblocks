@@ -2,13 +2,42 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/blockQ1s.json",
   "title": "Block Q1s",
-  "description": "State transition matrices for H1(s) in continuous time domain.",
+  "$$description": ["State transition matrices for H1(s) in continuous time domain.\n",
+                    "The state-space form is *Ax_dot + Bu = x*, *y = Cx + Du*.\n",
+                    "These are serialized as **numpy arrays**, squeezed to lists which cannot be validated in JSON Schema.\n",
+                    "Defined pair-wise between multiple input and multiple output (MIMO) channels."],
   "type": "object",
   "properties": {
-    "key": {
-      "description": "channel name",
-      "type":"string"
-     }
+    "n_in": {
+      "description": "Number of input channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_out": {
+      "description": "Number of output channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_b": {
+      "description": "**TODO**: remove for state-space model",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_a": {
+      "description": "**TODO**: remove for state-space model",
+      "type":"integer",
+      "minimum":1
+    },
+    "additionalProperties": {
+      "type":"numpy array",
+      "minItems":1,
+      "items": {
+        "type":"number"
+      },
+      "$$description":["Matrices in objects named *A_i_j*, *B_i_j*, *C_i_j*, and *D_i_j*, where\n",
+                       "*i* is the output channel number, *0..n_out-1*, and\n",
+                       "*j* is the input channel number, *0..n_in-1*.\n"]
+    }
   }
 }
 

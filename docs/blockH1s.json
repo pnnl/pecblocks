@@ -2,13 +2,42 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/pnnl/pecblocks/docs/blockH1s.json",
   "title": "Block H1s",
-  "description": "Transfer functions for H1(s) in continuous time domain.",
+  "$$description": ["Multiple-input multiple-output (MIMO) transfer functions for H1(s) in continuous time domain.\n",
+                    "Defined pair-wise between input and output channels."],
   "type": "object",
   "properties": {
-    "key": {
-      "description": "channel name",
-      "type":"string"
-     }
+    "n_in": {
+      "description": "Number of input channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_out": {
+      "description": "Number of output channels for this block.",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_b": {
+      "description": "Number of numerator coefficients in each H(s).",
+      "type":"integer",
+      "minimum":1
+    },
+    "n_a": {
+      "description": "Number of denominator coefficients in each H(s).",
+      "type":"integer",
+      "minimum":1
+    },
+    "additionalProperties": {
+      "type":"array",
+      "minItems":1,
+      "items": {
+        "type":"number"
+      },
+      "$$description":["Defines the coefficients by increasing order of *s*, beginning with 0.\n", 
+                       "Numerator coefficients are in objects named *b_i_j*, and\n",
+                       "Denominator coefficients are in objects named *a_i_j*, where\n",
+                       "*i* is the output channel number, *0..n_out-1*, and\n",
+                       "*j* is the input channel number, *0..n_in-1*.\n"]
+    }
   }
 }
 
