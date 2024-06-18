@@ -49,7 +49,12 @@ To deploy the project on PyPi, staring in the directory of your git clone, where
 - `pip install -i https://test.pypi.org/simple/ pecblocks==0.0.3` for local testing of the deployable package, example version 0.0.3 (Note: consider doing this in a separate Python test environment)
 - `twine upload dist/*` for final deployment; requires project credentials for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs to be used.
 
-## Example Directories
+## Directories
+
+- _data_ contains the training data used in project publications and examples
+- _docs_ contains the source files for user documentation
+- _examples_ contains the end-user scripts and configuration files to run various examples
+- _src_ contains the Python package code to be deployed on PyPi
 
 In the _examples_ subdirectory:
 

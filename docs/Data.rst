@@ -33,8 +33,8 @@ Data from EMT
 * The HDF5 file may include extra channels with no impact on the model training process. The JSON configuration file specifies which input and output channels to use in the model; other channels are ignored.
 * The training dataset should encompass the expected range of operation for all input and output channels. Typically, hundreds or thousands of cases are necessary for a good model. The model outputs may deviate substantially from expected behavior if the inputs deviate from the ranges that the model was trained for.
 * The training data should initialize smoothly, and settle to stable final values.
-* Use  `h5view.py <https://github.com/pnnl/pecblocks/tree/master/examples/data_prep/h5view.py>`_ to verify proper structure of an HDF5 file, before using it for training.
-* Use a script like `UCFTrainingPlot.py <https://github.com/pnnl/pecblocks/tree/master/examples/data_prep/UCFTrainingPlot.py>`_ to verify the range of channel values in an HDF5 file, before using it for training.
+* Use  `h5view.py <https://github.com/pnnl/pecblocks/tree/master/data/h5view.py>`_ to verify proper structure of an HDF5 file, before using it for training.
+* Use a script like `TrainingDataPlot.py <https://github.com/pnnl/pecblocks/tree/master/data/TrainingDataPlot.py>`_ to verify the range of channel values in an HDF5 file, before using it for training.
 
 The EMT solvers and laboratory transient recorders generally do not save 
 data in HDF5 format. It's necessary to convert their *native data format* to 
