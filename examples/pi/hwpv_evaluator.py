@@ -193,6 +193,7 @@ class model():
       print ('SFE A\n', self.A)
       print ('SFE B\n', self.B)
       print ('SFE C\n', self.C)
+      print ('SFE D\n', self.D)
       print ('SFE q\n', self.q)
 
   def step_simulation_sfe (self, T, G, Fc, Md, Mq, Vrms, GVrms, Ctl, h, log=False):
@@ -223,6 +224,10 @@ class model():
     self.q = np.linalg.solve (self.A, -self.B * y_non)
     if log:
       print ('Backward Euler Method, LU Decomposition = {:s}, initial states:\n'.format (str(LU_DECOMP)), self.q)
+      print ('SBE A\n', self.A)
+      print ('SBE B\n', self.B)
+      print ('SBE C\n', self.C)
+      print ('SBE D\n', self.D)
 
     self.ysum = np.zeros(self.nout)
     if LU_DECOMP:
@@ -250,11 +255,13 @@ class model():
           rhs = self.q[i,j] + self.B[i,j] * y_non[j] * h
           self.q[i,j] = la.lu_solve ((self.lu[i,j], self.piv[i,j]), rhs)
           self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+          self.ysum[i] += self.D[i,j] * y_non[j]
     else:
       for i in range(self.nout):
         for j in range(self.nout):
           self.q[i,j] = np.linalg.solve (self.lhs[i,j], self.q[i,j] + self.B[i,j] * y_non[j] * h)
           self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+          self.ysum[i] += self.D[i,j] * y_non[j]
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
 
     if log:

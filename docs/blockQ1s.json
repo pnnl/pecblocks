@@ -19,12 +19,12 @@
       "minimum":1
     },
     "n_b": {
-      "description": "**TODO**: remove for state-space model",
+      "description": "Number of columns in the *A* matrix.",
       "type":"integer",
       "minimum":1
     },
     "n_a": {
-      "description": "**TODO**: remove for state-space model",
+      "description": "Number of rows in the *A* matrix.",
       "type":"integer",
       "minimum":1
     },

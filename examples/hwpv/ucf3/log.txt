@@ -1,0 +1,247 @@
+C:\src\pecblocks\examples\hwpv>python pv3_training.py ucf3_config.json
+model_folder = ./ucf3/
+model_root = ucf3
+data_path = ../../data/ucf3.hdf5
+idx_in [0, 1, 2, 3, 4, 5, 6]
+idx_out [7, 8, 9, 10]
+read 1500 dataframes
+dt=0.010000 data_len=401 n_io=11 n_case=1500
+['G', 'Ud', 'Uq', 'Vd', 'Vq', 'GVrms', 'Ctrl'] ['Vdc', 'Idc', 'Id', 'Iq'] (1500, 401, 11)
+shapes of t (401,) data_train (1500, 401, 11) n_in=7, n_out=4
+t range 0.000000 to 4.000000
+Before Scaling:
+Column       Min       Max      Mean     Range
+G         -0.000   999.995   811.581   999.995
+Ud         0.800     1.200     1.011     0.400
+Uq        -0.499     0.501    -0.006     1.000
+Vd         0.000   337.082   219.318   337.082
+Vq      -150.297   139.415    -6.328   289.712
+GVrms     -0.000 414899.656 253630.828 414899.656
+Ctrl       0.000     1.000     0.748     1.000
+Vdc        0.000   628.176   461.755   628.176
+Idc        0.000     4.834     1.992     4.834
+Id         0.000     5.783     2.681     5.783
+Iq        -2.635     2.342    -0.080     4.977
+After Scaling:
+Column       Min       Max      Mean     Range     Scale    Offset
+G         -0.812     0.188     0.000     1.000   999.995   811.581
+Ud        -0.527     0.473    -0.000     1.000     0.400     1.011
+Uq        -0.493     0.507    -0.000     1.000     1.000    -0.006
+Vd        -0.651     0.349     0.000     1.000   337.082   219.318
+Vq        -0.497     0.503    -0.000     1.000   289.712    -6.328
+GVrms     -0.611     0.389     0.000     1.000 414899.656 253630.828
+Ctrl      -0.748     0.252     0.000     1.000     1.000     0.748
+Vdc       -0.735     0.265     0.000     1.000   628.176   461.755
+Idc       -0.412     0.588     0.000     1.000     4.834     1.992
+Id        -0.464     0.536     0.000     1.000     5.783     2.681
+Iq        -0.513     0.487     0.000     1.000     4.977    -0.080
+make_mimo_block iir
+prepending initial conditions (1500, 100, 11) (1500, 401, 11) float32 float32
+results in (1500, 501, 11)
+Dataset split: 1500 1275 225 validation_scale=5.667
+Average loss scaling: ntrain=1275, nbatch=50, average_loss_divisor=51.000
+Epoch    0 of 2000 | TrLoss     1.423436 | VldLoss     1.288962 | SensLoss     0.000000 | RMSE       0.2306 | Sigma       0.0000
+Epoch   10 of 2000 | TrLoss     0.101921 | VldLoss     0.113705 | SensLoss     0.000000 | RMSE       0.0650 | Sigma       0.0000
+Epoch   20 of 2000 | TrLoss     0.094685 | VldLoss     0.104819 | SensLoss     0.000000 | RMSE       0.0625 | Sigma       0.0000
+Epoch   30 of 2000 | TrLoss     0.091034 | VldLoss     0.101706 | SensLoss     0.000000 | RMSE       0.0615 | Sigma       0.0000
+Epoch   40 of 2000 | TrLoss     0.087818 | VldLoss     0.096590 | SensLoss     0.000000 | RMSE       0.0601 | Sigma       0.0000
+Epoch   50 of 2000 | TrLoss     0.069893 | VldLoss     0.074278 | SensLoss     0.000000 | RMSE       0.0532 | Sigma       0.0000
+Epoch   60 of 2000 | TrLoss     0.063773 | VldLoss     0.065859 | SensLoss     0.000000 | RMSE       0.0504 | Sigma       0.0000
+Epoch   70 of 2000 | TrLoss     0.060425 | VldLoss     0.063242 | SensLoss     0.000000 | RMSE       0.0492 | Sigma       0.0000
+Epoch   80 of 2000 | TrLoss     0.057319 | VldLoss     0.058942 | SensLoss     0.000000 | RMSE       0.0477 | Sigma       0.0000
+Epoch   90 of 2000 | TrLoss     0.053068 | VldLoss     0.055314 | SensLoss     0.000000 | RMSE       0.0461 | Sigma       0.0000
+Epoch  100 of 2000 | TrLoss     0.044239 | VldLoss     0.044279 | SensLoss     0.000000 | RMSE       0.0417 | Sigma       0.0000
+Epoch  110 of 2000 | TrLoss     0.038251 | VldLoss     0.040348 | SensLoss     0.000000 | RMSE       0.0393 | Sigma       0.0000
+Epoch  120 of 2000 | TrLoss     0.034489 | VldLoss     0.034659 | SensLoss     0.000000 | RMSE       0.0368 | Sigma       0.0000
+Epoch  130 of 2000 | TrLoss     0.034433 | VldLoss     0.034513 | SensLoss     0.000000 | RMSE       0.0368 | Sigma       0.0000
+Epoch  140 of 2000 | TrLoss     0.031263 | VldLoss     0.033369 | SensLoss     0.000000 | RMSE       0.0356 | Sigma       0.0000
+Epoch  150 of 2000 | TrLoss     0.028913 | VldLoss     0.028224 | SensLoss     0.000000 | RMSE       0.0335 | Sigma       0.0000
+Epoch  160 of 2000 | TrLoss     0.026590 | VldLoss     0.029533 | SensLoss     0.000000 | RMSE       0.0332 | Sigma       0.0000
+Epoch  170 of 2000 | TrLoss     0.027099 | VldLoss     0.028116 | SensLoss     0.000000 | RMSE       0.0329 | Sigma       0.0000
+Epoch  180 of 2000 | TrLoss     0.024474 | VldLoss     0.025556 | SensLoss     0.000000 | RMSE       0.0313 | Sigma       0.0000
+Epoch  190 of 2000 | TrLoss     0.024325 | VldLoss     0.026001 | SensLoss     0.000000 | RMSE       0.0314 | Sigma       0.0000
+Epoch  200 of 2000 | TrLoss     0.026904 | VldLoss     0.028616 | SensLoss     0.000000 | RMSE       0.0330 | Sigma       0.0000
+Epoch  210 of 2000 | TrLoss     0.023783 | VldLoss     0.029854 | SensLoss     0.000000 | RMSE       0.0324 | Sigma       0.0000
+Epoch  220 of 2000 | TrLoss     0.022533 | VldLoss     0.022636 | SensLoss     0.000000 | RMSE       0.0298 | Sigma       0.0000
+Epoch  230 of 2000 | TrLoss     0.020456 | VldLoss     0.020792 | SensLoss     0.000000 | RMSE       0.0284 | Sigma       0.0000
+Epoch  240 of 2000 | TrLoss     0.018366 | VldLoss     0.020934 | SensLoss     0.000000 | RMSE       0.0278 | Sigma       0.0000
+Epoch  250 of 2000 | TrLoss     0.016805 | VldLoss     0.019318 | SensLoss     0.000000 | RMSE       0.0266 | Sigma       0.0000
+Epoch  260 of 2000 | TrLoss     0.015838 | VldLoss     0.018321 | SensLoss     0.000000 | RMSE       0.0259 | Sigma       0.0000
+Epoch  270 of 2000 | TrLoss     0.014587 | VldLoss     0.016903 | SensLoss     0.000000 | RMSE       0.0248 | Sigma       0.0000
+Epoch  280 of 2000 | TrLoss     0.013926 | VldLoss     0.016537 | SensLoss     0.000000 | RMSE       0.0244 | Sigma       0.0000
+Epoch  290 of 2000 | TrLoss     0.012210 | VldLoss     0.013209 | SensLoss     0.000000 | RMSE       0.0223 | Sigma       0.0000
+Epoch  300 of 2000 | TrLoss     0.010827 | VldLoss     0.015470 | SensLoss     0.000000 | RMSE       0.0227 | Sigma       0.0000
+Epoch  310 of 2000 | TrLoss     0.010158 | VldLoss     0.012973 | SensLoss     0.000000 | RMSE       0.0213 | Sigma       0.0000
+Epoch  320 of 2000 | TrLoss     0.009972 | VldLoss     0.011054 | SensLoss     0.000000 | RMSE       0.0203 | Sigma       0.0000
+Epoch  330 of 2000 | TrLoss     0.008728 | VldLoss     0.011887 | SensLoss     0.000000 | RMSE       0.0201 | Sigma       0.0000
+Epoch  340 of 2000 | TrLoss     0.008070 | VldLoss     0.008549 | SensLoss     0.000000 | RMSE       0.0181 | Sigma       0.0000
+Epoch  350 of 2000 | TrLoss     0.007374 | VldLoss     0.007916 | SensLoss     0.000000 | RMSE       0.0173 | Sigma       0.0000
+Epoch  360 of 2000 | TrLoss     0.007782 | VldLoss     0.007590 | SensLoss     0.000000 | RMSE       0.0174 | Sigma       0.0000
+Epoch  370 of 2000 | TrLoss     0.007026 | VldLoss     0.007086 | SensLoss     0.000000 | RMSE       0.0166 | Sigma       0.0000
+Epoch  380 of 2000 | TrLoss     0.007842 | VldLoss     0.007784 | SensLoss     0.000000 | RMSE       0.0175 | Sigma       0.0000
+Epoch  390 of 2000 | TrLoss     0.006201 | VldLoss     0.007057 | SensLoss     0.000000 | RMSE       0.0161 | Sigma       0.0000
+Epoch  400 of 2000 | TrLoss     0.006007 | VldLoss     0.007014 | SensLoss     0.000000 | RMSE       0.0160 | Sigma       0.0000
+Epoch  410 of 2000 | TrLoss     0.006591 | VldLoss     0.006563 | SensLoss     0.000000 | RMSE       0.0161 | Sigma       0.0000
+Epoch  420 of 2000 | TrLoss     0.006181 | VldLoss     0.006043 | SensLoss     0.000000 | RMSE       0.0155 | Sigma       0.0000
+Epoch  430 of 2000 | TrLoss     0.006242 | VldLoss     0.008866 | SensLoss     0.000000 | RMSE       0.0172 | Sigma       0.0000
+Epoch  440 of 2000 | TrLoss     0.006665 | VldLoss     0.008792 | SensLoss     0.000000 | RMSE       0.0174 | Sigma       0.0000
+Epoch  450 of 2000 | TrLoss     0.006625 | VldLoss     0.006405 | SensLoss     0.000000 | RMSE       0.0160 | Sigma       0.0000
+Epoch  460 of 2000 | TrLoss     0.005401 | VldLoss     0.005557 | SensLoss     0.000000 | RMSE       0.0147 | Sigma       0.0000
+Epoch  470 of 2000 | TrLoss     0.005966 | VldLoss     0.007313 | SensLoss     0.000000 | RMSE       0.0161 | Sigma       0.0000
+Epoch  480 of 2000 | TrLoss     0.006422 | VldLoss     0.005666 | SensLoss     0.000000 | RMSE       0.0154 | Sigma       0.0000
+Epoch  490 of 2000 | TrLoss     0.006829 | VldLoss     0.006161 | SensLoss     0.000000 | RMSE       0.0160 | Sigma       0.0000
+Epoch  500 of 2000 | TrLoss     0.006557 | VldLoss     0.005213 | SensLoss     0.000000 | RMSE       0.0152 | Sigma       0.0000
+Epoch  510 of 2000 | TrLoss     0.015725 | VldLoss     0.013859 | SensLoss     0.000000 | RMSE       0.0241 | Sigma       0.0000
+Epoch  520 of 2000 | TrLoss     0.005287 | VldLoss     0.005499 | SensLoss     0.000000 | RMSE       0.0145 | Sigma       0.0000
+Epoch  530 of 2000 | TrLoss     0.007411 | VldLoss     0.009358 | SensLoss     0.000000 | RMSE       0.0181 | Sigma       0.0000
+Epoch  540 of 2000 | TrLoss     0.004878 | VldLoss     0.005059 | SensLoss     0.000000 | RMSE       0.0140 | Sigma       0.0000
+Epoch  550 of 2000 | TrLoss     0.005021 | VldLoss     0.006863 | SensLoss     0.000000 | RMSE       0.0153 | Sigma       0.0000
+Epoch  560 of 2000 | TrLoss     0.004789 | VldLoss     0.004892 | SensLoss     0.000000 | RMSE       0.0138 | Sigma       0.0000
+Epoch  570 of 2000 | TrLoss     0.005140 | VldLoss     0.007148 | SensLoss     0.000000 | RMSE       0.0155 | Sigma       0.0000
+Epoch  580 of 2000 | TrLoss     0.004984 | VldLoss     0.005095 | SensLoss     0.000000 | RMSE       0.0141 | Sigma       0.0000
+Epoch  590 of 2000 | TrLoss     0.004282 | VldLoss     0.004495 | SensLoss     0.000000 | RMSE       0.0131 | Sigma       0.0000
+Epoch  600 of 2000 | TrLoss     0.004607 | VldLoss     0.005880 | SensLoss     0.000000 | RMSE       0.0143 | Sigma       0.0000
+Epoch  610 of 2000 | TrLoss     0.004408 | VldLoss     0.004701 | SensLoss     0.000000 | RMSE       0.0134 | Sigma       0.0000
+Epoch  620 of 2000 | TrLoss     0.004258 | VldLoss     0.004319 | SensLoss     0.000000 | RMSE       0.0130 | Sigma       0.0000
+Epoch  630 of 2000 | TrLoss     0.005223 | VldLoss     0.006649 | SensLoss     0.000000 | RMSE       0.0153 | Sigma       0.0000
+Epoch  640 of 2000 | TrLoss     0.004264 | VldLoss     0.004177 | SensLoss     0.000000 | RMSE       0.0129 | Sigma       0.0000
+Epoch  650 of 2000 | TrLoss     0.004074 | VldLoss     0.004468 | SensLoss     0.000000 | RMSE       0.0129 | Sigma       0.0000
+Epoch  660 of 2000 | TrLoss     0.004946 | VldLoss     0.007017 | SensLoss     0.000000 | RMSE       0.0153 | Sigma       0.0000
+Epoch  670 of 2000 | TrLoss     0.004220 | VldLoss     0.004316 | SensLoss     0.000000 | RMSE       0.0129 | Sigma       0.0000
+Epoch  680 of 2000 | TrLoss     0.004691 | VldLoss     0.006028 | SensLoss     0.000000 | RMSE       0.0145 | Sigma       0.0000
+Epoch  690 of 2000 | TrLoss     0.004365 | VldLoss     0.004010 | SensLoss     0.000000 | RMSE       0.0128 | Sigma       0.0000
+Epoch  700 of 2000 | TrLoss     0.004782 | VldLoss     0.005459 | SensLoss     0.000000 | RMSE       0.0142 | Sigma       0.0000
+Epoch  710 of 2000 | TrLoss     0.004021 | VldLoss     0.003812 | SensLoss     0.000000 | RMSE       0.0124 | Sigma       0.0000
+Epoch  720 of 2000 | TrLoss     0.004669 | VldLoss     0.007328 | SensLoss     0.000000 | RMSE       0.0153 | Sigma       0.0000
+Epoch  730 of 2000 | TrLoss     0.005181 | VldLoss     0.004800 | SensLoss     0.000000 | RMSE       0.0140 | Sigma       0.0000
+Epoch  740 of 2000 | TrLoss     0.004687 | VldLoss     0.004601 | SensLoss     0.000000 | RMSE       0.0135 | Sigma       0.0000
+Epoch  750 of 2000 | TrLoss     0.003741 | VldLoss     0.004004 | SensLoss     0.000000 | RMSE       0.0123 | Sigma       0.0000
+Epoch  760 of 2000 | TrLoss     0.003846 | VldLoss     0.003815 | SensLoss     0.000000 | RMSE       0.0123 | Sigma       0.0000
+Epoch  770 of 2000 | TrLoss     0.003798 | VldLoss     0.003683 | SensLoss     0.000000 | RMSE       0.0121 | Sigma       0.0000
+Epoch  780 of 2000 | TrLoss     0.003775 | VldLoss     0.003777 | SensLoss     0.000000 | RMSE       0.0122 | Sigma       0.0000
+Epoch  790 of 2000 | TrLoss     0.004135 | VldLoss     0.004066 | SensLoss     0.000000 | RMSE       0.0127 | Sigma       0.0000
+Epoch  800 of 2000 | TrLoss     0.004811 | VldLoss     0.006811 | SensLoss     0.000000 | RMSE       0.0151 | Sigma       0.0000
+Epoch  810 of 2000 | TrLoss     0.003326 | VldLoss     0.003857 | SensLoss     0.000000 | RMSE       0.0119 | Sigma       0.0000
+Epoch  820 of 2000 | TrLoss     0.004115 | VldLoss     0.005933 | SensLoss     0.000000 | RMSE       0.0140 | Sigma       0.0000
+Epoch  830 of 2000 | TrLoss     0.004244 | VldLoss     0.004527 | SensLoss     0.000000 | RMSE       0.0131 | Sigma       0.0000
+Epoch  840 of 2000 | TrLoss     0.003359 | VldLoss     0.003876 | SensLoss     0.000000 | RMSE       0.0119 | Sigma       0.0000
+Epoch  850 of 2000 | TrLoss     0.003735 | VldLoss     0.004663 | SensLoss     0.000000 | RMSE       0.0128 | Sigma       0.0000
+Epoch  860 of 2000 | TrLoss     0.005576 | VldLoss     0.005139 | SensLoss     0.000000 | RMSE       0.0145 | Sigma       0.0000
+Epoch  870 of 2000 | TrLoss     0.003363 | VldLoss     0.003343 | SensLoss     0.000000 | RMSE       0.0115 | Sigma       0.0000
+Epoch  880 of 2000 | TrLoss     0.004685 | VldLoss     0.005426 | SensLoss     0.000000 | RMSE       0.0141 | Sigma       0.0000
+Epoch  890 of 2000 | TrLoss     0.003113 | VldLoss     0.003422 | SensLoss     0.000000 | RMSE       0.0113 | Sigma       0.0000
+Epoch  900 of 2000 | TrLoss     0.004006 | VldLoss     0.007573 | SensLoss     0.000000 | RMSE       0.0151 | Sigma       0.0000
+Epoch  910 of 2000 | TrLoss     0.003519 | VldLoss     0.005867 | SensLoss     0.000000 | RMSE       0.0136 | Sigma       0.0000
+Epoch  920 of 2000 | TrLoss     0.004674 | VldLoss     0.006161 | SensLoss     0.000000 | RMSE       0.0146 | Sigma       0.0000
+Epoch  930 of 2000 | TrLoss     0.003208 | VldLoss     0.003610 | SensLoss     0.000000 | RMSE       0.0116 | Sigma       0.0000
+Epoch  940 of 2000 | TrLoss     0.003667 | VldLoss     0.004473 | SensLoss     0.000000 | RMSE       0.0126 | Sigma       0.0000
+Epoch  950 of 2000 | TrLoss     0.003144 | VldLoss     0.003171 | SensLoss     0.000000 | RMSE       0.0111 | Sigma       0.0000
+Epoch  960 of 2000 | TrLoss     0.003191 | VldLoss     0.004798 | SensLoss     0.000000 | RMSE       0.0125 | Sigma       0.0000
+Epoch  970 of 2000 | TrLoss     0.003161 | VldLoss     0.002986 | SensLoss     0.000000 | RMSE       0.0110 | Sigma       0.0000
+Epoch  980 of 2000 | TrLoss     0.003573 | VldLoss     0.008074 | SensLoss     0.000000 | RMSE       0.0151 | Sigma       0.0000
+Epoch  990 of 2000 | TrLoss     0.002919 | VldLoss     0.003396 | SensLoss     0.000000 | RMSE       0.0111 | Sigma       0.0000
+Epoch 1000 of 2000 | TrLoss     0.003110 | VldLoss     0.003413 | SensLoss     0.000000 | RMSE       0.0113 | Sigma       0.0000
+Epoch 1010 of 2000 | TrLoss     0.004336 | VldLoss     0.003498 | SensLoss     0.000000 | RMSE       0.0124 | Sigma       0.0000
+Epoch 1020 of 2000 | TrLoss     0.003190 | VldLoss     0.003229 | SensLoss     0.000000 | RMSE       0.0112 | Sigma       0.0000
+Epoch 1030 of 2000 | TrLoss     0.002814 | VldLoss     0.004131 | SensLoss     0.000000 | RMSE       0.0117 | Sigma       0.0000
+Epoch 1040 of 2000 | TrLoss     0.004394 | VldLoss     0.003590 | SensLoss     0.000000 | RMSE       0.0125 | Sigma       0.0000
+Epoch 1050 of 2000 | TrLoss     0.003029 | VldLoss     0.003106 | SensLoss     0.000000 | RMSE       0.0110 | Sigma       0.0000
+Epoch 1060 of 2000 | TrLoss     0.003606 | VldLoss     0.005117 | SensLoss     0.000000 | RMSE       0.0131 | Sigma       0.0000
+Epoch 1070 of 2000 | TrLoss     0.002802 | VldLoss     0.003920 | SensLoss     0.000000 | RMSE       0.0115 | Sigma       0.0000
+Epoch 1080 of 2000 | TrLoss     0.003153 | VldLoss     0.005708 | SensLoss     0.000000 | RMSE       0.0132 | Sigma       0.0000
+Epoch 1090 of 2000 | TrLoss     0.003505 | VldLoss     0.003270 | SensLoss     0.000000 | RMSE       0.0115 | Sigma       0.0000
+Epoch 1100 of 2000 | TrLoss     0.002983 | VldLoss     0.002873 | SensLoss     0.000000 | RMSE       0.0107 | Sigma       0.0000
+Epoch 1110 of 2000 | TrLoss     0.003385 | VldLoss     0.002665 | SensLoss     0.000000 | RMSE       0.0109 | Sigma       0.0000
+Epoch 1120 of 2000 | TrLoss     0.002817 | VldLoss     0.003055 | SensLoss     0.000000 | RMSE       0.0107 | Sigma       0.0000
+Epoch 1130 of 2000 | TrLoss     0.004011 | VldLoss     0.003224 | SensLoss     0.000000 | RMSE       0.0119 | Sigma       0.0000
+Epoch 1140 of 2000 | TrLoss     0.002724 | VldLoss     0.005037 | SensLoss     0.000000 | RMSE       0.0123 | Sigma       0.0000
+Epoch 1150 of 2000 | TrLoss     0.003236 | VldLoss     0.003182 | SensLoss     0.000000 | RMSE       0.0112 | Sigma       0.0000
+Epoch 1160 of 2000 | TrLoss     0.002766 | VldLoss     0.003344 | SensLoss     0.000000 | RMSE       0.0109 | Sigma       0.0000
+Epoch 1170 of 2000 | TrLoss     0.002611 | VldLoss     0.005277 | SensLoss     0.000000 | RMSE       0.0124 | Sigma       0.0000
+Epoch 1180 of 2000 | TrLoss     0.002942 | VldLoss     0.003406 | SensLoss     0.000000 | RMSE       0.0112 | Sigma       0.0000
+Epoch 1190 of 2000 | TrLoss     0.002619 | VldLoss     0.002777 | SensLoss     0.000000 | RMSE       0.0103 | Sigma       0.0000
+Epoch 1200 of 2000 | TrLoss     0.003538 | VldLoss     0.005485 | SensLoss     0.000000 | RMSE       0.0133 | Sigma       0.0000
+Epoch 1210 of 2000 | TrLoss     0.003088 | VldLoss     0.002438 | SensLoss     0.000000 | RMSE       0.0104 | Sigma       0.0000
+Epoch 1220 of 2000 | TrLoss     0.002851 | VldLoss     0.002558 | SensLoss     0.000000 | RMSE       0.0103 | Sigma       0.0000
+Epoch 1230 of 2000 | TrLoss     0.003537 | VldLoss     0.002695 | SensLoss     0.000000 | RMSE       0.0111 | Sigma       0.0000
+Epoch 1240 of 2000 | TrLoss     0.002851 | VldLoss     0.002484 | SensLoss     0.000000 | RMSE       0.0102 | Sigma       0.0000
+Epoch 1250 of 2000 | TrLoss     0.003632 | VldLoss     0.003514 | SensLoss     0.000000 | RMSE       0.0118 | Sigma       0.0000
+Epoch 1260 of 2000 | TrLoss     0.002683 | VldLoss     0.002487 | SensLoss     0.000000 | RMSE       0.0101 | Sigma       0.0000
+Epoch 1270 of 2000 | TrLoss     0.003696 | VldLoss     0.002591 | SensLoss     0.000000 | RMSE       0.0111 | Sigma       0.0000
+Epoch 1280 of 2000 | TrLoss     0.002764 | VldLoss     0.002724 | SensLoss     0.000000 | RMSE       0.0104 | Sigma       0.0000
+Epoch 1290 of 2000 | TrLoss     0.003082 | VldLoss     0.002581 | SensLoss     0.000000 | RMSE       0.0105 | Sigma       0.0000
+Epoch 1300 of 2000 | TrLoss     0.003126 | VldLoss     0.002589 | SensLoss     0.000000 | RMSE       0.0106 | Sigma       0.0000
+Epoch 1310 of 2000 | TrLoss     0.002830 | VldLoss     0.004898 | SensLoss     0.000000 | RMSE       0.0123 | Sigma       0.0000
+Epoch 1320 of 2000 | TrLoss     0.002905 | VldLoss     0.002288 | SensLoss     0.000000 | RMSE       0.0101 | Sigma       0.0000
+Epoch 1330 of 2000 | TrLoss     0.002660 | VldLoss     0.002800 | SensLoss     0.000000 | RMSE       0.0103 | Sigma       0.0000
+Epoch 1340 of 2000 | TrLoss     0.002739 | VldLoss     0.002456 | SensLoss     0.000000 | RMSE       0.0101 | Sigma       0.0000
+Epoch 1350 of 2000 | TrLoss     0.002515 | VldLoss     0.002466 | SensLoss     0.000000 | RMSE       0.0099 | Sigma       0.0000
+Epoch 1360 of 2000 | TrLoss     0.003703 | VldLoss     0.003261 | SensLoss     0.000000 | RMSE       0.0117 | Sigma       0.0000
+Epoch 1370 of 2000 | TrLoss     0.002724 | VldLoss     0.003749 | SensLoss     0.000000 | RMSE       0.0113 | Sigma       0.0000
+Epoch 1380 of 2000 | TrLoss     0.003111 | VldLoss     0.002953 | SensLoss     0.000000 | RMSE       0.0109 | Sigma       0.0000
+Epoch 1390 of 2000 | TrLoss     0.002145 | VldLoss     0.003400 | SensLoss     0.000000 | RMSE       0.0104 | Sigma       0.0000
+Epoch 1400 of 2000 | TrLoss     0.002401 | VldLoss     0.002730 | SensLoss     0.000000 | RMSE       0.0100 | Sigma       0.0000
+Epoch 1410 of 2000 | TrLoss     0.002720 | VldLoss     0.002551 | SensLoss     0.000000 | RMSE       0.0102 | Sigma       0.0000
+Epoch 1420 of 2000 | TrLoss     0.002372 | VldLoss     0.002475 | SensLoss     0.000000 | RMSE       0.0097 | Sigma       0.0000
+Epoch 1430 of 2000 | TrLoss     0.002992 | VldLoss     0.002304 | SensLoss     0.000000 | RMSE       0.0102 | Sigma       0.0000
+Epoch 1440 of 2000 | TrLoss     0.002423 | VldLoss     0.002940 | SensLoss     0.000000 | RMSE       0.0103 | Sigma       0.0000
+Epoch 1450 of 2000 | TrLoss     0.002310 | VldLoss     0.002316 | SensLoss     0.000000 | RMSE       0.0095 | Sigma       0.0000
+Epoch 1460 of 2000 | TrLoss     0.002664 | VldLoss     0.002955 | SensLoss     0.000000 | RMSE       0.0105 | Sigma       0.0000
+Epoch 1470 of 2000 | TrLoss     0.002154 | VldLoss     0.002691 | SensLoss     0.000000 | RMSE       0.0097 | Sigma       0.0000
+Epoch 1480 of 2000 | TrLoss     0.002156 | VldLoss     0.003497 | SensLoss     0.000000 | RMSE       0.0105 | Sigma       0.0000
+Epoch 1490 of 2000 | TrLoss     0.002276 | VldLoss     0.002489 | SensLoss     0.000000 | RMSE       0.0097 | Sigma       0.0000
+Epoch 1500 of 2000 | TrLoss     0.002199 | VldLoss     0.002885 | SensLoss     0.000000 | RMSE       0.0100 | Sigma       0.0000
+Epoch 1510 of 2000 | TrLoss     0.002449 | VldLoss     0.002365 | SensLoss     0.000000 | RMSE       0.0097 | Sigma       0.0000
+Epoch 1520 of 2000 | TrLoss     0.002662 | VldLoss     0.002790 | SensLoss     0.000000 | RMSE       0.0103 | Sigma       0.0000
+Epoch 1530 of 2000 | TrLoss     0.003089 | VldLoss     0.002839 | SensLoss     0.000000 | RMSE       0.0108 | Sigma       0.0000
+Epoch 1540 of 2000 | TrLoss     0.002522 | VldLoss     0.001994 | SensLoss     0.000000 | RMSE       0.0094 | Sigma       0.0000
+Epoch 1550 of 2000 | TrLoss     0.002182 | VldLoss     0.002186 | SensLoss     0.000000 | RMSE       0.0093 | Sigma       0.0000
+Epoch 1560 of 2000 | TrLoss     0.007009 | VldLoss     0.009143 | SensLoss     0.000000 | RMSE       0.0178 | Sigma       0.0000
+Epoch 1570 of 2000 | TrLoss     0.002418 | VldLoss     0.002420 | SensLoss     0.000000 | RMSE       0.0097 | Sigma       0.0000
+Epoch 1580 of 2000 | TrLoss     0.002465 | VldLoss     0.002082 | SensLoss     0.000000 | RMSE       0.0094 | Sigma       0.0000
+Epoch 1590 of 2000 | TrLoss     0.002328 | VldLoss     0.002387 | SensLoss     0.000000 | RMSE       0.0096 | Sigma       0.0000
+Epoch 1600 of 2000 | TrLoss     0.003784 | VldLoss     0.002572 | SensLoss     0.000000 | RMSE       0.0112 | Sigma       0.0000
+Epoch 1610 of 2000 | TrLoss     0.002461 | VldLoss     0.002165 | SensLoss     0.000000 | RMSE       0.0095 | Sigma       0.0000
+Epoch 1620 of 2000 | TrLoss     0.002106 | VldLoss     0.004897 | SensLoss     0.000000 | RMSE       0.0117 | Sigma       0.0000
+Epoch 1630 of 2000 | TrLoss     0.004124 | VldLoss     0.002625 | SensLoss     0.000000 | RMSE       0.0115 | Sigma       0.0000
+Epoch 1640 of 2000 | TrLoss     0.002126 | VldLoss     0.002152 | SensLoss     0.000000 | RMSE       0.0092 | Sigma       0.0000
+Epoch 1650 of 2000 | TrLoss     0.002744 | VldLoss     0.004030 | SensLoss     0.000000 | RMSE       0.0115 | Sigma       0.0000
+Epoch 1660 of 2000 | TrLoss     0.002372 | VldLoss     0.001942 | SensLoss     0.000000 | RMSE       0.0092 | Sigma       0.0000
+Epoch 1670 of 2000 | TrLoss     0.002023 | VldLoss     0.002828 | SensLoss     0.000000 | RMSE       0.0098 | Sigma       0.0000
+Epoch 1680 of 2000 | TrLoss     0.001941 | VldLoss     0.001868 | SensLoss     0.000000 | RMSE       0.0086 | Sigma       0.0000
+Epoch 1690 of 2000 | TrLoss     0.002472 | VldLoss     0.003272 | SensLoss     0.000000 | RMSE       0.0106 | Sigma       0.0000
+Epoch 1700 of 2000 | TrLoss     0.002013 | VldLoss     0.002278 | SensLoss     0.000000 | RMSE       0.0092 | Sigma       0.0000
+Epoch 1710 of 2000 | TrLoss     0.001783 | VldLoss     0.002184 | SensLoss     0.000000 | RMSE       0.0088 | Sigma       0.0000
+Epoch 1720 of 2000 | TrLoss     0.001832 | VldLoss     0.002799 | SensLoss     0.000000 | RMSE       0.0095 | Sigma       0.0000
+Epoch 1730 of 2000 | TrLoss     0.001995 | VldLoss     0.002004 | SensLoss     0.000000 | RMSE       0.0089 | Sigma       0.0000
+Epoch 1740 of 2000 | TrLoss     0.002471 | VldLoss     0.003280 | SensLoss     0.000000 | RMSE       0.0106 | Sigma       0.0000
+Epoch 1750 of 2000 | TrLoss     0.001862 | VldLoss     0.002263 | SensLoss     0.000000 | RMSE       0.0090 | Sigma       0.0000
+Epoch 1760 of 2000 | TrLoss     0.002418 | VldLoss     0.002046 | SensLoss     0.000000 | RMSE       0.0094 | Sigma       0.0000
+Epoch 1770 of 2000 | TrLoss     0.002558 | VldLoss     0.002394 | SensLoss     0.000000 | RMSE       0.0099 | Sigma       0.0000
+Epoch 1780 of 2000 | TrLoss     0.001974 | VldLoss     0.002109 | SensLoss     0.000000 | RMSE       0.0089 | Sigma       0.0000
+Epoch 1790 of 2000 | TrLoss     0.001854 | VldLoss     0.002136 | SensLoss     0.000000 | RMSE       0.0088 | Sigma       0.0000
+Epoch 1800 of 2000 | TrLoss     0.001679 | VldLoss     0.002167 | SensLoss     0.000000 | RMSE       0.0087 | Sigma       0.0000
+Epoch 1810 of 2000 | TrLoss     0.001976 | VldLoss     0.003007 | SensLoss     0.000000 | RMSE       0.0099 | Sigma       0.0000
+Epoch 1820 of 2000 | TrLoss     0.002212 | VldLoss     0.001996 | SensLoss     0.000000 | RMSE       0.0091 | Sigma       0.0000
+Epoch 1830 of 2000 | TrLoss     0.001869 | VldLoss     0.002028 | SensLoss     0.000000 | RMSE       0.0087 | Sigma       0.0000
+Epoch 1840 of 2000 | TrLoss     0.002075 | VldLoss     0.002280 | SensLoss     0.000000 | RMSE       0.0092 | Sigma       0.0000
+Epoch 1850 of 2000 | TrLoss     0.002939 | VldLoss     0.003099 | SensLoss     0.000000 | RMSE       0.0109 | Sigma       0.0000
+Epoch 1860 of 2000 | TrLoss     0.002944 | VldLoss     0.002658 | SensLoss     0.000000 | RMSE       0.0105 | Sigma       0.0000
+Epoch 1870 of 2000 | TrLoss     0.003378 | VldLoss     0.003072 | SensLoss     0.000000 | RMSE       0.0112 | Sigma       0.0000
+Epoch 1880 of 2000 | TrLoss     0.001903 | VldLoss     0.001804 | SensLoss     0.000000 | RMSE       0.0085 | Sigma       0.0000
+Epoch 1890 of 2000 | TrLoss     0.002484 | VldLoss     0.006463 | SensLoss     0.000000 | RMSE       0.0132 | Sigma       0.0000
+Epoch 1900 of 2000 | TrLoss     0.003309 | VldLoss     0.002761 | SensLoss     0.000000 | RMSE       0.0109 | Sigma       0.0000
+Epoch 1910 of 2000 | TrLoss     0.002100 | VldLoss     0.001930 | SensLoss     0.000000 | RMSE       0.0089 | Sigma       0.0000
+Epoch 1920 of 2000 | TrLoss     0.001927 | VldLoss     0.003000 | SensLoss     0.000000 | RMSE       0.0098 | Sigma       0.0000
+Epoch 1930 of 2000 | TrLoss     0.002045 | VldLoss     0.001733 | SensLoss     0.000000 | RMSE       0.0086 | Sigma       0.0000
+Epoch 1940 of 2000 | TrLoss     0.002160 | VldLoss     0.002433 | SensLoss     0.000000 | RMSE       0.0095 | Sigma       0.0000
+Epoch 1950 of 2000 | TrLoss     0.001997 | VldLoss     0.002893 | SensLoss     0.000000 | RMSE       0.0098 | Sigma       0.0000
+Epoch 1960 of 2000 | TrLoss     0.008331 | VldLoss     0.003072 | SensLoss     0.000000 | RMSE       0.0150 | Sigma       0.0000
+Epoch 1970 of 2000 | TrLoss     0.001808 | VldLoss     0.001587 | SensLoss     0.000000 | RMSE       0.0082 | Sigma       0.0000
+Epoch 1980 of 2000 | TrLoss     0.001828 | VldLoss     0.002819 | SensLoss     0.000000 | RMSE       0.0095 | Sigma       0.0000
+Epoch 1990 of 2000 | TrLoss     0.002533 | VldLoss     0.002169 | SensLoss     0.000000 | RMSE       0.0096 | Sigma       0.0000
+prepending initial conditions (1500, 100, 11) (1500, 401, 11) float32 float32
+results in (1500, 501, 11)
+COL_Y ['Vdc', 'Idc', 'Id', 'Iq']
+Train time: 1502.99, Recent loss: 0.002186, RMS Errors: 0.0030 0.0116 0.0111 0.0047
+

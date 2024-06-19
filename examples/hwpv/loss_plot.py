@@ -24,10 +24,12 @@ if __name__ == '__main__':
   plt.plot(np.log10(data[0]), label='Training Loss')
   plt.plot(np.log10(data[1]), label='Validation Loss')
   if data.shape[0] > 2:
-    plt.plot(np.log10(data[2]), label='Sensitivity Loss')
+    if np.min(data[2]) > 0.0:
+      plt.plot(np.log10(data[2]), label='Sensitivity Loss')
   plt.ylabel ('Log10')
   plt.xlabel ('Epoch')
   plt.legend()
   plt.grid(True)
+  plt.savefig(os.path.join(data_path, '{:s}_train_loss.pdf'.format(data_path)))
   plt.show()
 

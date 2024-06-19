@@ -1,7 +1,7 @@
 {
   "model_folder": "./osg4/",
   "model_root": "osg4",
-  "data_path": "d:/data/osg4_vdvq.hdf5",
+  "data_path": "./../data/osg4.hdf5",
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
