@@ -6,6 +6,7 @@ Examples
 ========
 
 Source files are at https://github.com/pnnl/pecblocks/tree/master/examples/hwpv.
+Date files are at the `Harvard Dataverse <https://doi.org/10.7910/DVN/PWW981>`_.
 Results from these examples are discussed in `SysDO 2024 Paper (submitted) <_static/paper.pdf>`_
 
 To create their own examples, users will need to provide:

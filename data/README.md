@@ -5,6 +5,8 @@ This directory contains data files used in the project publications and examples
 - *h5view.py* summarizes contents of an HDF5 data file
 - *TrainingDataPlot.py [file]* plots contents of an HDF5 data file
 
+Data files archived at the [Harvard Dataverse](https://doi.org/10.7910/DVN/PWW981).
+
 | File | Records | Points | Time Step | Prefix | Source |
 | ---- | ------- | ------ | --------- | ------ | ------ |
 | big3 | 23400   | 3501   | 0.0020    | case   | ATP 3-phase average, balanced |
