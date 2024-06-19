@@ -1,7 +1,7 @@
 {
   "model_folder": "./ucf2/",
   "model_root": "ucf2",
-  "data_path": "./../data/ucf2.hdf5",
+  "data_path": "../../data/ucf2.hdf5",
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Md1", "Mq1", "Vod", "Voq", "GVrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],

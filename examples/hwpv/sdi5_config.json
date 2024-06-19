@@ -1,7 +1,7 @@
 {
   "model_folder": "./sdi5/",
   "model_root": "sdi5",
-  "data_path": "./../data/sdi5.hdf5",
+  "data_path": "../../data/sdi5.hdf5",
   "COL_T": ["t"],
   "COL_U": ["Fc", "Ud", "Uq", "Vd", "Vq", "Vdc"],
   "COL_Y": ["Idc", "Id", "Iq"],

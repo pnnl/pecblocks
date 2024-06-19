@@ -40,14 +40,23 @@ if __name__ == '__main__':
   nlookback = 10
   recent_loss = LOSS[len(LOSS)-nlookback:]
 
+  fp = open (os.path.join (model_folder, 'summary.txt'), 'w')
+  jp = open (os.path.join (model_folder, 'normfacs.json'), 'r')
+  normfacs = json.load (jp)
+  jp.close()
+  print ('Dataset Summary: (Mean=Offset, Range=Scale)', file=fp)
+  print ('Column       Min       Max      Mean     Range', file=fp)
+  for key, row in normfacs.items():
+    print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (key, row['min'], row['max'], row['offset'], row['scale']), file=fp)
   out_size = len(model.COL_Y)
-  print ('COL_Y', model.COL_Y)
+  print ('COL_Y', model.COL_Y, file=fp)
   valstr = ' '.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
   print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
-    np.mean(recent_loss), valstr))
+    np.mean(recent_loss), valstr), file=fp)
   if bWantMAE:
     valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
-    print ('                          MAE Errors: {:s}'.format (valstr))
+    print ('                          MAE Errors: {:s}'.format (valstr), file=fp)
+  fp.close()
 
   if bWantPlot:
     plt.figure()

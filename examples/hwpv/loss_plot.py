@@ -6,10 +6,14 @@ import sys
 plt.rcParams['savefig.directory'] = os.getcwd()
 
 data_path = 'ucfB_t_2nd_Ctrl'
+bShowPlot = True
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
     data_path = sys.argv[1]
+    if len(sys.argv) > 2:
+      if int(sys.argv[2]) <= 0:
+        bShowPlot = False
 
   fname = os.path.join (data_path, 'Loss.npy')
   data = np.load (fname)
@@ -31,5 +35,6 @@ if __name__ == '__main__':
   plt.legend()
   plt.grid(True)
   plt.savefig(os.path.join(data_path, '{:s}_train_loss.pdf'.format(data_path)))
-  plt.show()
+  if bShowPlot:
+    plt.show()
 

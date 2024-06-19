@@ -19,8 +19,10 @@ Training a Model
 
 The following script trains a model on Windows. It's called with one 
 argument, the root of the configuration file, e.g., `call train.bat osg4`, 
-assuming that `osg4_config.json` has been created. The directory `osg4` will
-be created if necessary, but not erased.
+assuming that `osg4_config.json` has been created. The directory `osg4` 
+will be created if necessary, but not erased. The last line plots training 
+losses to a saved PDF, but not to the screen so that a calling script may 
+continue without user acknowledgement. 
 
 .. literalinclude:: ../examples/hwpv/train.bat
 
@@ -43,8 +45,8 @@ The following Python code supervises training a model using *pecblocks*.
   - Line 37 saves the most recent trained model coefficients. (Note: these coefficients are saved periodically during training. The set of coefficients with lowest fitting loss is also saved as needed in each epoch.)
   - Line 38 summarizes the training errors for each output channel, over all cases or events in the training data set. More detail is available in the next steps. The RMSE is most relevant to HWPV applications.
 
-* Lines 40-50 provide summary output of the training run. This information is also availble later.
-* Lines 52-64 plot the losses vs. training epoch.
+* Lines 40-59 provide summary output of the training run. This information is also availble later.
+* Lines 61-73 plot the losses vs. training epoch. Use of *loss_plot.py* is now preferred.
 
 .. literalinclude:: ../examples/hwpv/pv3_training.py
   :linenos:
