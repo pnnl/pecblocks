@@ -1,0 +1,12 @@
+*.hdf5
+train.bat
+train.sh
+export.bat
+export.sh
+loss_plot.py
+pv3_export.py
+pv3_metrics.py
+pv3_sigma.py
+pv3_test.py
+pv3_training.py
+

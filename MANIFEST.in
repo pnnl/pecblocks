@@ -1,0 +1,21 @@
+graft src
+prune docs
+
+include license.txt
+include README.md
+include requirements.txt
+
+include examples/training/download.*
+include examples/training/*.json
+include examples/training/*.py
+include examples/training/train.bat
+include examples/training/train.sh
+include examples/training/export.bat
+include examples/training/export.sh
+
+include examples/sdomain/*.py
+include examples/sdomain/*.json
+include examples/sdomain/*.bat
+include examples/sdomain/*.sh
+
+global-exclude *.py[cod] __pycache__/*
