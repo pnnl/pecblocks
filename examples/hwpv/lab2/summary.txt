@@ -1,0 +1,11 @@
+Dataset Summary: (Mean=Offset, Range=Scale)
+Column       Min       Max      Mean     Range
+Fc        58.000    62.000    60.000     4.000
+Vc       114.000   125.000   119.652    11.000
+Rc        40.000   500.000   109.605   460.000
+Vdc       46.860    48.780    47.897     1.919
+Vrms       0.093   129.714   120.415   129.621
+Irms       0.000     3.265     2.048     3.265
+Idc        0.000    16.611     8.210    16.611
+COL_Y ['Vrms', 'Irms', 'Idc']
+Train time: 204.69, Recent loss: 0.002863, RMS Errors: 0.0068 0.0252 0.0276
