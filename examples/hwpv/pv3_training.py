@@ -48,11 +48,14 @@ if __name__ == '__main__':
   print ('Column       Min       Max      Mean     Range', file=fp)
   for key, row in normfacs.items():
     print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (key, row['min'], row['max'], row['offset'], row['scale']), file=fp)
+
   out_size = len(model.COL_Y)
-  print ('COL_Y', model.COL_Y, file=fp)
+  recent_loss = np.mean(recent_loss)
   valstr = ' '.join('{:.4f}'.format(rmse[j]) for j in range(out_size))
-  print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, 
-    np.mean(recent_loss), valstr), file=fp)
+  print ('COL_Y', model.COL_Y, file=fp)
+  print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, recent_loss, valstr), file=fp)
+  print ('COL_Y', model.COL_Y)
+  print ('Train time: {:.2f}, Recent loss: {:.6f}, RMS Errors: {:s}'.format (train_time, recent_loss, valstr))
   if bWantMAE:
     valstr = ' '.join('{:.4f}'.format(mae[j]) for j in range(out_size))
     print ('                          MAE Errors: {:s}'.format (valstr), file=fp)

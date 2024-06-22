@@ -20,7 +20,7 @@ class PVInvDataset(torch.utils.data.Dataset):
     n_out (int): number of output channels
   """
 
-  def __init__(self, data, input_dim, out_dim, pre_pad = 0):
+  def __init__(self, data, input_dim, out_dim, pre_pad = 0, bLog = True):
     """ Constructor method
 
     Total number of channels must be *input_dim + output_dim*.
@@ -35,11 +35,13 @@ class PVInvDataset(torch.utils.data.Dataset):
       # padding initial conditions
       nchan = input_dim + out_dim
       ic = np.zeros((data.shape[0], pre_pad, nchan), dtype=data.dtype)
-      print ('prepending initial conditions', ic.shape, data.shape, ic.dtype, data.dtype)
+      if bLog:
+        print ('DataLoader: prepending initial conditions', ic.shape, data.shape, ic.dtype, data.dtype)
       for i in range(nchan):
         ic[:,i] = data[0,i]
       icdata = np.concatenate ((ic, data), axis=1)
-      print ('results in', icdata.shape)      
+      if bLog:
+        print ('DataLoader: results in', icdata.shape)      
       self.data = torch.tensor(icdata)
     else:
       self.data = torch.tensor(data)

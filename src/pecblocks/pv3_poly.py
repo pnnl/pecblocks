@@ -1576,7 +1576,7 @@ class pv3():
     else:
       case_loss = None
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad, bLog=False)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
 
     icase = 0
@@ -1625,7 +1625,7 @@ class pv3():
       case_rmse = None
       case_mae = None
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad, bLog=False)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
 
     icase = 0
@@ -1673,7 +1673,7 @@ class pv3():
     in_size = len(self.COL_U)
     out_size = len(self.COL_Y)
 
-    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad)
+    total_ds = PVInvDataset (self.data_train, in_size, out_size, self.n_pad, bLog=False)
     total_dl = torch.utils.data.DataLoader(total_ds, batch_size=self.batch_size, shuffle=False)
     rmse_loss = 0.0
 
