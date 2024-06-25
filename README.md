@@ -41,13 +41,18 @@ The project on ReadTheDocs will re-build automatically upon commits to the git r
 To deploy the project on PyPi, staring in the directory of your git clone, where `setup.py` is located:
 
 - Make sure that the version number in `setup.cfg` and `src\pecblocks\version.py` is new.
-- Invoke `rd /s /q dist` on Windows, or `rm -rf dist` on Linux or Mac OS X
-- Invoke `pip install build` and `pip install twine` if necessary
-- `python -m build`
-- `twine check dist/*` should not show any errors
+- Invoke `build_package.bat` on Windows. This copies quick-start examples into the source tree, and does the following steps:
+    - Invoke `rd /s /q dist` on Windows (would be `rm -rf dist` on Linux or Mac OS X)
+    - `python -m build`
+    - `twine check dist/*` should not show any errors
 - `twine upload -r testpypi dist/*` requires project credentials for pecblocks on test.pypi.org (Note: this will reject if version already exists, also note that testpypi is a separate register to pypi)
 - `pip install -i https://test.pypi.org/simple/ pecblocks==0.0.3` for local testing of the deployable package, example version 0.0.3 (Note: consider doing this in a separate Python test environment)
-- `twine upload dist/*` for final deployment; requires project credentials for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs to be used.
+- `twine upload dist/*` for final deployment
+
+If this doesn't work, some preparatory steps may be required:
+
+- Invoke `pip install build` and `pip install twine` if necessary
+- Project credentials are required for pecblocks on pypi.org. If 2-Factor-Authentication is enabled an [API token](https://pypi.org/help/#apitoken>) needs to be used.
 
 ## Directories
 
@@ -67,9 +72,10 @@ In the _examples_ subdirectory:
 - _initialization_ was used to develop better initialization of the linear _H1_ block (_no longer actively used_).
 - _lcl_ uses phasor arithmetic to calculate voltages and currents at the inverter bridge terminals, from voltages and currents at the PCC. But this is an acausal operation, not good for control design. (_no longer actively used_)
 - _media_ contains graphics of training data sets and output comparisons.
-- _pi_ contains a lightweight model evaluation test for Raspberry Pi, using _numpy_ but not _torch_
 - _pv1_ contains single-phase inverter modeling code, later incorporated into the generalized package for deployment (_no longer actively used_)
+- _sdomain_ contains a lightweight model evaluation test for Raspberry Pi, using _numpy_ but not _torch_
 - _simscape_ processes MATLAB/Simscape outputs into a format for pecblocks (_no longer actively used_)
+- _training_ downloader and configuration for a quick-start example
 
 ## License
 
