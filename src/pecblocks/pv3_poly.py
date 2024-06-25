@@ -1313,7 +1313,7 @@ class pv3():
     print ('H1', self.H1.in_channels, self.H1.out_channels, self.H1.n_a, self.H1.n_b, self.H1.n_k)
     print (self.H1.state_dict())
 
-  def testOneCase(self, case_idx, npad, bUseTorchDS=False):
+  def testOneCase(self, case_idx, npad, bUseTorchDS=False, bLog=True):
     """Compare the estimated and actual output for one of the cases used for training and validation.
 
     This function uses *PyTorch* to evaluate *H1*.
@@ -1325,6 +1325,7 @@ class pv3():
       case_idx(int): zero-based case number from *data_train* to test
       npad(int): number of decimated time points to pre-pad with initial condition values
       bUseTorchDS(bool): if *True*, use the torch tensor *DataLoader*, which matches the training process but takes longer and does not properly match the initial conditions. If *False*, perform test on *data_train* directly.
+      bLog(bool): if *True*, output diagnostics on the dataset sizes
 
     Returns:
       float: root mean square error for this case
@@ -1334,16 +1335,18 @@ class pv3():
       array_like(float,ndim=2): input (u) for this case, first dimension is time, second dimension is channel 
     """
     if bUseTorchDS: # TODO: this doesn't match the correct Y[0] values
-      total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), npad)
+      total_ds = PVInvDataset (self.data_train, len(self.COL_U), len(self.COL_Y), npad, bLog=bLog)
       case_data = total_ds[case_idx]
-      print ('case_data shape', len(case_data))
-      print ('case_data[0]', case_data[0].shape)
-      print ('case_data[1]', case_data[1].shape)
+      if bLog:
+        print ('case_data shape', len(case_data))
+        print ('case_data[0]', case_data[0].shape)
+        print ('case_data[1]', case_data[1].shape)
       ub = torch.unsqueeze(case_data[0], dim=0)
       y_true_ret = case_data[1].detach().numpy()[npad:,:]
       y_true_err = case_data[1].detach().numpy()[self.n_loss_skip:,:]
       u_ret = case_data[0].detach().numpy()[npad:,:]
-      print ('Using PVInvDataset for IC padding', ub.shape, y_true_ret.shape, y_true_err.shape, u_ret.shape)
+      if bLog:
+        print ('Using PVInvDataset for IC padding:')
     else:
       case_data = self.data_train[[case_idx],:,:]
       udata = case_data[0,:,self.idx_in].squeeze().transpose()
@@ -1356,11 +1359,17 @@ class pv3():
       u_ret = udata[npad:,:]
       y_true_ret = np.transpose(case_data[0,:,self.idx_out]).squeeze()
       # padding initial conditions on the output vector for error metrics
-      ic = np.zeros((self.n_loss_skip, len(self.idx_out)), dtype=case_data.dtype)
+      ic = np.zeros((npad - self.n_loss_skip, len(self.idx_out)), dtype=case_data.dtype)
       for i in range(len(self.idx_out)):
         ic[:,i] = y_true_ret[0,i]
       y_true_err = np.concatenate ((ic, y_true_ret))
-      print ('Using data_train for IC padding', ub.shape, y_true_ret.shape, y_true_err.shape, u_ret.shape)
+      if bLog:
+        print ('Using data_train for IC padding:')
+    if bLog:
+      print ('  ub.shape', ub.shape)
+      print ('  y_true.shape', y_true_ret.shape)
+      print ('  y_err.shape', y_true_err.shape)
+      print ('  u_ret.shape', u_ret.shape)
 
     # model evaluation on the padded data
     y_non = self.F1 (ub)
@@ -1466,6 +1475,7 @@ class pv3():
     n = len(self.t)
     y_hat = np.zeros(shape=(n,len(self.idx_out)), dtype=case_data.dtype)
     ub = torch.zeros((1, 1, len(self.idx_in)), dtype=torch.float)
+
     self.start_simulation()
     # establish initial conditions of the normalized data
     ub = torch.tensor (case_data[0,self.idx_in]) # initial inputs

@@ -1,10 +1,10 @@
 # copyright 2021-2024 Battelle Memorial Institute
 # plots a comparison of simulated and true outputs from a trained HW model
 #  arg1: configuration file
-#  arg2: case number to plot 1..ncases (default 189)
-#  arg3: 1 to plot normalized quantities (default false)
+#  arg2: case number to plot 0..ncases-1 (default 100)
+#  arg3: plotting method, [0,1,2] (see usage)
 #
-# example: python pv3_test.py flatbal_config.json
+# example: python pv3_test.py ucf3_config.json
 
 import pandas as pd
 import numpy as np
@@ -18,90 +18,13 @@ bNormalized = False
 
 bWantMAE = False
 
-#data_path = './data/flatbalanced.hdf5'
-#model_path = './flatbal/flatbal_config.json'
-#report_path = './report'
-#
-#model_path = './flatstable/flatstable_config.json'
-#
-#data_path = './data/balanced.hdf5'
-#model_path = './big/balanced_config.json'
-#
-#data_path = '../../../atptools/unbalanced.hdf5'
-#model_path = './tacs/tacs_config.json'
-#model_path = './unbal/unbal_config.json'
-#
-#data_path = '../simscape/balanced.hdf5'
-#model_path = '../simscape/balanced_config.json'
-#
-#data_path = './data/osg_vrms.hdf5'
-#model_path = './osg_vrms/osg_vrms_config.json'
-#
-#data_path = './data/osg_vdvq.hdf5'
-#model_path = './osg_vdvq/osg_vdvq_config.json'
-#
-#data_path = './data/balanced_vdvq.hdf5'
-#model_path = './dc/dc_config.json'
-#
-#data_path = './data/flatbalanced.hdf5'
-#model_path = './flatbal_continuation/flatbal_continuation_config.json'
-#
-#data_path = './data/osg_vdvq2.hdf5'
-#model_path = './osg_vdvq/osg_vdvq_config.json'
-#
-#data_path = './data/balanced_vdvq2.hdf5'
-#model_path = './flat_vdvq/flat_vdvq_config.json'
-#
-#data_path = 'c:/data/ucf2.hdf5'
-#model_path = './ucf2/ucf2_config.json'
-#model_path = './ucf2ac/ucf2ac_config.json'
-#
-#data_path = 'c:/data/sdi.hdf5'
-#model_path = './sdi/sdi_config.json'
-#
-#data_path = 'c:/data/sdi4.hdf5'
-#model_path = './sdi4/sdi4_config.json'
-##model_path = './sdi4v/sdi4v_config.json'
-#
-#data_path = 'c:/data/sdi5.hdf5'
-#model_path = './sdi5/sdi5_config.json'
-#
-#data_path = 'd:/data/unb4.hdf5'
-#model_path = './unb4/unb4_config.json'
-#
-#data_path = 'd:/data/jan.hdf5'
-#model_path = './jan/jan_config.json'
-#
-#data_path = 'd:/data/ucf2.hdf5'
-#model_path = './ucf2ac/ucf2ac_config.json'
-#
-#data_path = 'd:/data/ucf3/ucf3z.hdf5'
-#model_path = './ucf3z_config.json'
-#
-#data_path = 'd:/data/ucf3/ucf3.hdf5'
-##model_path = './ucf3_config.json'
-##model_path = './ucf4_config.json'
-#model_path = './ucf6_config.json'
-#
-#data_path = 'd:/data/ucf3/ucf7.hdf5'
-#model_path = './ucf7s_config.json'
-#model_path = './ucf8_config.json'
-
-#data_path = 'd:/data/osg4_vdvq.hdf5'
-#model_path = './osg4/osg4_vdvq_config.json'
-
-#data_path = 'd:/data/ucf3/ucf9.hdf5'
-#model_path = './ucf9_config.json'
-#model_path = './ucf10_config.json'
-
-#data_path = 'd:/data/ucf3/ucf9c.hdf5'
-#model_path = './ucf10c_config.json'
-
-def plot_case(model, idx, bPNG=False):
-#  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500) # RMSE calc includes pre-padding, as in training
-#  rmse2, mae2, y_hat2, y_true2, u2 = model.stepOneCase(idx)
-  rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
-#  print ('Test-Step Difference in RMSE', rmse - rmse2)
+def plot_case(model, idx, method=0, bPNG=False):
+  if method == 0:
+    rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=model.n_pad, bUseTorchDS=True)
+  elif method == 1:
+    rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=model.n_pad, bUseTorchDS=False)
+  else: # method == 2
+    rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
   print ('Variable Ranges for Case {:d}:'.format(idx))
   print ('Column       Min       Max      Mean     Range')
   col_idx = 0
@@ -146,10 +69,7 @@ def plot_case(model, idx, bPNG=False):
       offset = 0.0
     ax[row,col].set_title ('Input {:s}'.format (key))
     ax[row,col].plot (model.t[i1:], u[i1:,j]*scale + offset)
-#    ax[row,col].plot (model.t[i1:], (u[i1:,j] - u2[i1:,j])*scale)
-#    ax[row,col].set_xlim (model.t[0], model.t[-1])
     ax[row,col].grid()
-#    ax[row,col].ticklabel_format(useOffset=False)
     j += 1
     col += 1
     if col >= ncols:
@@ -165,12 +85,8 @@ def plot_case(model, idx, bPNG=False):
     ax[2,j].set_title ('Output {:s}'.format (key))
     ax[2,j].plot (model.t[i1:], y_true[i1:,j]*scale + offset, label='y')
     ax[2,j].plot (model.t[i1:], y_hat[i1:,j]*scale + offset, label='y_hat')
-#    ax[2,j].plot (model.t[i1:], (y_hat[i1:,j] - y_hat2[i1:,j])*scale, label='difference y_hat')
-#    ax[2,j].plot (model.t[i1:], (y_true[i1:,j] - y_true2[i1:,j])*scale, label='difference y')
     ax[2,j].legend()
-#    ax[2,j].set_xlim (model.t[0], model.t[-1])
     ax[2,j].grid()
-#    ax[row,col].ticklabel_format(useOffset=False)
     print ('initial {:s}={:.6f}'.format (key, y_hat[i1,j]*scale + offset))
     j += 1
   if bPNG:
@@ -180,8 +96,13 @@ def plot_case(model, idx, bPNG=False):
     plt.show()
   plt.close(fig)
 
-def add_case(model, idx, bTrueOutput=False):
-  rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=500)
+def add_case(model, idx, bTrueOutput=False, method=0):
+  if method == 0:
+    rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=model.n_pad, bUseTorchDS=True, bLog=False)
+  elif method == 1:
+    rmse, mae, y_hat, y_true, u = model.testOneCase(idx, npad=model.n_pad, bUseTorchDS=False, bLog=False)
+  else: # method == 2
+    rmse, mae, y_hat, y_true, u = model.stepOneCase(idx)
   i1 = 0 # 1 # 2*model.n_loss_skip
   for j in range(len(model.COL_Y)):
     key = model.COL_Y[j]
@@ -205,18 +126,24 @@ if __name__ == '__main__':
     model_folder = cfg['model_folder']
     model_root = cfg['model_root']
   else:
-    print ('Usage: python pv3_test.py config.json')
+    print ('Usage: python pv3_test.py config.json [idx=100] [method=0]')
+    print ('  idx is the 0-based case number to plot, or -1 to plot all')
+    print ('  method is the RMSE evaluation method to apply:')
+    print ('    0 - Use the Torch Dataloader. RMSE will match training results, but may not start smoothly.')
+    print ('    1 - Initialize by pre-padding inputs. RMSE may not match, but initialization improves.')
+    print ('    2 - Initialize by coefficients of H1(z), as in other simulators. RMSE may not match, but initialization improves.')
+    print ('    method 2 evaluates RMSE over just the plotted range. methods 0 and 1 include RMSE over a pre-initialization period.')
     quit()
 
   print ('model_folder =', model_folder)
   print ('model_root =', model_root)
   print ('data_path =', data_path)
-  case_idx = 100 # 36 # 189
+  case_idx = 100
+  method = 0
   if len(sys.argv) > 2:
     case_idx = int(sys.argv[2])
     if len(sys.argv) > 3:
-      if int(sys.argv[3]) > 0:
-        bNormalized = True
+      method = int(sys.argv[3])
 
   model = pv3_model.pv3(training_config=config_file)
   model.loadTrainingData(data_path)
@@ -228,7 +155,7 @@ if __name__ == '__main__':
 
   if case_idx < 0:
     fig, ax = plt.subplots (2, 2, sharex = 'col', figsize=(12,8), constrained_layout=True)
-    fig.suptitle ('Testing model {:s} estimated output with {:d} cases'.format(model_path, model.n_cases))
+    fig.suptitle ('Testing model {:s} estimated output with {:d} cases'.format(model_root, model.n_cases))
     for j in range(len(model.COL_Y)):
       ax[j // 2, j % 2].set_title ('Estimated {:s}'.format (model.COL_Y[j]))
       ax[j // 2, j % 2].grid()
@@ -241,7 +168,7 @@ if __name__ == '__main__':
     plt.close(fig)
 
     fig, ax = plt.subplots (2, 2, sharex = 'col', figsize=(12,8), constrained_layout=True)
-    fig.suptitle ('Testing model {:s} true output with {:d} cases'.format(model_path, model.n_cases))
+    fig.suptitle ('Testing model {:s} true output with {:d} cases'.format(model_root, model.n_cases))
     for j in range(len(model.COL_Y)):
       ax[j // 2, j % 2].set_title ('True {:s}'.format (model.COL_Y[j]))
       ax[j // 2, j % 2].grid()
@@ -253,5 +180,5 @@ if __name__ == '__main__':
     plt.show()
     plt.close(fig)
   else:
-    plot_case (model, case_idx)
+    plot_case (model, case_idx, method=method)
 
