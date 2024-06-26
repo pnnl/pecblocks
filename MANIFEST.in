@@ -14,7 +14,7 @@ include examples/training/export.bat
 include examples/training/export.sh
 
 include examples/sdomain/*.py
-include examples/sdomain/*.json
+include examples/sdomain/bal3_fhf.json
 include examples/sdomain/*.bat
 include examples/sdomain/*.sh
 

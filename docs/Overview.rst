@@ -42,13 +42,13 @@ To install the Python package::
 Quick Start
 -----------
 
-The package includes two examples. Find location of examples::
+The package includes two examples. To download and run them:
 
-    pip show pecblocks
+- Download the **Source Distribution** from `PyPi <https://pypi.org/project/pecblocks/#files>`_ 
+- Unzip the *examples* directory from that archive to your local computer. There should be two subdirectories therein:
 
-Sample return::
-
-    Location: c:\users\tom\appdata\local\programs\python\python310\lib\site-packages
+    - *examples/training* contains the files to train an example HWPV model
+    - *examples/sdomain* contains the files to run a time-domain simulation of a trained HWPV model.
 
 Training a Model
 ^^^^^^^^^^^^^^^^
@@ -175,10 +175,21 @@ From the *example/sdomain* directory::
 
     go.bat or ./go.sh
 
-This runs a continous-time simulation of a trained HWPV model, at a longer time
-step than the original z-domain model was trained at. The result looks like:
+This runs a continous-time simulation of a trained HWPV model for a 100 
+kW, 480 V inverter. The grid resistance, *Rg*, begins at 2.3 ohms. The 
+solar irradiance, *G*, ramps up between 1 and 2 seconds, the control mode 
+changes to GFM at 2.5 seconds, and then *Rg* changes from 2.3 to 3.0 ohms 
+at 5 seconds. The result looks like: 
 
 .. image:: assets/BackwardEuler1.png
+
+For more information:
+
+* The model in *bal3_fhf.json* was pre-trained from over 23000 EMT simulations
+* The Python file *hwpv_pi.py* illustrates how to test an HWPV model, by application of control inputs, and simulating the effect of external grid resistance, *Rg*.
+* The Python file *hwpv_evaluator.py* implements discrete-time simulation or Euler integration of the model.
+* Initialization of the Backward Euler method is still under development.
+* When *Rg* changes suddenly, as in this example, the time step size is limited to maintain numerical stability. To alleviate this limit, a variable time step for the Euler method is under development.
 
 Example Repository
 ------------------

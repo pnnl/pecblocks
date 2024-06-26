@@ -246,6 +246,13 @@ class model():
         for j in range(self.nout):
           self.lhs[i,j] = np.eye(self.nout) - h*self.A[i,j]
 
+    for k in range(200):
+      yss = self.step_simulation_sbe (inputs, h)
+    if log:
+      print ('Padded Outputs:', yss)
+      print ('Padded States:\n', self.q)
+
+
   def step_simulation_sbe (self, inputs, h, log=False):
     ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
