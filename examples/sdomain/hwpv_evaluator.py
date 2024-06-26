@@ -1,4 +1,4 @@
-# copyright 2021-2023 Battelle Memorial Institute
+# copyright 2021-2024 Battelle Memorial Institute
 # HWPV model simulation code
 
 import numpy as np
@@ -110,30 +110,23 @@ class model():
       print ('  {:d} inputs from {:s}'.format (self.nin, str(self.COL_U)))
       print ('  {:d} outputs from {:s}'.format (self.nout, str(self.COL_Y)))
 
-  def make_ub (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl):
-    T = self.normalize (T, self.normfacs['T'])
-    G = self.normalize (G, self.normfacs['G'])
-    Fc = self.normalize (Fc, self.normfacs['Fc'])
-    Ud = self.normalize (Ud, self.normfacs['Ud'])
-    Uq = self.normalize (Uq, self.normfacs['Uq'])
-    Vrms = self.normalize (Vrms, self.normfacs['Vrms'])
-    GVrms = self.normalize (GVrms, self.normfacs['GVrms'])
-    Ctl = self.normalize (Ctl, self.normfacs['Ctl'])
-    ub = np.array([T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl])
+  def make_ub (self, inputs):
+    ub = np.zeros(self.nin)
+    for i in range(self.nin):
+      ub[i] = self.normalize (inputs[i], self.normfacs[self.COL_U[i]])
     return ub
 
   def extract_y_hat(self, y_hat, log=False):
-    Vdc = self.de_normalize (y_hat[0], self.normfacs['Vdc'])
-    Idc = self.de_normalize (y_hat[1], self.normfacs['Idc'])
-    Id = self.de_normalize (y_hat[2], self.normfacs['Id'])
-    Iq = self.de_normalize (y_hat[3], self.normfacs['Iq'])
+    ret = np.zeros(self.nout)
+    for i in range(self.nout):
+      ret[i] = self.de_normalize (y_hat[i], self.normfacs[self.COL_Y[i]])
     if log:
-      print ('Vdc, Idc, Id, Iq = {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format (Vdc, Idc, Id, Iq))
-    return Vdc, Idc, Id, Iq
+      print (self.COL_Y, '=', ','.join('{:.3f}'.format(ret[j]) for j in range(self.nout)))
+    return ret
 
-  def start_simulation_z(self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl):
+  def start_simulation_z(self, inputs):
 # set up IIR filters for time step simulation, nin == nout for H1
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.uhist = {}
     self.yhist = {}
@@ -157,8 +150,8 @@ class model():
     output = np.matmul(n2w, hidden) + n2b
     return output
 
-  def step_simulation_z (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl):
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+  def step_simulation_z (self, inputs):
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.ysum[:] = 0.0
     for i in range(self.nout):
@@ -174,8 +167,8 @@ class model():
     y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
     return self.extract_y_hat (y_hat)
 
-  def start_simulation_sfe (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl, log=False):
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+  def start_simulation_sfe (self, inputs, log=False):
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     rhs = -self.B * y_non
     lhs = np.linalg.solve (self.A, rhs)
@@ -196,8 +189,8 @@ class model():
       print ('SFE D\n', self.D)
       print ('SFE q\n', self.q)
 
-  def step_simulation_sfe (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl, h, log=False):
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+  def step_simulation_sfe (self, inputs, h, log=False):
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     if log:
       print ('\nub = {:s}'.format (str(ub)))
@@ -218,18 +211,26 @@ class model():
       print ('y_hat = {:s}'.format(str(y_hat)))
     return self.extract_y_hat (y_hat, log)
 
-  def start_simulation_sbe (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl, h, log=False):
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+  def start_simulation_sbe (self, inputs, h, log=False):
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.q = np.linalg.solve (self.A, -self.B * y_non)
+    self.ysum = np.zeros(self.nout)
     if log:
       print ('Backward Euler Method, LU Decomposition = {:s}, initial states:\n'.format (str(LU_DECOMP)), self.q)
-      print ('SBE A\n', self.A)
-      print ('SBE B\n', self.B)
-      print ('SBE C\n', self.C)
-      print ('SBE D\n', self.D)
+      self.ysum[:] = 0.0
+      for i in range(self.nout):
+        for j in range(self.nout):
+          self.ysum[i] += np.matmul (self.C[i,j], self.q[i,j])
+          self.ysum[i] += self.D[i,j] * y_non[j]
+      y_hat = self.tanh_layer (self.ysum, self.F2_n0w, self.F2_n0b, self.F2_n2w, self.F2_n2b)
+      print ('Initial Outputs:', y_hat)
+      print ('Denormalized:', self.extract_y_hat(y_hat))
+#     print ('SBE A\n', self.A)
+#     print ('SBE B\n', self.B)
+#     print ('SBE C\n', self.C)
+#     print ('SBE D\n', self.D)
 
-    self.ysum = np.zeros(self.nout)
     if LU_DECOMP:
       self.lu = {}
       self.piv = {}
@@ -245,8 +246,8 @@ class model():
         for j in range(self.nout):
           self.lhs[i,j] = np.eye(self.nout) - h*self.A[i,j]
 
-  def step_simulation_sbe (self, T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl, h, log=False):
-    ub = self.make_ub (T, G, Fc, Ud, Uq, Vrms, GVrms, Ctl)
+  def step_simulation_sbe (self, inputs, h, log=False):
+    ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
     self.ysum[:] = 0.0
     if LU_DECOMP:
