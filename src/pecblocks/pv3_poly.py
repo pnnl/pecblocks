@@ -1259,7 +1259,7 @@ class pv3():
     config = {'name':'PV3', 'type':'F1+H1+F2', 't_step': self.t_step}
     config['normfacs'] = {}
     for key, val in self.normfacs.items():
-      config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset']}
+      config['normfacs'][key] = {'scale':val['scale'], 'offset':val['offset'], 'max':val['max'], 'min':val['min']}
     config['model_folder'] = self.model_folder
     config['model_root'] = self.model_root
     config['data_path'] = self.data_path
