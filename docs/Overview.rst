@@ -26,7 +26,7 @@ electronics equipment.
 Background
 ----------
 
-For technical background on *pecblocks*, see `SysDO 2024 Paper (submitted) <_static/paper.pdf>`_
+For technical background on *pecblocks*, see `Draft Paper <_static/paper.pdf>`_
 
 For technical background on *dynoNet*, see `Forgione, Piga Paper <https://arxiv.org/pdf/2006.02250>`_
 

@@ -57,7 +57,7 @@ provided instead.
  
 * The *dq* transformations may be implemented in the EMT model, in which case the *dq* voltages and currents are directly available.
 * For lab test records, or EMT simulations without *dq* outputs, the *dq* transformation can be implemented in Python code that adds the necessary HDF5 channels. For an example, see the *simulate_pll* function in `sdi5_prep.py <https://github.com/pnnl/pecblocks/blob/master/examples/data_prep/sdi_prep5.py>`_.
-* For single-phase inverters, an orthogonal signal generator may be used to construct the *dq* values. This was implemented within an ATP simulation, following references 18 and 19 of `SysDO 2024 Paper (submitted) <_static/paper.pdf>`_.
+* For single-phase inverters, an orthogonal signal generator may be used to construct the *dq* values. This was implemented within an ATP simulation, following references 18 and 19 of `Draft Paper <_static/paper.pdf>`_.
 * Lab test records, and EMT simulations of detailed switching inverter models, may include significant noise in voltage and current channels. Filtering may be advisable. This might be done as part of the EMT simulation, i.e., by simulating the measurement systems. It might also be done in post-processing. For an example of Butterworth filtering to mitigate measurement noise, see the *my_decimate* function in `sdi5_prep.py <https://github.com/pnnl/pecblocks/blob/master/examples/data_prep/sdi_prep5.py>`_.
 * For unbalanced simulations, the *dq* components may be filtered into low-pass and high-pass components, and fit separately. For an example, see `UnbalancedPrep.py <https://github.com/pnnl/pecblocks/blob/master/examples/data_prep/UnbalancedPrep.py>`_.
 
