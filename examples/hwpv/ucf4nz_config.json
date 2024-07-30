@@ -1,0 +1,48 @@
+{
+  "model_folder": "./ucf4nz",
+  "model_root": "ucf4nz",
+  "data_path": "../../data/ucf4.hdf5",
+  "mac_data_path": "/Users/tom/Documents/data/ucf4.hdf5",
+  "COL_T": ["t"],
+  "COL_U": ["G", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ramp"],
+  "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
+  "disable_sensitivity": {
+     "limit": 0.01,
+     "weight": 0.0010,
+     "delta": 0.01,
+     "inputs": ["Vd", "Vq"],
+     "outputs": ["Id", "Iq"],
+     "GVrms": {"G": "G", "Vd": "Vd", 
+               "Vq": "Vq", "k": 1.2247449
+     },
+     "sets": {
+         "G": [300.0, 800.0],
+         "Ud": [0.9, 1.1],
+         "Uq": [-0.4, 0.4],
+         "Vd": [170.0, 340.0],
+         "Vq": [-135.0, 135.0],
+         "Ramp": [0.0, 1.0]
+     }
+  },
+  "h5grp_prefix":"ucf",
+  "lr": 1.0e-3,
+  "t_step": 0.01,
+  "num_iter": 1000,
+  "continue_iterations": false,
+  "print_freq": 20,
+  "batch_size": 405,
+  "n_validation_pct": 15,
+  "n_validation_seed": 99,
+  "n_skip": 0,
+  "n_trunc": 0,
+  "n_dec": 1,
+  "n_loss_skip": 50,
+  "n_pad": 100,
+  "gtype": "stable2ndx",
+  "na": 2,
+  "nb": 3,
+  "nk": 0,
+  "activation": "tanh",
+  "nh1": 80,
+  "nh2": 60
+}
