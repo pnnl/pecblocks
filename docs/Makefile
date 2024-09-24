@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = i2x
+SPHINXPROJ    = pecblocks
 SOURCEDIR     = .
 BUILDDIR      = _build
 
