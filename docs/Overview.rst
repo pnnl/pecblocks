@@ -1,6 +1,7 @@
 .. role:: math(raw)
    :format: html latex
 ..
+.. include:: <isonum.txt>
 
 Overview
 ========
@@ -26,7 +27,9 @@ electronics equipment.
 Background
 ----------
 
-For technical background on *pecblocks*, see `Draft Paper <_static/paper.pdf>`_
+For technical background on *pecblocks*, see `IEEE eGRID 2024 preprint <_static/paper.pdf>`_ |copy| 2024 IEEE.
+
+For a control systems application, see `SysDO 2024 preprint <https://www.ece.ucf.edu/~qu/wp-content/uploads/2024/11/Inverter_Modeling_Research__EMT_compensation_SysDO2024.pdf>`_
 
 For technical background on *dynoNet*, see `Forgione, Piga Paper <https://arxiv.org/pdf/2006.02250>`_
 
