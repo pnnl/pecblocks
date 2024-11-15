@@ -20,7 +20,7 @@ if __name__ == '__main__':
     model_folder = cfg['model_folder']
     model_root = cfg['model_root']
   else:
-    print ('Usage: python pv3_lambda.py config.json')
+    print ('Usage: python pv3_sigma.py config.json')
     quit()
 
   print ('model_folder =', model_folder)

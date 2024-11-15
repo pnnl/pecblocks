@@ -41,9 +41,9 @@ class model():
     return a, b
 
   def load_state_matrices (self, Q):
-    A = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'], Q['n_b'])) # TODO: n_a or n_b first?
+    A = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'], Q['n_a'])) # TODO: n_a or n_b first?
     B = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'])) # TODO: n_a or n_b?
-    C = np.zeros((Q['n_out'], Q['n_in'], Q['n_b'])) # TODO: n_a or n_b?
+    C = np.zeros((Q['n_out'], Q['n_in'], Q['n_a'])) # TODO: n_a or n_b?
     D = np.zeros((Q['n_out'], Q['n_in'])) # TODO: n_a or n_b?
     for i in range (Q['n_out']):
       for j in range (Q['n_in']):
@@ -135,7 +135,7 @@ class model():
       self.uhist[i] = {}
       self.yhist[i] = {}
       for j in range(self.nout):
-        ynew = y_non[j] * np.sum(self.zb[i,j,:]) / (np.sum(self.za[i,j,:]+1.0))
+        ynew = y_non[j] * np.sum(self.zb[i,j,:]) / (np.sum(self.za[i,j,:])+1.0)
         self.uhist[i][j] = np.ones(self.nb) * y_non[j]
         self.yhist[i][j] = np.ones(self.na) * ynew
                                              
@@ -212,8 +212,13 @@ class model():
     return self.extract_y_hat (y_hat, log)
 
   def start_simulation_sbe (self, inputs, h, log=False):
+    print ('SBE A {:s}\n'.format (str(self.A.shape)))#, self.A)
+    print ('SBE B {:s}\n'.format (str(self.B.shape)))#, self.B)
+    print ('SBE C {:s}\n'.format (str(self.C.shape)))#, self.C)
+    print ('SBE D {:s}\n'.format (str(self.D.shape)))#, self.D)
     ub = self.make_ub (inputs)
     y_non = self.tanh_layer (ub, self.F1_n0w, self.F1_n0b, self.F1_n2w, self.F1_n2b)
+    print ('y_non {:s}\n'.format (str(y_non.shape)))#, y_non)
     self.q = np.linalg.solve (self.A, -self.B * y_non)
     self.ysum = np.zeros(self.nout)
     if log:

@@ -9,7 +9,7 @@ import hwpv_evaluator as hwpv
 
 # choices are SBE (preferred, s-domain backward Euler), 
 # SFE (s-domain forward Euler), and Z (discrete domain)
-METHOD = 'SBE'
+METHOD = 'Z' # 'SBE'
 
 # interpolation tables for each case are keyed as:
 #   'Rg' is a fixed key for external load resistance
@@ -41,7 +41,7 @@ cases = [
     'model': '../hwpv/bal3/bal3_fhf.json',
     'group': 'bal3',
     'tmax': 5.0,
-    'dt': 0.001,
+    'dt': 0.002, # .001,
     'krms': math.sqrt(1.5),
     'kGVrms': 0.001,
     'G':  [[-1.0, 1.00,   2.00,   200.0], 
@@ -57,7 +57,7 @@ cases = [
     'Mq': [[-1.00, 200.0], 
            [0.000, 0.000]],
     'Rg': [[-1.0, 200.0], 
-           [2.3, 2.3]]
+           [0.2, 0.2]]
   },
   {
     'model': 'balanced_fhf.json',
@@ -80,6 +80,28 @@ cases = [
            [0.392, 0.392]],
     'Rg': [[-1.0, 200.0], 
            [10.0, 10.0]]
+  },
+  {
+    'model': '../hwpv/ucf4n/ucf4n_fhf.json',
+    'group': 'ucf4n',
+    'tmax': 5.0,
+    'dt': 0.001,
+    'krms': math.sqrt(1.5),
+    'kGVrms': 1.0,
+    'G':  [[-1.0, 1.00,   2.00,   200.0], 
+           [0.00, 0.00, 1000.0,  1000.0]],
+    'T':  [[-1.0, 200.0],
+           [35.0, 35.0]],
+    'Fc': [[-1.0, 200.0],
+           [60.0, 60.0]],
+    'Ramp':[[-1.0, 2.50, 2.51, 200.0],
+           [0.00, 0.00, 1.00, 1.00]],
+    'Ud': [[-1.00, 200.0], 
+           [0.810, 0.810]],
+    'Uq': [[-1.00, 200.0], 
+           [0.392, 0.392]],
+    'Rg': [[-1.0, 200.0], 
+           [65.0, 65.0]]
   }
 ]
 
