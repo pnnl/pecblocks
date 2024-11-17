@@ -138,6 +138,7 @@ class model():
         ynew = y_non[j] * np.sum(self.zb[i,j,:]) / (np.sum(self.za[i,j,:])+1.0)
         self.uhist[i][j] = np.ones(self.nb) * y_non[j]
         self.yhist[i][j] = np.ones(self.na) * ynew
+        #print ('  start simulation', i, j, self.uhist[i][j], self.yhist[i][j])
                                              
   def normalize (self, val, fac):
     return (val - fac['offset']) / fac['scale']
