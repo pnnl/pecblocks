@@ -16,8 +16,8 @@ METHOD = 'Z' # 'SBE'
 #   other keys will be searched for a matching key in the model's COL_U
 cases = [
   {
-    'model': 'bal3_fhf.json',
-    'group': 'bal3',
+    'model': '../hwpv/bal3n/bal3n_fhf.json',
+    'group': 'bal3n',
     'tmax': 8.0,
     'dt': 0.002,
     'krms': math.sqrt(1.5),
