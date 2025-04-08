@@ -7,7 +7,7 @@
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
   "sensitivity": {
      "limit": 0.10,
-     "weight": 1.00,
+     "weight": 2.00,
      "delta": 0.10,
      "inputs": ["Vd", "Vq"],
      "outputs": ["Id", "Iq"],

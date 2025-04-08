@@ -1,4 +1,4 @@
-# copyright 2021-2024 Battelle Memorial Institute
+# copyright 2021-2025 Battelle Memorial Institute
 # HW model training and simulation code for 3-phase inverters
 
 """
@@ -1147,15 +1147,15 @@ class pv3():
   def loadModelCoefficients(self):
     """Load the block coefficients from *F1.pkl*, *F2.pkl* and *H1.pkl* in *model_folder*.
     """
-    B1 = torch.load(os.path.join(self.model_folder, "F1.pkl"))
+    B1 = torch.load(os.path.join(self.model_folder, "F1.pkl"), weights_only=False)
     self.F1.load_state_dict(B1)
-    B2 = torch.load(os.path.join(self.model_folder, "H1.pkl"))
+    B2 = torch.load(os.path.join(self.model_folder, "H1.pkl"), weights_only=False)
     self.H1.load_state_dict(B2)
 #   print (self.H1)
 #   print ('b_coeff', self.H1.b_coeff)
 #   print ('rho', self.H1.rho)
 #   print ('psi', self.H1.psi)
-    B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"))
+    B3 = torch.load(os.path.join(self.model_folder, "F2.pkl"), weights_only=False)
     self.F2.load_state_dict(B3)
 
   def make_H1Q1s(self, Hz):

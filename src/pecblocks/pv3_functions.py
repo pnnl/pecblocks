@@ -1,4 +1,4 @@
-# copyright 2021-2024 Battelle Memorial Institute
+# copyright 2021-2025 Battelle Memorial Institute
 
 """
   Functions to perform sensitivity analysis on Thevenin and Norton controlled
@@ -158,7 +158,7 @@ def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
     return [T0, G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
   return [T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
 
-def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
+def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThresh=0.10):
   """Estimates the sensitivity of an exported model in z domain.
 
   The sensitivity is estimated for grid interface output variables (Id, Iq) with
@@ -173,6 +173,7 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
     bPrint (bool): print the maximum values of the four partial derivatives of *Id*, *Iq* with respect to *Vd*, *Vq*.
     bLog (bool): print diagnostics of the operating points and perturbations over the sensitivity evaluation set.
     bAutoRange (bool): if *True*, use the minima and maxima of the *model* training set to establish the input channel bounds. If *False*, use a built-in set of bounds for the GridLink SDI lab tests.
+    dThresh (float): when printing, show the number of cases within each range that have sigma exceeding this threshold.
 
   Yields:
     Printed output of the auto-range boundaries and the sensitivity evaluation set.
@@ -239,19 +240,35 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
   print (' Ctl_range', Ctl_range)
   print (' Vd_range', Vd_range)
   print (' Vq_range', Vq_range)
+  G_count = np.zeros(G_range.shape[0])
+  T_count = np.zeros(T_range.shape[0])
+  Fc_count = np.zeros(Fc_range.shape[0])
+  Ctl_count = np.zeros(Ctl_range.shape[0])
+  Ud_count = np.zeros(Ud_range.shape[0])
+  Uq_count = np.zeros(Uq_range.shape[0])
+  Vd_count = np.zeros(Vd_range.shape[0])
+  Vq_count = np.zeros(Vq_range.shape[0])
 
   if bLog:
     print ('   G0   Ud0   Uq0   Vd0    Vq0 Ctl   dIdVd   dIdVq   dIqVd   dIqVq')
   model.start_simulation (bPrint=False)
   for T0 in T_range:
+    T_idx = np.nonzero(T_range==T0)[0][0]
     for F0 in Fc_range:
+      Fc_idx = np.nonzero(Fc_range==F0)[0][0]
       for G0 in G_range:
+        G_idx = np.nonzero(G_range==G0)[0][0]
         print ('checking G={:.2f}'.format(G0), 'T=', T0, 'Fc=', F0)
         for Ud0 in Ud_range:
+          Ud_idx = np.nonzero(Ud_range==Ud0)[0][0]
           for Uq0 in Uq_range:
+            Uq_idx = np.nonzero(Uq_range==Uq0)[0][0]
             for Ctl in Ctl_range:
+              Ctl_idx = np.nonzero(Ctl_range==Ctl)[0][0]
               for Vd0 in Vd_range:
+                Vd_idx = np.nonzero(Vd_range==Vd0)[0][0]
                 for Vq0 in Vq_range:
+                  Vq_idx = np.nonzero(Vq_range==Vq0)[0][0]
                   # baseline
                   Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
                   GVrms = G0 * Vrms
@@ -296,9 +313,29 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False):
                   dIqVq = abs(dIqVq)
                   if dIqVq > maxdIqVq:
                     maxdIqVq = dIqVq
+
+                  # am I above dThresh
+                  if dIdVd >= dThresh or dIdVq >= dThresh or dIqVd >= dThresh or dIqVq >= dThresh:
+                    T_count[T_idx] += 1.0
+                    G_count[G_idx] += 1.0
+                    Ctl_count[Ctl_idx] += 1.0
+                    Fc_count[Fc_idx] += 1.0
+                    Ud_count[Ud_idx] += 1.0
+                    Uq_count[Uq_idx] += 1.0
+                    Vd_count[Vd_idx] += 1.0
+                    Vq_count[Vq_idx] += 1.0
   if bPrint:
     print ('                                     dIdVd   dIdVq   dIqVd   dIqVq')
     print ('{:34s} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format ('Maximum Magnitudes', maxdIdVd, maxdIdVq, maxdIqVd, maxdIqVq))
+    print ('Counting instances of max sensitivity >= {:7.4f}'.format (dThresh))
+    print ('  T counts:  ', T_count)
+    print ('  G counts:  ', G_count)
+    print ('  Ctl counts:', Ctl_count)
+    print ('  Fc counts: ', Fc_count)
+    print ('  Ud counts: ', Ud_count)
+    print ('  Uq counts: ', Uq_count)
+    print ('  Vd counts: ', Vd_count)
+    print ('  Vq counts: ', Vq_count)
   return max(maxdIdVd, maxdIdVq, maxdIqVd, maxdIqVq)
 
 def find_channel_indices (targets, available):
