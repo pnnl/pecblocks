@@ -5,6 +5,26 @@
   "COL_T": ["t"],
   "COL_U": ["T", "G", "Fc", "Ud", "Uq", "Vd", "Vq", "GVrms", "Ctl"],
   "COL_Y": ["Vdc", "Idc", "Id", "Iq"],
+  "sensitivity": {
+     "limit": 0.10,
+     "weight": 0.10,
+     "delta": 0.10,
+     "inputs": ["Vd", "Vq"],
+     "outputs": ["Id", "Iq"],
+     "GVrms": {"G": "G", "Vd": "Vd", 
+               "Vq": "Vq", "k": 1.0
+     },
+     "sets": {
+         "T": [25.0],
+         "Fc": [60.0],
+         "G": [100.0, 300.0, 800.0],
+         "Ud": [0.9, 1.1],
+         "Uq": [-0.4, 0.4],
+         "Vd": [10.0, 210.0, 420.0],
+         "Vq": [-200.0, 0.0, 90.0],
+         "Ctl": [0.0, 1.0]
+     }
+  },
   "h5grp_prefix":"case",
   "lr": 0.5e-3,
   "t_step": 0.001,
