@@ -30,7 +30,7 @@
   "eps": 1.0e-6,
   "t_step": 0.002,
   "num_iter": 250,
-  "continue_iterations": false,
+  "continue_iterations": true,
   "print_freq": 2,
   "batch_size": 1170,
   "n_validation_pct": 10,
