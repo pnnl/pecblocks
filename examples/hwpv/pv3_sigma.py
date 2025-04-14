@@ -39,7 +39,11 @@ if __name__ == '__main__':
   print (len(model.COL_U), 'inputs:', model.COL_U)
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
   if 'Vd' in model.COL_U and 'Vq' in model.COL_U and 'Id' in model.COL_Y and 'Iq' in model.COL_Y:
-    sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
+    if 'sensitivity' in cfg:
+      krms = cfg['sensitivity']['GVrms']['k']
+      sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True, cfgKRMS = krms)
+    else:
+      sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
     print ('Maximum Norton Sensitivity = {:.6f}'.format (sens))
     clamp = pv3_fn.clamp_loss (model, bPrint=True)
     print ('Total Norton Clamping Loss = {:.6f}'.format (clamp))

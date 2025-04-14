@@ -158,7 +158,7 @@ def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
     return [T0, G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
   return [T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
 
-def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThresh=0.10):
+def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThresh=0.10, cfgKRMS=None):
   """Estimates the sensitivity of an exported model in z domain.
 
   The sensitivity is estimated for grid interface output variables (Id, Iq) with
@@ -174,6 +174,7 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThre
     bLog (bool): print diagnostics of the operating points and perturbations over the sensitivity evaluation set.
     bAutoRange (bool): if *True*, use the minima and maxima of the *model* training set to establish the input channel bounds. If *False*, use a built-in set of bounds for the GridLink SDI lab tests.
     dThresh (float): when printing, show the number of cases within each range that have sigma exceeding this threshold.
+    cfgKRMS (float): pass KRMS from the model config file if available, otherwise sqrt(1.5) is the default
 
   Yields:
     Printed output of the auto-range boundaries and the sensitivity evaluation set.
@@ -186,6 +187,11 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThre
   maxdIqVd = 0.0
   maxdIqVq = 0.0
   delta = 0.01
+  if cfgKRMS is None:
+    localKRMS = KRMS
+  else:
+    localKRMS = cfgKRMS
+  print ('This KRMS={:.4f}'.format (localKRMS))
 
   T_range = [math.nan]
   Fc_range = [math.nan]
@@ -270,21 +276,21 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThre
                 for Vq0 in Vq_range:
                   Vq_idx = np.nonzero(Vq_range==Vq0)[0][0]
                   # baseline
-                  Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
+                  Vrms = localKRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq0, GVrms, Ctl)
                   Vdc0, Idc0, Id0, Iq0 = model.steady_state_response (step_vals)
 
                   # change Vd and GVrms
                   Vd1 = Vd0 + delta
-                  Vrms = KRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
+                  Vrms = localKRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd1, Vq0, GVrms, Ctl)
                   Vdc1, Idc1, Id1, Iq1 = model.steady_state_response (step_vals)
 
                   # change Vq and GVrms
                   Vq1 = Vq0 + delta
-                  Vrms = KRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
+                  Vrms = localKRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl)
                   Vdc2, Idc2, Id2, Iq2 = model.steady_state_response (step_vals)
@@ -504,7 +510,7 @@ def model_sensitivity (model, bPrint):
     print (max_sens)
   return np.max(max_sens)
 
-def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = False):
+def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = False, dThresh=10.0, cfgKRMS=None):
   """Calculates the maximum sensitivity of an exported *Thevenin* model in z domain.
 
   This function uses a fixed sensitivity evaluation set for the GridLink SDI lab tests.
@@ -517,6 +523,8 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
     bPrint (bool): print the maximum values of each partial derivative of *Vd*, *Vq* with respect to *Id*, *Iq*
     bLog (bool): print the four partial derivatives of *Vd*, *Vq*, w.r.t. *Id*, *Iq* sat each operating point in the sensitivity evaluation set.
     bReducedSet (bool): use a reduced sensitivity evaluation set of 72 cases instead of the full set of 60,500 cases
+    dThresh (float): when printing, show the number of cases within each range that have sigma exceeding this threshold.
+    cfgKRMS (float): pass KRMS from the model config file if available, otherwise sqrt(1.5) is the default
 
   Yields:
     Printed information about the sensitivity evaluation set and columns.
@@ -529,6 +537,11 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
   maxdVqId = 0.0
   maxdVqIq = 0.0
   delta = 0.01
+  if cfgKRMS is None:
+    localKRMS = KRMS
+  else:
+    localKRMS = cfgKRMS
+  print ('This KRMS={:.4f}'.format (localKRMS))
 
   if bReducedSet:
     # 72 cases for faster training
@@ -548,6 +561,18 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
     Iq_range = np.linspace (-2.7, 2.4, 11)
 
   ncases = len(G_range) * len(Ud_range) * len(Uq_range) * len(Ctl_range) * len(Id_range) * len(Iq_range)
+  print (' G_range', G_range)
+  print (' Ctl_range', Ctl_range)
+  print (' Ud_range', Ud_range)
+  print (' Uq_range', Uq_range)
+  print (' Id_range', Id_range)
+  print (' Iq_range', Iq_range)
+  G_count = np.zeros(G_range.shape[0])
+  Ctl_count = np.zeros(Ctl_range.shape[0])
+  Ud_count = np.zeros(Ud_range.shape[0])
+  Uq_count = np.zeros(Uq_range.shape[0])
+  Id_count = np.zeros(Id_range.shape[0])
+  Iq_count = np.zeros(Iq_range.shape[0])
   bGVrms = 'GVrms' in model.COL_U
   bGIrms = 'GIrms' in model.COL_U
   worst_dVdId = None
@@ -560,18 +585,24 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
   model.start_simulation (bPrint=False)
   for G0 in G_range:
     print (' checking G0={:.2f}'.format (G0))
+    G_idx = np.nonzero(G_range==G0)[0][0]
     for Ud0 in Ud_range:
+      Ud_idx = np.nonzero(Ud_range==Ud0)[0][0]
       for Uq0 in Uq_range:
+        Uq_idx = np.nonzero(Uq_range==Uq0)[0][0]
         # estimate GVrms, ignoring any feedback effects from Id and Iq
         Vdx = np.interp (Ud0, [0.8, 1.21], [170.0, 350.0])
         Vqx = np.interp (Uq0, [-0.5, 0.5], [-154.0, 144.0])
-        Vrms = KRMS * math.sqrt(Vdx*Vdx + Vqx*Vqx)
+        Vrms = localKRMS * math.sqrt(Vdx*Vdx + Vqx*Vqx)
         GVrms = G0 * Vrms
         for Ctl in Ctl_range:
+          Ctl_idx = np.nonzero(Ctl_range==Ctl)[0][0]
           for Id0 in Id_range:
+            Id_idx = np.nonzero(Id_range==Id0)[0][0]
             for Iq0 in Iq_range:
+              Iq_idx = np.nonzero(Iq_range==Iq0)[0][0]
               # baseline
-              Irms = KRMS * math.sqrt(Id0*Id0 + Iq0*Iq0)
+              Irms = localKRMS * math.sqrt(Id0*Id0 + Iq0*Iq0)
               GIrms = G0 * Irms
               if bGIrms:
                 step_vals = [G0, Ud0, Uq0, Id0, Iq0, GIrms, Ctl]
@@ -583,7 +614,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
 
               # change Id
               Id1 = Id0 + delta
-              Irms = KRMS * math.sqrt(Id1*Id1 + Iq0*Iq0)
+              Irms = localKRMS * math.sqrt(Id1*Id1 + Iq0*Iq0)
               GIrms = G0 * Irms
               if bGIrms:
                 step_vals = [G0, Ud0, Uq0, Id1, Iq0, GIrms, Ctl]
@@ -595,7 +626,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
 
               # change Iq
               Iq1 = Iq0 + delta
-              Irms = KRMS * math.sqrt(Id0*Id0 + Iq1*Iq1)
+              Irms = localKRMS * math.sqrt(Id0*Id0 + Iq1*Iq1)
               GIrms = G0 * Irms
               if bGIrms:
                 step_vals = [G0, Ud0, Uq0, Id0, Iq1, GIrms, Ctl]
@@ -634,6 +665,15 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
                 maxdVqIq = dVqIq
                 worst_dVqIq = [G0, Ud0, Uq0, Id0, Iq0, Ctl]
 
+              # am I above dThresh
+              if dVdId >= dThresh or dVdIq >= dThresh or dVqId >= dThresh or dVqIq >= dThresh:
+                G_count[G_idx] += 1.0
+                Ctl_count[Ctl_idx] += 1.0
+                Ud_count[Ud_idx] += 1.0
+                Uq_count[Uq_idx] += 1.0
+                Id_count[Id_idx] += 1.0
+                Iq_count[Iq_idx] += 1.0
+
   if bPrint:
     print ('                                     dVdId   dVdIq   dVqId   dVqIq')
     print ('{:34s} {:7.4f} {:7.4f} {:7.4f} {:7.4f}'.format ('Maximum Magnitudes', maxdVdId, maxdVdIq, maxdVqId, maxdVqIq))
@@ -641,5 +681,11 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
     print ('worst case dVdIq [G, Ud, Uq, Id, Iq]:', worst_dVdIq)
     print ('worst case dVqId [G, Ud, Uq, Id, Iq]:', worst_dVqId)
     print ('worst case dVqIq [G, Ud, Uq, Id, Iq]:', worst_dVqIq)
+    print ('  G counts:  ', G_count)
+    print ('  Ctl counts:', Ctl_count)
+    print ('  Ud counts: ', Ud_count)
+    print ('  Uq counts: ', Uq_count)
+    print ('  Id counts: ', Id_count)
+    print ('  Iq counts: ', Iq_count)
   return max(maxdVdId, maxdVdIq, maxdVqId, maxdVqIq)
 
