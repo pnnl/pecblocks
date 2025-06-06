@@ -827,8 +827,15 @@ class pv3():
       self.sensitivity['idx_q_rms'] = self.COL_U.index (self.sensitivity['GIrms']['Iq'])
       self.sensitivity['idx_gdqrms'] = self.COL_U.index ('GIrms')
       self.sensitivity['k'] = self.sensitivity['GIrms']['k']
-    print ('GDQrms', self.sensitivity['idx_g_rms'], self.sensitivity['idx_d_rms'], self.sensitivity['idx_q_rms'], 
-      self.sensitivity['k'], self.sensitivity['idx_gdqrms'])
+    else:
+      self.sensitivity['idx_g_rms'] = None
+      self.sensitivity['idx_d_in'] = self.COL_U.index (self.sensitivity['inputs'][0])
+      self.sensitivity['idx_q_in'] = self.COL_U.index (self.sensitivity['inputs'][1])
+    if self.sensitivity['idx_g_rms'] is not None:
+      print ('GDQrms', self.sensitivity['idx_g_rms'], self.sensitivity['idx_d_rms'], self.sensitivity['idx_q_rms'], 
+        self.sensitivity['k'], self.sensitivity['idx_gdqrms'])
+    else:
+      print ('DQ indices (no G)', self.sensitivity['idx_d_in'], self.sensitivity['idx_q_in'])
 
     self.sens_bases = []
     vals = np.zeros (len(self.COL_U))
@@ -842,7 +849,7 @@ class pv3():
     self.build_sens_baselines (self.sens_bases, vals, self.sensitivity, keys, indices, lens, 0)
     print (len(self.sens_bases), 'sensitivity base cases constructed in', self.sens_counter, 'function calls')
 
-  def sensitivity_response (self, vals):
+  def sensitivity_response (self, vals, bPrint=False):
     """Calculate the maximum d-axis and q-axis model sensitivity, using pre-calculated *sens_mat* for *H1*
 
     Args:
@@ -859,8 +866,10 @@ class pv3():
     y_non = self.F1 (ub)
     ysum = torch.sum (y_non * self.sens_mat, dim=1)
     y_hat = self.F2 (ysum)
-    ACd = self.de_normalize (y_hat[2], self.normfacs[self.d_key])
-    ACq = self.de_normalize (y_hat[3], self.normfacs[self.q_key])
+    if bPrint:
+      print ('sens resp', y_hat)
+    ACd = self.de_normalize (y_hat[self.sensitivity['idx_out'][0]], self.normfacs[self.d_key])
+    ACq = self.de_normalize (y_hat[self.sensitivity['idx_out'][1]], self.normfacs[self.q_key])
     return ACd, ACq
 
   # coefficients as trainable tensors instead of numpy, use self.H1.b as they are, but pad self.H1.a with ones
@@ -890,7 +899,6 @@ class pv3():
       self.H1.a_coeff = torch.cat ((a1, a2), dim=2)
       if bPrint:
         print ('    constructed a_coeff', self.H1.a_coeff.shape, self.H1.a_coeff)
-        print ('    beta', beta.shape, beta)
         print ('    a1', a1.shape, a1)
         print ('    a2', a2.shape, a2)
     else:
@@ -920,15 +928,19 @@ class pv3():
       float: weighted sensitivity loss; add this to the fitting loss
       float: maximum sensitivity, normalized
     """
-    idx_d = self.sensitivity['idx_d_rms']
-    idx_q = self.sensitivity['idx_q_rms']
-    idx_gdqrms = self.sensitivity['idx_gdqrms']
-    idx_g = self.sensitivity['idx_g_rms']
-    krms = self.sensitivity['k']
     delta = self.sensitivity['delta']
+    idx_g = self.sensitivity['idx_g_rms']
+    if idx_g is not None:
+      idx_d = self.sensitivity['idx_d_rms']
+      idx_q = self.sensitivity['idx_q_rms']
+      idx_gdqrms = self.sensitivity['idx_gdqrms']
+      krms = self.sensitivity['k']
+    else:
+      idx_d = self.sensitivity['idx_d_in']
+      idx_q = self.sensitivity['idx_q_in']
     max_sens = torch.tensor (0.0, requires_grad=True)
     sens_floor = torch.tensor (1.0e-8, requires_grad=True)
-    self.start_sensitivity_simulation ()
+    self.start_sensitivity_simulation (bPrint=bPrint)
 
     for vals in self.sens_bases:
       Ud0 = vals[idx_d]
@@ -936,25 +948,28 @@ class pv3():
       Ud1 = Ud0 + delta
       Uq1 = Uq0 + delta
 
-      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq0*Uq0)
-      Yd0, Yq0 = self.sensitivity_response (vals.copy())
+      if idx_g is not None:
+        vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq0*Uq0)
+      Yd0, Yq0 = self.sensitivity_response (vals.copy(), bPrint=False)
 
-      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud1*Ud1 + Uq0*Uq0)
+      if idx_g is not None:
+        vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud1*Ud1 + Uq0*Uq0)
       vals[idx_d] = Ud1
       vals[idx_q] = Uq0
-      Yd1, Yq1 = self.sensitivity_response (vals.copy())
+      Yd1, Yq1 = self.sensitivity_response (vals.copy(), bPrint=False)
 
-      vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq1*Uq1)
+      if idx_g is not None:
+        vals[idx_gdqrms] = vals[idx_g] * krms * math.sqrt (Ud0*Ud0 + Uq1*Uq1)
       vals[idx_d] = Ud0
       vals[idx_q] = Uq1
-      Yd2, Yq2 = self.sensitivity_response (vals.copy())
+      Yd2, Yq2 = self.sensitivity_response (vals.copy(), bPrint=False)
       #prevent aliasing the base cases
       vals[idx_q] = Uq0
 
       sens = torch.max (torch.stack ((torch.abs(Yd1 - Yd0), torch.abs(Yq1 - Yq0), torch.abs(Yd2 - Yd0), torch.abs(Yq2 - Yq0)))) / delta
       max_sens = torch.max (torch.stack ((max_sens, sens)))
 
-      if bPrint and False:
+      if bPrint: # and False:
         print (' * Yd=', Yd0, Yd1, Yd2)
         print ('   Yq=', Yq0, Yq1, Yq2)
         print ('   sens=', sens, 'max=', max_sens)
@@ -1445,6 +1460,8 @@ class pv3():
 
     y_hat = y_hat.detach().numpy()[[0], :, :].squeeze()
 
+    #REVISIT: hard-wired with 4 outputs in the order shown, but note this function has been deprecated.
+    # To fix, see the approach in the local steady_state_response function.
     Vdc = self.de_normalize (y_hat[npad:,0], self.normfacs['Vdc'])
     Idc = self.de_normalize (y_hat[npad:,1], self.normfacs['Idc'])
     ACd = self.de_normalize (y_hat[npad:,2], self.normfacs[self.d_key])
@@ -1919,13 +1936,15 @@ class pv3():
       vals(list(float)): vector of de-normalized inputs, in order to match *COL_U*
 
     Returns:
-      float: steady-state DC voltage
-      float: steady-state DC current
+      float: steady-state DC voltage (if present in the output)
+      float: steady-state DC current (if present in the output)
       float: steady-state *Id* for a Norton model or *Vd* for a Thevenin model
       float: steady-state *Iq* for a Norton model or *Vq* for a Thevenin model
     """
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
+
+    print (self.d_key, self.q_key)
 
     ub = torch.tensor (vals, dtype=torch.float)
     with torch.no_grad():
@@ -1937,6 +1956,13 @@ class pv3():
           self.ysum[i] += ynew
       y_lin = torch.tensor (self.ysum, dtype=torch.float)
       y_hat = self.F2 (y_lin)
+
+    if len(y_hat) < 3:
+      ACd = y_hat[1].item()
+      ACq = y_hat[2].item()
+      ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
+      ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
+      return ACd, ACq
 
     if len(y_hat) < 4:
       Idc = y_hat[0].item()

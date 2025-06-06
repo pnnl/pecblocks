@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024 Battelle Memorial Institute
+# Copyright (C) 2018-2025 Battelle Memorial Institute
 # file: UCFTrainingPlot.py
 """ Plots the UCF Simscape training data from HDF5 files.
 
@@ -112,6 +112,23 @@ plot_defs = [
     {'row':2, 'col':4, 'tag':'GIrms','title':'Polynomial $G_{Irms}$',  'ylabel':''}
   ]
 
+# this is for the June 3, 2025 data set for sigma optimization
+plot_defs = [
+    {'row':0, 'col':0, 'tag':'Step', 'title':'Control Step', 'ylabel':''},
+    {'row':0, 'col':1, 'tag':'Ramp', 'title':'Control Ramp', 'ylabel':''},
+    {'row':0, 'col':3, 'tag':'Ra',   'title':'$R_a$',        'ylabel':'$\Omega$'},
+
+    {'row':1, 'col':0, 'tag':'Rb',   'title':'$R_b$', 'ylabel':'$\Omega$'},
+    {'row':1, 'col':1, 'tag':'Rc',   'title':'$R_c$', 'ylabel':'$\Omega$'},
+    {'row':1, 'col':2, 'tag':'Vd',   'title':'$V_d$', 'ylabel':'V'},
+    {'row':1, 'col':3, 'tag':'Vq',   'title':'$V_q$', 'ylabel':'V'},
+
+    {'row':2, 'col':0, 'tag':'Ud',   'title':'$U_d$', 'ylabel':''},
+    {'row':2, 'col':1, 'tag':'Uq',   'title':'$U_q$', 'ylabel':''},
+    {'row':2, 'col':2, 'tag':'Id',   'title':'$I_d$', 'ylabel':'A'},
+    {'row':2, 'col':3, 'tag':'Iq',   'title':'$I_q$', 'ylabel':'A'}
+  ]
+
 def start_plot(case_title, idx):
   last_col = 0
   last_row = 0
@@ -162,13 +179,14 @@ def finish_plot(ax, plot_file = None):
 
 
 #pathname = 'd:/data/'
-pathname = 'd:/data/ucf3/'
+#pathname = 'd:/data/ucf3/'
+pathname = 'd:/data/ucf_sigma/'
 
 if __name__ == '__main__':
   idx = -1
   if len(sys.argv) > 1:
     idx = int(sys.argv[1])
-  for root in ['ucf4']: # ucf3z. ucf2t, ucf3, ucf7, ucf9, ucf9c
+  for root in ['ucf_s1']: # ucf4, ucf3z. ucf2t, ucf3, ucf7, ucf9, ucf9c
     filename = '{:s}{:s}.hdf5'.format (pathname, root)
     pngname = '{:s}_Training_Set.png'.format (root)
     ax = start_plot (filename, idx)

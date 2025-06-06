@@ -220,9 +220,9 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThre
         Uq_range = np.linspace (dmin, dmax, 5) # 5)
       elif c in ['Ctl', 'Ctrl', 'Step', 'Ramp']:
         Ctl_range = np.linspace (0.0, 1.0, 2)
-      elif c in ['Vd']:
+      elif c in ['Vd', 'Vdlo']:
         Vd_range = np.linspace (dmin, dmax, 5) # 11)
-      elif c in ['Vq']:
+      elif c in ['Vq', 'Vqlo']:
         Vq_range = np.linspace (dmin, dmax, 5) # 11)
       elif c in ['T']:
         T_range = np.linspace (dmin, dmax, 2)

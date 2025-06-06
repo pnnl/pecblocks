@@ -40,7 +40,10 @@ if __name__ == '__main__':
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
   if 'Vd' in model.COL_U and 'Vq' in model.COL_U and 'Id' in model.COL_Y and 'Iq' in model.COL_Y:
     if 'sensitivity' in cfg:
-      krms = cfg['sensitivity']['GVrms']['k']
+      if 'GVrms' in cfg['sensitivity']:
+        krms = cfg['sensitivity']['GVrms']['k']
+      else:
+        krms = None
       sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True, cfgKRMS = krms)
     else:
       sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
@@ -50,6 +53,9 @@ if __name__ == '__main__':
   elif 'Id' in model.COL_U and 'Iq' in model.COL_U and 'Vd' in model.COL_Y and 'Vq' in model.COL_Y:
     sens = pv3_fn.thevenin_sensitivity_analysis (model, bPrint=True)
     print ('Maximum Thevenin Sensitivity = {:.6f}'.format (sens))
+  elif 'Vdlo' in model.COL_U and 'Vqlo' in model.COL_U and 'Idlo' in model.COL_Y and 'Iqlo' in model.COL_Y: # unbalanced model
+    sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
+    print ('Maximum Norton Lo Sensitivity = {:.6f}'.format (sens))
   else:
     print ('No Thevenin or Norton columns found: skipping sensitivity analysis')
     #sens = sensitivity_analysis (model, bPrint=True, bLog=False, bAutoRange=True)
