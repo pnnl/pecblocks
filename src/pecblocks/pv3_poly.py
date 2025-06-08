@@ -1461,7 +1461,7 @@ class pv3():
     y_hat = y_hat.detach().numpy()[[0], :, :].squeeze()
 
     #REVISIT: hard-wired with 4 outputs in the order shown, but note this function has been deprecated.
-    # To fix, see the approach in the local steady_state_response function.
+    # To fix, see the approach in the steady_state_response function.
     Vdc = self.de_normalize (y_hat[npad:,0], self.normfacs['Vdc'])
     Idc = self.de_normalize (y_hat[npad:,1], self.normfacs['Idc'])
     ACd = self.de_normalize (y_hat[npad:,2], self.normfacs[self.d_key])
@@ -1943,8 +1943,6 @@ class pv3():
     """
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
-
-    print (self.d_key, self.q_key)
 
     ub = torch.tensor (vals, dtype=torch.float)
     with torch.no_grad():
