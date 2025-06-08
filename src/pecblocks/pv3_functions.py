@@ -9,6 +9,7 @@ import numpy as np
 import pecblocks.pv3_poly as pv3_model
 import math
 import torch
+import itertools
 
 KRMS = math.sqrt(1.5)
 
@@ -158,7 +159,138 @@ def build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl):
     return [T0, G0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
   return [T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl]
 
-def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThresh=0.10, cfgKRMS=None):
+def general_sensitivity_analysis (model, bPrint, dThresh, bLog = False):
+  """Estimates the sensitivity of an exported model in z domain, Norton or Thev, without G.
+
+  The sensitivity is estimated from steady-state response of grid output variables (OutD, OutQ)
+  with respect to grid input variables (InD, InQ). These variables must be indentified in the 
+  model cfg sensitivity data structure. Steady-state operating points are estimated at 7 values
+  of each input variables, as determined by autoranging. There is no special handling of *G*.
+
+  Args:
+    model (pv3_poly): The *pv3_poly* instance with data loaded and normalized, and the model previously exported.
+    bPrint (bool): print the maximum values of the four partial derivatives of *OutD*, *OutQ* with respect to *InD*, *InQ*.
+    dThresh (float): when printing, show the number of cases within each range that have sigma exceeding this threshold.
+    bLog (bool): print diagnostics of the operating points and perturbations over the sensitivity evaluation set.
+
+  Returns:
+    float: the maximum of four partial derivatives of OutD, OutQ with respect to InD, InQ
+  """
+  maxdOutDInD = 0.0
+  maxdOutDInQ = 0.0
+  maxdOutQInD = 0.0
+  maxdOutQInQ = 0.0
+  delta = 0.01
+  keys = {}
+  ranges = {}
+  counts = {}
+  ncases = 1
+  npts_in_range = 4
+  idx_InD = -1
+  idx_InQ = -1
+  nvals = len(model.COL_U)
+  step_vals = np.zeros (nvals)
+
+  print ('Autoranging Inputs:')
+  print ('Column       Min       Max      Mean     Range')
+  idx = 0
+  for c in model.COL_U:
+    fac = model.normfacs[c]
+    dmean = fac['offset']
+    if 'max' in fac and 'min' in fac:
+      dmax = fac['max']
+      dmin = fac['min']
+    else:
+      dmax = model.de_normalize (np.max (model.data_train[:,:,idx]), fac)
+      dmin = model.de_normalize (np.min (model.data_train[:,:,idx]), fac)
+    drange = dmax - dmin
+    if abs(drange) <= 0.0:
+      drange = 1.0
+    print ('{:6s} {:9.3f} {:9.3f} {:9.3f} {:9.3f}'.format (c, dmin, dmax, dmean, drange))
+    keys[idx] = c
+    ranges[idx] = np.linspace (dmin, dmax, npts_in_range)
+    counts[idx] = np.zeros (npts_in_range)
+    ncases *= npts_in_range
+    if 'Vd' == c or 'Id' == c:
+      idx_InD = idx
+    elif 'Vq' == c or 'Iq' == c:
+      idx_InQ = idx
+    idx += 1
+
+  print ('Using {:d} sensitivity cases, DQ input indices {:d}, {:d} with {:d} inputs'.format (ncases, idx_InD, idx_InQ, nvals))
+  for idx in range(nvals):
+    print (keys[idx], ranges[idx])
+
+  indices = [range(npts_in_range) for _ in range(nvals)]
+
+  model.start_simulation (bPrint=False)
+  for row in itertools.product(*indices):
+    if bLog:
+      print (row)
+    # baseline
+    for idx in range(nvals):
+      step_vals[idx] = ranges[idx][row[idx]]
+    InD0 = step_vals[idx_InD]
+    InD1 = InD0 + delta
+    InQ0 = step_vals[idx_InQ]
+    InQ1 = InQ0 + delta
+    if bLog:
+      print ('  base:', step_vals)
+    OutD0, OutQ0 = model.steady_state_response (step_vals)
+
+    # change InD
+    for idx in range(nvals):
+      step_vals[idx] = ranges[idx][row[idx]]
+    step_vals[idx_InD] = InD1
+    if bLog:
+      print ('  dD1:', step_vals)
+    OutD1, OutQ1 = model.steady_state_response (step_vals)
+
+    # change InQ
+    for idx in range(nvals):
+      step_vals[idx] = ranges[idx][row[idx]]
+    step_vals[idx_InQ] = InQ1
+    if bLog:
+      print ('  dQ1:', step_vals)
+    OutD2, OutQ2 = model.steady_state_response (step_vals)
+
+    # calculate the changes
+    dOutDInD = (OutD1 - OutD0) / delta
+    dOutQInD = (OutQ1 - OutQ0) / delta
+    dOutDInQ = (OutD2 - OutD0) / delta
+    dOutQInQ = (OutQ2 - OutQ0) / delta
+
+    # track the global maxima
+    dOutDInD = abs(dOutDInD)
+    if dOutDInD > maxdOutDInD:
+      maxdOutDInD = dOutDInD
+
+    dOutQInD = abs(dOutQInD)
+    if dOutQInD > maxdOutQInD:
+      maxdOutQInD = dOutQInD
+
+    dOutDInQ = abs(dOutDInQ)
+    if dOutDInQ > maxdOutDInQ:
+      maxdOutDInQ = dOutDInQ
+
+    dOutQInQ = abs(dOutQInQ)
+    if dOutQInQ > maxdOutQInQ:
+      maxdOutQInQ = dOutQInQ
+
+    # am I above dThresh
+    if dOutDInD >= dThresh or dOutDInQ >= dThresh or dOutQInD >= dThresh or dOutQInQ >= dThresh:
+      for idx in range(nvals):
+        counts[row[idx]] += 1.0
+
+  if bPrint:
+    print ('                               maxdOutDInD maxdOutDInQ maxdOutQInD maxdOutQInQ')
+    print ('{:29s} {:11.4f} {:11.4f} {:11.4f} {:11.4f}'.format ('Maximum Magnitudes', maxdOutDInD, maxdOutDInQ, maxdOutQInD, maxdOutQInQ))
+    print ('Counting instances of max sensitivity >= {:7.4f}'.format (dThresh))
+    for key, val in counts.items():
+      print (key, val)
+  return max(maxdOutDInD, maxdOutDInQ, maxdOutQInD, maxdOutQInQ)
+
+def norton_sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThresh=0.10, cfgKRMS=None):
   """Estimates the sensitivity of an exported model in z domain.
 
   The sensitivity is estimated for grid interface output variables (Id, Iq) with
@@ -279,21 +411,21 @@ def sensitivity_analysis (model, bPrint, bLog = False, bAutoRange = False, dThre
                   Vrms = localKRMS * math.sqrt(Vd0*Vd0 + Vq0*Vq0)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq0, GVrms, Ctl)
-                  Vdc0, Idc0, Id0, Iq0 = model.steady_state_response (step_vals)
+                  Id0, Iq0 = model.steady_state_response (step_vals)
 
                   # change Vd and GVrms
                   Vd1 = Vd0 + delta
                   Vrms = localKRMS * math.sqrt(Vd1*Vd1 + Vq0*Vq0)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd1, Vq0, GVrms, Ctl)
-                  Vdc1, Idc1, Id1, Iq1 = model.steady_state_response (step_vals)
+                  Id1, Iq1 = model.steady_state_response (step_vals)
 
                   # change Vq and GVrms
                   Vq1 = Vq0 + delta
                   Vrms = localKRMS * math.sqrt(Vd0*Vd0 + Vq1*Vq1)
                   GVrms = G0 * Vrms
                   step_vals = build_step_vals (T0, G0, F0, Ud0, Uq0, Vd0, Vq1, GVrms, Ctl)
-                  Vdc2, Idc2, Id2, Iq2 = model.steady_state_response (step_vals)
+                  Id2, Iq2 = model.steady_state_response (step_vals)
 
                   # calculate the changes
                   dIdVd = (Id1 - Id0) / delta
@@ -480,19 +612,19 @@ def model_sensitivity (model, bPrint):
     Vq1 = Vq0 + 1.0
 
     vals[cfg['idx_gvrms']] = get_gvrms (vals[cfg['idx_g_rms']], Vd0, Vq0, krms)
-    _, _, Id0, Iq0 = model.steady_state_response (vals.copy())
+    Id0, Iq0 = model.steady_state_response (vals.copy())
     #print (vals, Id0, Iq0)
 
     vals[cfg['idx_gvrms']] = get_gvrms (vals[cfg['idx_g_rms']], Vd1, Vq0, krms)
     vals[cfg['idx_vd_rms']] = Vd1
     vals[cfg['idx_vq_rms']] = Vq0
-    _, _, Id1, Iq1 = model.steady_state_response (vals.copy())
+    Id1, Iq1 = model.steady_state_response (vals.copy())
     #print (vals, Id1, Iq1)
 
     vals[cfg['idx_gvrms']] = get_gvrms (vals[cfg['idx_g_rms']], Vd0, Vq1, krms)
     vals[cfg['idx_vd_rms']] = Vd0
     vals[cfg['idx_vq_rms']] = Vq1
-    _, _, Id2, Iq2 = model.steady_state_response (vals.copy())
+    Id2, Iq2 = model.steady_state_response (vals.copy())
     #print (vals, Id2, Iq2)
     #prevent aliasing the base cases
     vals[cfg['idx_vq_rms']] = Vq0
@@ -610,7 +742,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
                 step_vals = [G0, Ud0, Uq0, Id0, Iq0, GVrms, Ctl]
               else:
                 step_vals = [G0, Ud0, Uq0, Id0, Iq0, Ctl]
-              Vdc0, Idc0, Vd0, Vq0 = model.steady_state_response (step_vals)
+              Vd0, Vq0 = model.steady_state_response (step_vals)
 
               # change Id
               Id1 = Id0 + delta
@@ -622,7 +754,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
                 step_vals = [G0, Ud0, Uq0, Id1, Iq0, GVrms, Ctl]
               else:
                 step_vals = [G0, Ud0, Uq0, Id1, Iq0, Ctl]
-              Vdc1, Idc1, Vd1, Vq1 = model.steady_state_response (step_vals)
+              Vd1, Vq1 = model.steady_state_response (step_vals)
 
               # change Iq
               Iq1 = Iq0 + delta
@@ -634,7 +766,7 @@ def thevenin_sensitivity_analysis (model, bPrint, bLog = False, bReducedSet = Fa
                 step_vals = [G0, Ud0, Uq0, Id0, Iq1, GVrms, Ctl]
               else:
                 step_vals = [G0, Ud0, Uq0, Id0, Iq1, Ctl]
-              Vdc2, Idc2, Vd2, Vq2 = model.steady_state_response (step_vals)
+              Vd2, Vq2 = model.steady_state_response (step_vals)
 
               # calculate the changes
               dVdId = (Vd1 - Vd0) / delta

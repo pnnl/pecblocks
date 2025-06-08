@@ -1936,10 +1936,10 @@ class pv3():
       vals(list(float)): vector of de-normalized inputs, in order to match *COL_U*
 
     Returns:
-      float: steady-state DC voltage (if present in the output)
-      float: steady-state DC current (if present in the output)
       float: steady-state *Id* for a Norton model or *Vd* for a Thevenin model
       float: steady-state *Iq* for a Norton model or *Vq* for a Thevenin model
+      float: steady-state DC voltage (if present in the output, NOT INCLUDED for now)
+      float: steady-state DC current (if present in the output, NOT INCLUDED for now)
     """
     for i in range(len(vals)):
       vals[i] = self.normalize (vals[i], self.normfacs[self.COL_U[i]])
@@ -1956,8 +1956,8 @@ class pv3():
       y_hat = self.F2 (y_lin)
 
     if len(y_hat) < 3:
-      ACd = y_hat[1].item()
-      ACq = y_hat[2].item()
+      ACd = y_hat[0].item()
+      ACq = y_hat[1].item()
       ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
       ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
       return ACd, ACq
@@ -1969,7 +1969,7 @@ class pv3():
       Idc = self.de_normalize (Idc, self.normfacs['Idc'])
       ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
       ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
-      return Idc, ACd, ACq
+      return ACd, ACq
 
     Vdc = y_hat[0].item()
     Idc = y_hat[1].item()
@@ -1981,7 +1981,7 @@ class pv3():
     ACd = self.de_normalize (ACd, self.normfacs[self.d_key])
     ACq = self.de_normalize (ACq, self.normfacs[self.q_key])
 
-    return Vdc, Idc, ACd, ACq
+    return ACd, ACq
 
   def step_simulation (self, vals, nsteps=1):
     """Simulate one or more discrete time steps of a trained model using the IIR coefficients of *H1*

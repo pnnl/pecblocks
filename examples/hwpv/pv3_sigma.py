@@ -39,22 +39,21 @@ if __name__ == '__main__':
   print (len(model.COL_U), 'inputs:', model.COL_U)
   print (len(model.COL_Y), 'outputs:', model.COL_Y)
   if 'Vd' in model.COL_U and 'Vq' in model.COL_U and 'Id' in model.COL_Y and 'Iq' in model.COL_Y:
-    if 'sensitivity' in cfg:
-      if 'GVrms' in cfg['sensitivity']:
-        krms = cfg['sensitivity']['GVrms']['k']
-      else:
-        krms = None
-      sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True, cfgKRMS = krms)
+    if 'sensitivity' in cfg and 'GVrms' in cfg['sensitivity']:
+      sens = pv3_fn.norton_sensitivity_analysis (model, bPrint=True, bAutoRange=True, cfgKRMS = cfg['sensitivity']['GVrms']['k'])
     else:
-      sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
+      sens = pv3_fn.general_sensitivity_analysis (model, bPrint=True, dThresh=0.10, bLog=False)
     print ('Maximum Norton Sensitivity = {:.6f}'.format (sens))
     clamp = pv3_fn.clamp_loss (model, bPrint=True)
     print ('Total Norton Clamping Loss = {:.6f}'.format (clamp))
   elif 'Id' in model.COL_U and 'Iq' in model.COL_U and 'Vd' in model.COL_Y and 'Vq' in model.COL_Y:
-    sens = pv3_fn.thevenin_sensitivity_analysis (model, bPrint=True)
+    if 'sensitivity' in cfg and 'GIrms' in cfg['sensitivity']:
+      sens = pv3_fn.thevenin_sensitivity_analysis (model, bPrint=True)
+    else:
+      sens = pv3_fn.general_sensitivity_analysis (model, bPrint=True, dThresh=10.0)
     print ('Maximum Thevenin Sensitivity = {:.6f}'.format (sens))
   elif 'Vdlo' in model.COL_U and 'Vqlo' in model.COL_U and 'Idlo' in model.COL_Y and 'Iqlo' in model.COL_Y: # unbalanced model
-    sens = pv3_fn.sensitivity_analysis (model, bPrint=True, bAutoRange=True)
+    sens = pv3_fn.norton_sensitivity_analysis (model, bPrint=True, bAutoRange=True)
     print ('Maximum Norton Lo Sensitivity = {:.6f}'.format (sens))
   else:
     print ('No Thevenin or Norton columns found: skipping sensitivity analysis')
