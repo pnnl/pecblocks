@@ -11,4 +11,4 @@ Ramp       0.000     1.000     0.950     1.000
 Id        -2.578    40.698     3.448    43.276
 Iq       -10.079    17.930     2.391    28.008
 COL_Y ['Id', 'Iq']
-Train time: 140.53, Recent loss: 0.086959, RMS Errors: 0.0394 0.0243
+Train time: 2880.42, Recent loss: 0.004710, RMS Errors: 0.0144 0.0184

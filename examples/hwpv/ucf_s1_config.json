@@ -8,7 +8,7 @@
   "COL_Y": ["Id", "Iq"],
   "sensitivity": {
      "limit": 0.01,
-     "weight": 0.10,
+     "weight": 0.20,
      "delta": 0.01,
      "inputs": ["Vd", "Vq"],
      "outputs": ["Id", "Iq"],
@@ -26,7 +26,7 @@
   "h5grp_prefix":"ucf",
   "lr": 1.0e-3,
   "t_step": 0.01,
-  "num_iter": 10,
+  "num_iter": 200,
   "continue_iterations": false,
   "print_freq": 20,
   "batch_size": 800,
