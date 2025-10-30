@@ -1,0 +1,38 @@
+BEGIN NEW DATA CASE
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+ 20.0E-3     1.5                        
+ 9999999       1       1       1       1       0       0       1       0
+/MODELS
+MODELS
+$INCLUDE, GIDSRC.mod
+RECORD
+  DCBUS_______GIDSRC.o1 AS o1
+  DCBUS_______GIDSRC.o2 AS o2
+  DCBUS_______GIDSRC.o3 AS o3
+ENDMODELS
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C < n1 >< n2 ><ref1><ref2>< R  >< A  >< B  ><Leng><><>0
+  IRRAD                     1.E3                                               0
+  DCBUS                     100.                                               1
+94DCBUS       GIDSRCNORT                                                       3
+94IRRAD                                                                        0
+ >DATA  WC          377.
+ >END
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+11IRRAD  0        1.                                              0.50      1.E3
+/OUTPUT
+  IRRAD DCBUS
+BLANK MODELS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

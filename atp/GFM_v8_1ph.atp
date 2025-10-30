@@ -1,0 +1,217 @@
+BEGIN NEW DATA CASE
+$INCLUDE, GFM_v8_1ph.prm
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+__DELTAT____TMAX                        
+   65535       1       1       1       1       0       0       1       0
+/TACS
+TACS HYBRID
+98DBARI   =DBAR * IL
+98DBARV   =DBAR * VCAP
+90VCAP                                                             -1.      1.E3
+91IL                                                                        1.E3
+98ISCN    =      8.2
+98VOCN    =     36.8
+98NS      =      60.
+98KI      =   6.2E-4
+98KV      = -0.00356
+98A       =      1.3
+98RP      =  1088.27
+98RS      =    0.244
+98MSER    =      13.
+98MPAR    =      36.
+98IPVN    =(RP+RS)*ISCN/RP
+98VPV     =ABS(DCP)/MSER
+98ISWT    =RSEQ
+98ITRM    =ISWT/MPAR
+98DTEMP   =TEMP-25.0
+98GPU     =G/1000.0
+98AVT     =A*NS*(DTEMP+298.0)/11604.506
+98I0      =(ISCN + KI*DTEMP) / (EXP((VOCN + KV*DTEMP)/AVT) - 1.0)
+98IPV     =(IPVN + KI*DTEMP)*GPU
+98ID      =I0*(EXP((VPV+RS*ITRM)/AVT) - 1.0)
+98IM      =IPV - ID
+98IPOS    =IM*MPAR
+98INEG    =-IM*MPAR
+90G                                                                -1.      1.E3
+90TEMP                                                             -1.      1.E3
+91RSEQ                                                             -1.      1.E3
+90DCP                                                              -1.      1.E3
+98VMP     =    29.51
+98IMP     =     7.63
+98DIDT  59                +IPVPU                      1.
+98IPVPU   = 0.0036 * RSEQ  
+ 0VPVPU           +DCP                            .00261                  
+98IDEN  63+DENPAD                         +DIDT             1.
+98DENPAD  =      0.1
+98PPVPU   =IPVPU*VPVPU
+98DELTV   =-DIDT*DELTAT*(TIMEX.GT.0.1)*VPVPU/IDEN
+ 1DBAR                    +DELTV                     20.   .25    4.      
+       -1.                                                                      
+                  1.                                                            
+90PCCA                                                                      1.E3
+90PCCB                                                                      1.E3
+90PCCC                                                                      1.E3
+90FCTRL                                                            -1.      1.E3
+90MD                                                               -1.      1.E3
+90MQ                                                               -1.      1.E3
+98COSTH   =COS(THETA)
+98COSTHM  =COS(THETA-2*PI/3)
+98COSTHP  =COS(THETA+2*PI/3)
+98SINTH   =SIN(THETA)
+98SINTHM  =SIN(THETA-2*PI/3)
+98SINTHP  =SIN(THETA+2*PI/3)
+98VC0     =(PCCA+PCCB+PCCC)/3.0
+98VCD     =(PCCA*COSTH+PCCB*COSTHM+PCCC*COSTHP)/1.5
+98VCQ     =-(PCCA*SINTH+PCCB*SINTHM+PCCC*SINTHP)/1.5
+91IMTRB                                                                     1.E3
+91IMTRA                                                                     1.E3
+91IMTRC                                                                     1.E3
+98IC0     =(IMTRA+IMTRB+IMTRC)/3.0
+98ICD     =(IMTRA*COSTH+IMTRB*COSTHM+IMTRC*COSTHP)/1.5
+98ICQ     =-(IMTRA*SINTH+IMTRB*SINTHM+IMTRC*SINTHP)/1.5
+98PDQ0    =1.5*(VCD*ICD+VCQ*ICQ+2*VC0*IC0)
+98QDQ0    =1.5*(VCQ*ICD-VCD*ICQ)
+98VSA     =MA * VDC * 0.5
+98VSB     =MB * VDC * 0.5
+98VSC     =MC * VDC * 0.5
+90VDC                                                              -1.      1.E3
+91ACOUTA                                                           -1.      1.E3
+91ACOUTB                                                           -1.      1.E3
+91ACOUTC                                                           -1.      1.E3
+98IDCA    =-MA * ACOUTA * 0.5
+98IDCB    =-MB * ACOUTB * 0.5
+98IDCC    =-MC * ACOUTC * 0.5
+98MA      =COSTH*MD - SINTH*MQ
+98WC      =2*PI*FCTRL
+98MB      =COSTHM*MD - SINTHM*MQ
+98MC      =COSTHP*MD - SINTHP*MQ
+ 1THETA   +WC                                         1.
+        1.
+                  1.
+98DINTEG  = DRAW   + DINIT 
+ 1DRAW    +DELTV                                   -1.E4
+        1.
+                  1.
+11DINIT           .4                                                        1.E3
+ 0DBAR                    +DINTEG                     1.   .25    4.      
+33DBAR  
+33VCD   
+33VCQ   
+33ICD   
+33ICQ   
+33VC0   
+33IC0   
+33PDQ0  
+33QDQ0  
+77DBAR            .4
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C < n1 >< n2 ><ref1><ref2>< R  >< A  >< B  ><Leng><><>0
+  ACOUTAACTEEA                    .061                                         0
+  ACOUTAACTEEA              91.5
+  ACOUTBACTEEB                    .061                                         0
+  ACOUTBACTEEB              91.5
+  ACOUTCACTEEC                    .061                                         0
+  ACOUTCACTEEC              91.5
+  ACTEEA                     .01        19.1                                   0
+  ACTEEB                     .01        19.1                                   0
+  ACTEEC                     .01        19.1                                   0
+  VCAP  VDC                       .001                                         0
+  VCAP  VDC                  1.5
+  ACTEEAPCCA                     .0367                                         0
+  ACTEEAPCCA               55.05
+  ACTEEBPCCB                     .0367                                         0
+  ACTEEBPCCB               55.05
+  ACTEECPCCC                     .0367                                         0
+  ACTEECPCCC               55.05
+  ACFLTALDNDA                     .061                                         0
+  ACFLTALDNDA               91.5
+  ACFLTBLDNDB                     .061                                         0
+  ACFLTBLDNDB               91.5
+  ACFLTCLDNDC                     .061                                         0
+  ACFLTCLDNDC               91.5
+  MTRA  ACFLTA              .046                                               0
+  MTRB  ACFLTB              .046                                               0
+  MTRC  ACFLTC              .046                                               0
+  IL    DCFLT                      20.                                         0
+  DBARI VCAP               .0001                                               0
+  IL    DCFLT               5.E3                                               0
+  DCFLT DBARV              .0001                                               0
+  VCAP                    .00075        1.E3                                   0
+  DCP                     .00075        1.E3                                   0
+97LDNDA                            -1.                                         0
+             0.0          RLDA1_
+             4.0          RLDA2_
+            9999
+97LDNDB                                                                        0
+             0.0          RLDB1_
+             4.0          RLDB2_
+            9999
+97LDNDC                                                                        0
+             0.0          RLDC1_
+             4.0          RLDC2_
+            9999
+  IPOS  RSEQ              .04406                                               0
+99IPOS  INEG                                                                   0
+          1.2173           478.4
+           295.2           479.4
+            9999
+  INEG                    .04406                                               0
+        G                   1.E3                                               0
+        TEMP                1.E3                                               0
+        FCTRL               1.E3                                               0
+        MD                  1.E3                                               0
+        MQ                  1.E3                                               0
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+  PCCA  IMTRA                                         MEASURING                
+  PCCB  IMTRB                                         MEASURING                
+  PCCC  IMTRC                                         MEASURING                
+  IMTRA MTRA                                          MEASURING                0
+  IMTRB MTRB                                          MEASURING                0
+  IMTRC MTRC                                          MEASURING                0
+  RSEQ  DCP                                           MEASURING                1
+  VSA   ACOUTA                                        MEASURING                0
+  VSB   ACOUTB                                        MEASURING                0
+  VSC   ACOUTC                                        MEASURING                0
+  DCP   IL                                            MEASURING                0
+  VDC   IDCB                                          MEASURING                0
+  VDC   IDCC                                          MEASURING                0
+  VDC   IDCA                                          MEASURING                0
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+60DBARV  0                                                         -1.      1.E3
+60DBARI -1                                                         -1.      1.E3
+60IPOS  -1                                                         -1.      1.E3
+60INEG  -1                                                         -1.      1.E3
+12G      0G1________                  1.                           1.0      1.E3
+12G      0DG________                  1.                           4.0      1.E3
+11TEMP   0TEMP0_____                                               -1.      1.E3
+12TEMP   0DTEMP_____                  .1                           4.0      1.E3
+11FCTRL  0FC0_______                                               -1.      1.E3
+12FCTRL  0DFC_______                  .1                           4.0      1.E3
+11MD     0UD0_______                                               -1.      1.E3
+12MD     0DUD_______                  .1                           4.0      1.E3
+11MQ     0UQ0_______                                               -1.      1.E3
+12MQ     0DUQ_______                  .1                           4.0      1.E3
+60VSA    0                                                                  1.E3
+60VSB    0                                                                  1.E3
+60VSC    0                                                                  1.E3
+60IDCA  -1                                                         -1.      1.E3
+60IDCB  -1                                                         -1.      1.E3
+60IDCC  -1                                                         -1.      1.E3
+/INITIAL
+ 3IL    DCFLT             0.0
+/OUTPUT
+  DCP   G     TEMP  FCTRL MD    MQ    
+BLANK TACS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK INITIAL
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

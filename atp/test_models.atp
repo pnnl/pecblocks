@@ -1,0 +1,73 @@
+BEGIN NEW DATA CASE
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+ 20.0E-3     1.5                        
+ 9999999       1       1       1       1       0       0       1       0
+/MODELS
+MODELS
+INPUT
+  MM0001 {v(IN1)}
+$INCLUDE, GTOVDC.mod
+$INCLUDE, GTOIDC.mod
+$INCLUDE, TTOVDC.mod
+$INCLUDE, TTOIDC.mod
+$INCLUDE, VTOIDC.mod
+$INCLUDE, VTOPAC.mod
+$INCLUDE, VTOQAC.mod
+USE GTOVDC AS GTOVDC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE GTOIDC AS GTOIDC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE TTOVDC AS TTOVDC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE TTOIDC AS TTOIDC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE VTOIDC AS VTOIDC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE VTOPAC AS VTOPAC
+INPUT
+  i1:= MM0001
+ENDUSE
+USE VTOQAC AS VTOQAC
+INPUT
+  i1:= MM0001
+ENDUSE
+RECORD
+  GTOVDC.o3 AS GTOVDC
+  GTOIDC.o3 AS GTOIDC
+  TTOVDC.o3 AS TTOVDC
+  TTOIDC.o3 AS TTOIDC
+  VTOIDC.o3 AS VTOIDC
+  VTOPAC.o3 AS VTOPAC
+  VTOQAC.o3 AS VTOQAC
+ENDMODELS
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C < n1 >< n2 ><ref1><ref2>< R  >< A  >< B  ><Leng><><>0
+  IN1                       1.E3                                               0
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+11IN1    0        1.                                              0.50      1.E3
+/OUTPUT
+  IN1
+BLANK MODELS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

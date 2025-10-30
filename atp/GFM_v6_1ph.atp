@@ -1,0 +1,1004 @@
+BEGIN NEW DATA CASE
+$INCLUDE, GFM_v6_1ph.prm
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+__DELTAT____TMAX                        
+ 9999999       1       1       1       1       0       0       1       0
+/TACS
+TACS HYBRID
+98DBARI   =Dbar * IL
+98DBARV   =Dbar * Vcap
+90VCAP                                                             -1.      1.E3
+27DBAR  
+91IL                                                                        1.E3
+98VSRCA   =alphaA* Vdc
+98VSRCB   =alphaB * Vdc
+98VSRCC   =alphaC * Vdc
+90VDC                                                              -1.      1.E3
+91IAS                                                              -1.      1.E3
+91IBS                                                              -1.      1.E3
+91ICS                                                              -1.      1.E3
+98INJA    =-alphaA * Ias
+98INJB    =-alphaB * Ibs
+98INJC    =-alphaC * Ics
+98ALPHAA  =     1. * MDSIA 
+98ALPHAB  =     1. * MDSIB 
+98ALPHAC  =     1. * MDSIC 
+27MDSIA 
+27MDSIB 
+27MDSIC 
+C perturbation type, 0:sin, 1:ramp, 2:multi steps, 3:single step, 9:no change
+98GTYPE   =       1.
+27IRROUT
+C perturbation type, 0:sin, 1:ramp, 2:multi steps, 3:single step, 9: no change
+98TTYPE   =       1.
+27TMPOUT
+77IRROUT        1.E3
+77TMPOUT         25.
+/MODELS
+MODELS
+INPUT
+  MM0001 {v(PCCA)}
+  MM0002 {v(PCCB)}
+  MM0003 {v(PCCC)}
+  MM0004 {i(PCCA)}
+  MM0005 {i(PCCB)}
+  MM0006 {i(PCCC)}
+  MM0007 {v(VCAP)}
+  MM0009 {v(PVPOSA)}
+  MM0010 {v(MPPTN)}
+  MM0011 {i(PVPOSA)}
+  MM0012 {tacs(IRROUT)}
+  MM0013 {tacs(TMPOUT)}
+  MM0014 {tacs(GTYPE)}
+  MM0015 {tacs(TTYPE)}
+OUTPUT
+  MDSIA
+  MDSIB
+  MDSIC
+  PMEA
+  QMEA
+  DBAR
+  IPVA
+  IPVB
+  IRROUT
+  TMPOUT
+  FPLL
+  X0001A
+  X0001B
+  X0001C
+  X0002A
+  X0002B
+  X0002C
+  VMAGA
+  VMAGB
+  VMAGC
+  VANGA
+  VANGB
+  VANGC
+  X0003A
+  X0003B
+  X0003C
+  X0004A
+  X0004B
+  X0004C
+  IMAGA
+  IMAGB
+  IMAGC
+  IANGA
+  IANGB
+  IANGC
+MODEL VSICTRLUQ
+COMMENT =============================================================
+    7-July-2020, Yuan Liu, GFM inverter
+========================================================== ENDCOMMENT
+INPUT  volt[1..3] -- phase voltages
+       curr[1..3] -- line current out of inverter  
+       VDCP, VDCN -- Positive and negative DC-bus voltage           
+OUTPUT fire[1..3]
+CONST
+  twopi  {VAL:6.283185307}
+DATA
+  S      {dflt:0.1}    --MVA
+  Vrms   {dflt:0.48}    --kV L-L rms
+  Freq0  {dflt:60}   --Hz
+  --swfreq {dflt:10000} --Hz
+  theta0 {dflt:0.0}  --initial phase betw. d-axis and alpha-axis
+  TVQP   {dflt:0.01} --sec
+  mP     {dflt:3.77} --rad/s
+  mQ     {dflt:0.05} --pu
+  Kvp    {dflt:0.0}  --pu
+  Tvi    {dflt:0.1706} --sec
+  Kpp    {dflt:5.0}  --rad/s
+  Tpi    {dflt:0.01} --s^2
+VAR
+  Vds, Vqs, Ids, Iqs, VPUss, VPUs, QPUss, QPUs, PPUss, PPUs, Vreq, Preq, w1, w 
+  w2, w21, w22, w21s, w22s, V, Vs, f, Pmax, Pmin, Vref, Sbase, Vbase, Wbase
+  omega, fire[1..3], i, Vdc, m[1..3], Vpu, freq, theta
+HISTORY
+  freq {dflt:Freq0} --Hz
+  VPUs {dflt:0} --pu
+  QPUs {dflt:0} --pu
+  PPUs {dflt:0} --pu
+  V {dflt:0} --pu
+  w21 {dflt:0} --rad/s, actually delta_w
+  w22 {dflt:0} --rad/s, actually delta_w
+INIT
+  omega:=2*PI*Freq0
+  theta := theta0*PI/180.0
+  Wbase:=omega --rad/s
+  Pmax:= 1.0 --pu
+  Pmin:= 0.0 --pu
+  Sbase:= S  --MVA
+  Vbase:= Vrms --kV
+  Vpu:=Vrms*1000*sqrt(2/3)   -- V, L-G peak ref.
+  Vreq:=1.0 --pu
+  Preq:=1.0 --pu
+  --w21:=0.0
+  --w22:=0.0
+ENDINIT
+EXEC
+  --if t> 1.5 then
+  --    Preq := 1.5
+  --endif
+  Vdc:=VDCP-VDCN --V
+  --Coordinate transforms
+  Vds:=volt[1]*2.0/3.0-volt[2]/3.0-volt[3]/3.0 --V
+  Vqs:=(volt[2]-volt[3])/sqrt(3.0) --V
+  Ids:=curr[1]*2.0/3.0-curr[2]/3.0-curr[3]/3.0  --A
+  Iqs:=(curr[2]-curr[3])/sqrt(3.0)  --A
+  --VPQ filter
+  VPUss:=sqrt(Vds**2 + Vqs**2) * sqrt(3.0/2.0)/(Vbase*1000.0) --pu
+  claplace(VPUs/VPUss):=(1|s0)/(1|s0+TVQP|s1) --pu
+  QPUss:=3.0/2.0*(Vqs*Ids - Vds*Iqs)/(Sbase*1e6) --pu
+  claplace(QPUs/QPUss):=(1|s0)/(1|s0+TVQP|s1) --pu
+  PPUss:=3.0/2.0*(Vds*Ids + Vqs*Iqs)/(Sbase*1e6) --pu
+  claplace(PPUs/PPUss):=(1|s0)/(1|s0+TVQP|s1) --pu
+  --QV droop control
+  Vref:=-QPUs*mQ+Vreq --pu
+  Vs:=Vref-VPUs --pu
+  claplace(V/Vs){dmin:0.25 dmax:1.0}:=(1|s0+Kvp*Tvi|s1)/(Tvi|s1) --pu
+  --Pf droop control
+  w21s:=Pmax-PPUs --pu
+  claplace(w21/w21s){dmin:-20.0 dmax:0.0}:=(1|s0+Kpp*Tpi|s1)/(Tpi|s1) --rad/s
+  w22s:=Pmin-PPUs --pu
+  claplace(w22/w22s){dmin:0.0 dmax:3.1416}:=(1|s0+Kpp*Tpi|s1)/(Tpi|s1) --rad/s
+  w2:=w21+w22 --rad/s
+  w1:=(Preq-PPUs)*mP --rad/s
+  w:=w1+w2+Wbase --rad/s
+  f:=w/twopi --Hz
+
+  for i:=1 to 3 do
+    m[i]:=V*sin(w*t+(i-1)*4.0/3.0*pi) {min:-1.0 max:1.0} --pu
+    fire[i] := m[i]
+  endfor
+
+  --V:=0.3
+  --fire[1]:= V * sin(twopi * freq * t)
+  --fire[2]:= V * sin(twopi * freq * t + 4.0/3.0 * PI)
+  --fire[3]:= V * sin(twopi * freq * t + 2.0/3.0 * PI)
+  
+  --tx:=t mod recip(swfreq)  
+  --triang:=1.0*(tx*4*swfreq-1 - 2*(tx*4*swfreq-2)*(2*tx>recip(swfreq)))  --triangular PWM
+  --triang:=Vdc/(2.0*Vpu)*(tx*4*swfreq-1 - 2*(tx*4*swfreq-2)*(2*tx>recip(swfreq)))  --triangular PWM
+  --for i:=1 to 3 do
+  --  fire[i]:=m[i]>triang
+  --  fire[i+3]:=not fire[i]
+  --endfor
+
+ENDEXEC
+ENDMODEL
+MODEL UI2PQ3
+comment--------------------------------------------------------------
+This model calculates the input active and reactive power of a time 
+domain voltage/current signals by a user selectable algorithm
+Algorithm=0: FFT Radix2-8. More robust 
+Algorithm=1: DFT recursive. Faster, some drift. Handles sub-harmonics.
+Algorithm=2: alpha-beta transformation by Peñaloza
+One period of the signal is needed to reach steady state. 
+SampleFreq frequency should be a whole multiple of the power frequency.
+-----------------------------------------------------------endcomment
+INPUT 
+  V[1..3], I[1..3]     --input signals to be transformed to phasors
+DATA  
+  FREQ {DFLT:50}       --power frequency
+  SampleFreq {dflt:400}--sample frequency in this model in Hz
+  ScaleV {dflt:1}      --multiply output by this number 
+  ScaleI {dflt:1}      --multiply output by this number
+  Algorithm {dflt:0}   --0: FFT radix2-8, 1: DFT recursive
+OUTPUT 
+  P, Q     --Active and reactive power output signals (rms)
+VAR    
+  P, Q, reV[1..3],imV[1..3],reI[1..3],imI[1..3],NSAMPL, OMEGA,
+  D,alpha,x1,x3,x5,x7,xre,xim,n,delta_T[0..7]
+  P3A,Q3A,P3I,Q3I,DP3,DQ3,VAT,IAT,VBT,IBT,Period
+CONST SQR3 {VAL:1.732050807569}
+HISTORY
+  V[1..3] {DFLT:0}
+  I[1..3] {DFLT:0}
+  P3A {DFLT: 0.0}, Q3A {DFLT: 0.0}
+  P3I {DFLT: 0.0}, Q3I {DFLT: 0.0}
+timestep min: 1/SampleFreq
+DELAY CELLS (V[1..3]) : recip(FREQ*timestep)+2
+DELAY CELLS (I[1..3]) : recip(FREQ*timestep)+2
+DELAY CELLS (P3I, Q3I): recip(FREQ*timestep)+2
+
+INIT 
+  OMEGA:= 2*PI*FREQ
+  NSAMPL:=recip(FREQ*timestep)
+  reV[1..3] :=0
+  imV[1..3] :=0
+  reI[1..3] :=0
+  imI[1..3] :=0
+  alpha:=1/sqrt(2)
+  for n:= 0 to 7 do
+    delta_T[n] := n/(FREQ*8)
+  endfor
+  Period:=recip(FREQ)
+ENDINIT
+EXEC
+  if Algorithm=2
+  then
+    VAT := (2.0*V[1] - V[2] - V[3])/SQR3
+    IAT := (2.0*I[1] - I[2] - I[3])/SQR3
+    VBT := V[2] - V[3]
+    IBT := I[2] - I[3]
+    P3I := (VAT*IAT + VBT*IBT)/2.0*ScaleV*ScaleI
+    Q3I := (VBT*IAT - VAT*IBT)/2.0*ScaleV*ScaleI
+    DP3 := P3I - delay(P3I, Period, 1)
+    DQ3 := Q3I - delay(Q3I, Period, 1)
+    CLAPLACE(P3A/DP3) := (FREQ|s0)/(1.0|s1)
+    CLAPLACE(Q3A/DQ3) := (FREQ|s0)/(1.0|s1)
+    P := P3I*(t<=Period) + P3A*(t>Period)
+    Q := Q3I*(t<=Period) + Q3A*(t>Period)
+  else
+    P:=0
+    Q:=0
+    for n:=1 to 3 do
+      if Algorithm=0
+      then
+        x1 := delay(V[n],delta_T[0],1) - delay(V[n],delta_T[4],1)
+        x3 := delay(V[n],delta_T[2],1) - delay(V[n],delta_T[6],1)
+        x5 := delay(V[n],delta_T[1],1) - delay(V[n],delta_T[5],1)
+        x7 := delay(V[n],delta_T[3],1) - delay(V[n],delta_T[7],1)
+        xRe := x1 + (x5 - x7)*alpha
+        xIm := x3 + (x5 + x7)*alpha
+        ReV[n] := (xRe*cos(OMEGA*T)+xIm*sin(OMEGA*T))/4
+        ImV[n] := (xIm*cos(OMEGA*T)-xRe*sin(OMEGA*T))/4
+        x1 := delay(I[n],delta_T[0],1) - delay(I[n],delta_T[4],1)
+        x3 := delay(I[n],delta_T[2],1) - delay(I[n],delta_T[6],1)
+        x5 := delay(I[n],delta_T[1],1) - delay(I[n],delta_T[5],1)
+        x7 := delay(I[n],delta_T[3],1) - delay(I[n],delta_T[7],1)
+        xRe := x1 + (x5 - x7)*alpha
+        xIm := x3 + (x5 + x7)*alpha
+        ReI[n] := (xRe*cos(OMEGA*T)+xIm*sin(OMEGA*T))/4
+        ImI[n] := (xIm*cos(OMEGA*T)-xRe*sin(OMEGA*T))/4
+      else
+        x1:=delay(V[n],1/FREQ,2)
+        D:=2/NSAMPL*(V[n]-x1)*cos(OMEGA*T) 
+        ReV[n]:=ReV[n]+D
+        D:=2/NSAMPL*(V[n]-x1)*sin(OMEGA*T) 
+        ImV[n]:=ImV[n]-D
+        x1:=delay(I[n],1/FREQ,2)
+        D:=2/NSAMPL*(I[n]-x1)*cos(OMEGA*T) 
+        ReI[n]:=ReI[n]+D
+        D:=2/NSAMPL*(I[n]-x1)*sin(OMEGA*T) 
+        ImI[n]:=ImI[n]-D
+      endif
+      P:=P+(reV[n]*reI[n]+imV[n]*imI[n])*ScaleV*ScaleI/2
+      Q:=Q+(imV[n]*reI[n]-reV[n]*imI[n])*ScaleV*ScaleI/2
+    endfor
+  endif
+ENDEXEC
+ENDMODEL
+MODEL MPPT1 -- Simple MPPT algorithm + Inverter control for PV
+
+CONST SQR3 {VAL: 1.732050808}, Twop {VAL: 6.28318531}
+
+DATA Ton {dflt: 0.020} -- time for inverter start-up, in sec
+     Frq0{dflt:  60.0} -- AC side Frequency, in Hz
+     Tmpp{dflt:  0.001} -- measurement time constant, in sec
+     Dtc {dflt: 0.005} -- cycle period for MPPT, in sec
+     Pthr {dflt: 0.001} -- power threshold to increment or decrement deltaD
+     Sinv {dflt: 0.1}  -- inverter power rating, in MVA
+     --swfreq {dflt: 10000.0} -- switching frequency for boost converter
+
+INPUT DCP, DCN, IDC
+
+OUTPUT Dbar
+
+VAR D, Dprev, Pprev, Vprev, deltaD
+    PPVR, PPVF, Draw, Ppv, Vpv, IDCF, TCIC
+    Dfix, Dbar
+
+HISTORY D {dflt: 0.0}, Dprev {dflt: 0.0}, Vprev {dflt: 0.0}
+        deltaD {dflt: 0.0}, Ppv {dflt: 0.0}, Pprev {dflt: 0.0}
+        Vpv {dflt: 0.0}, PPVF {dflt: 0.0}
+        Draw {dflt: 0.0}, IDCF {dflt: 0.0}, TCIC {dflt: 0.0}
+        Dbar {dflt: 0.0}
+
+INIT
+  D := 0.2 --pu
+  Dprev := D
+  Dbar := 1.0 - D
+  Dfix := D  
+  Vprev := 0.0 --pu
+  Pprev := 0.0
+  deltaD := 0.001 --pu
+  PPVF := 0.0 --pu, filtered PV power
+  Ppv := 0.0 --pu 
+  Vpv := 0.0
+  Draw := 0.0
+  IDCF := 0.0
+  TCIC := 0.0
+ENDINIT
+
+EXEC
+  -- PV Power
+  PPVR := (DCP - DCN) * IDC
+  LAPLACE(PPVF/PPVR):=(1|s0)/(1|s0+Tmpp|s1)
+  LAPLACE(IDCF/IDC):=(1|s0)/(1|s0+Tmpp|s1)
+  Ppv := PPVF
+  Vpv := DCP - DCN
+  
+  -- PV Maximum Power Point Tracking
+  -- matlab P&O MPPT implementation is correct
+  -- the original P&O MPPT adjusts Vref, which is Vpv_ref
+  -- E. Koutroulis et al. "Development of a Microcontroller-Based,Photovoltaic Maximum Power Point Tracking Control System"
+  -- also refer to: M. Nikraz, et. al "A DSP-CONTROLLED PHOTOVOLTAIC SYSTEM WITH MAXIMUM POWER POINT TRACKING"
+  -- (1-D)Vboost_out = Vpv, assume Vboost_out constant,
+  -- Increasing Vpv means decreasing D
+  -- an easy way to verify is to use Dfix=0.2, the original direction of D change, 
+  -- and the reverse direction of D change to simulate, then compare PPUS
+  if t> Ton then
+    TCIC := TCIC + timestep
+    if TCIC > Dtc then
+        if abs(Ppv - Pprev) > Pthr * Sinv * 1.0e6 then
+          if (Ppv - Pprev) > 0.0 then
+            if (Vpv - Vprev) > 0.0 then
+              Draw := Dprev - deltaD
+            else
+              Draw := Dprev + deltaD
+            endif
+          else -- (Ppv - Pprev) < 0.0
+            if (Vpv - Vprev) > 0.0 then
+              Draw := Dprev + deltaD
+            else
+              Draw := Dprev - deltaD
+            endif
+          endif -- end if (Ppv - Pprev) > 0.0
+        else -- abs(Ppv - Pprev) < Pthr * Sinv * 1.0e6
+          Draw := Dprev
+        endif -- end if abs(Ppv - Pprev) > Pthr
+        
+        --LAPLACE(Vref/VrefRaw):=(1|s0)/(1|s0+Tmpp|s1)
+        D := Draw
+        
+        if D > 0.99 then
+          D:=0.99
+        elsif D < 0.0 then
+          D:=0.0
+        endif
+      
+        Dprev := D
+        Vprev := Vpv
+        Pprev := Ppv
+        TCIC := 0.0
+    endif -- TCIC>Dtc
+  
+  --else
+  --  D:=0.2
+  --  Dprev := D
+  endif -- t>Ton
+
+  --Dbar := 1.0 - Dfix
+  Dbar := 1.0 - D
+
+ENDEXEC
+
+ENDMODEL
+MODEL PV4P           -- Photovoltaic Array Model
+                     -- 4-parameter I(V) expression.
+DATA
+     NSER {dflt:    1.0} -- Modules per chain
+     NPAR {dflt:    1.0} -- Chains per array
+     ISCN {dflt:    8.0} -- STC Current [Adc] at terminals in short-circuit
+     VOCN {dflt:   36.0} -- STC Voltage [Vdc] at terminals in open-circuit 
+     IMPN {dflt:    7.2} -- STC Current [Adc] at maximum deliverable power
+     VMPN {dflt:   29.5} -- STC Voltage [Vdc] at maximum deliverable power
+
+INPUT
+     IRAD  -- Irradiation [W/m2]
+     TEMP  -- Modules' temperature [°C]
+     VPVP  -- Potential at PV positive terminal
+     VPVN  -- Potential at PV negative terminal
+
+OUTPUT IPV[1..2]
+
+VAR ISCO, VOCO, IMPO, VMPO
+    K1, K2, K3, K4, EM, ISCG
+    IPV[1..2], VPV, IPR, PPV
+    IRAD2
+ INIT
+  VPV := 0.0
+  IPV[1..2] := 0.0
+  PPV := 0.0
+  K1 := 0.01175
+  K4 := LN((1.0 + K1)/K1)
+  IRAD2 := 0.0
+ ENDINIT
+
+ EXEC
+
+  VOCO := VOCN * (1.0 - 0.00356 * ( TEMP - 25.0 )) * NSER
+  ISCO := ISCN * (1.0 + 0.00062 * ( TEMP - 25.0 )) * NPAR
+  VMPO := VMPN * (1.0 - 0.00500 * ( TEMP - 25.0 )) * NSER
+  IMPO := IMPN * (1.0 + 0.00030 * ( TEMP - 25.0 )) * NPAR
+
+  K3 := LN((ISCO * (1.0 + K1) - IMPO)/(K1 * ISCO))
+  EM := LN(K3 / K4) / LN(VMPO / VOCO)
+  K2 := K4 / VOCO**EM
+  if t < 0.1 then
+     IRAD2 := IRAD/0.1 * t
+  else
+     IRAD2 := IRAD
+  endif
+  ISCG := ISCO * IRAD2 / 1000.0
+  --ISCG := ISCO * IRAD / 1000.0 -- SC available current
+
+  VPV := ABS(VPVP - VPVN)  {max:VOCO min:0.0}
+  IPR := ISCG - ISCO * K1 *(EXP(K2 * VPV**EM) - 1.0)
+  IPV[1] := IPR
+  IPV[2] := -IPR
+  PPV := IPV[1] * VPV
+
+ ENDEXEC
+
+ENDMODEL
+MODEL SIGGEN
+DATA fprtb {dflt: 60.0}
+     mprtb {dflt: 200.0}
+     tprtbst {dflt: 0.5}
+     tprtbend {dflt: 1.0}
+     cini {dflt: 1000.0}
+     cfin {dflt: 1000.0}
+     trmp1 {dflt: 1000.0}
+     prmp1 {dflt: 1000.0}
+     crmp1 {dflt: 1000.0}
+     trmp2 {dflt: 1000.0}
+     prmp2 {dflt: 1000.0}
+     crmp2 {dflt: 1000.0}
+     trmp3 {dflt: 1000.0}
+     prmp3 {dflt: 1000.0}
+     tstep {dflt: 1000.0}
+     psteps {dflt: 1000.0}
+     msteps {dflt: 0.0}
+INPUT ptrbtp
+OUTPUT out 
+VAR out, brmp1, brmp2, brmp3
+INIT
+  out:=0
+ENDINIT
+EXEC
+  if (ptrbtp = 0) then
+      if (t>tprtbst and t<=tprtbend) then
+        out:= cini + mprtb * sin(2.0*pi*fprtb*t)
+      elsif (t > tprtbend) then
+        out:= cfin
+      else
+        out:= cini
+      endif
+  elsif (ptrbtp = 1) then
+      brmp1:= (crmp1 - cini)/prmp1
+      brmp2:= (crmp2 - crmp1)/prmp2
+      brmp3:= (cfin - crmp2)/prmp3
+      if (t <= trmp1) then
+          out:= cini
+      elsif (t>trmp1 and t<=trmp1+prmp1) then
+          out:= brmp1 * (t-trmp1) + cini
+      elsif (t>trmp1+prmp1 and t<=trmp2) then
+          out:= crmp1
+      elsif (t>trmp2 and t<=trmp2+prmp2) then
+          out:= brmp2 * (t-trmp2) + crmp1
+      elsif (t>trmp2+prmp2 and t<=trmp3) then
+          out:= crmp2
+      elsif (t>trmp3 and t<=trmp3+prmp3) then
+          out:= brmp3 * (t-trmp3) + crmp2
+      else
+          out:= cfin
+      endif
+  elsif (ptrbtp = 2) then
+      if (t < tstep) then
+          out:= cini
+      elsif (t>=tstep and t<tstep+1.0*psteps) then
+          out:= cini + 1.0*msteps
+      elsif (t>=tstep+1.0*psteps and t<tstep+2.0*psteps) then
+          out:= cini + 2.0*msteps
+      elsif (t>=tstep+2.0*psteps and t<tstep+3.0*psteps) then
+          out:= cini + 3.0*msteps
+      elsif (t>=tstep+3.0*psteps and t<tstep+4.0*psteps) then
+          out:= cini + 4.0*msteps
+      elsif (t>=tstep+4.0*psteps and t<tstep+5.0*psteps) then
+          out:= cini + 3.0*msteps
+      elsif (t>=tstep+5.0*psteps and t<tstep+6.0*psteps) then
+          out:= cini + 2.0*msteps
+      elsif (t>=tstep+6.0*psteps and t<tstep+7.0*psteps) then
+          out:= cini + 1.0*msteps
+      elsif (t>=tstep+7.0*psteps and t<tstep+8.0*psteps) then
+          out:= cini
+      endif
+  elsif (ptrbtp = 3) then
+      if (t < tstep) then
+          out:= cini
+      else
+          out:= cini + msteps
+      endif
+  else
+      out:= cini
+  endif
+ENDEXEC
+ENDMODEL
+MODEL PLLDQ
+COMMENT =============================================================
+
+    EEUG Course 2005:
+    Estimation of frequency and phase by means of a PLL which
+    operates using dq-components of measured voltages
+    Reference: C. Zan; C. Fitzer; V. K. Ramachandaramurthy; 
+    A. Arulampalam; M. Barnes; N. Jenkins: 
+    Software Phased-Locked Loop applied to Dynamic Voltage 
+    Restorer (DVR), Proc. IEEE-PES Winter Meeting 2001, 
+    pp. 1033-1038.
+
+    14-Aug-2005, Prof. M. Kizilcay
+========================================================== ENDCOMMENT
+INPUT  u[1..3]              -- phase voltages
+OUTPUT FREQ
+--CONST
+--  twopi  {VAL:6.283185307}
+DATA
+  theta0 {DFLT:0.0}          -- phase betw. d-axis and alpha-axis
+  f0     {DFLT:50.0}
+  Gain   {DFLT:22.85}
+VAR
+  ualpha, ubeta, u0, ualfaN, ubetaN,
+  u_dN, u_qN, u_d, u_q, uampl
+  theta, wcon 
+  omega, omega0,freq 
+  ucomp, temp
+HISTORY
+  wcon {DFLT:0}
+  u_qN {DFLT:0}
+  omega {DFLT:2*PI*f0}
+  INTEGRAL(omega) {DFLT:theta0*PI/180}
+  freq {DFLT:50}
+  theta {DFLT:theta0*PI/180}
+INIT
+  omega0 := 2*PI*f0
+  theta := theta0*PI/180.0
+ENDINIT
+EXEC
+  -- From three-phase to alfa-beta-zero
+  ualpha := SQRT(2/3)*(u[1] - 0.5*(u[2]+u[3]))
+  ubeta := SQRT(0.5)*(u[2] - u[3])
+  u0 := (u[1] + u[2] + u[3])/3.0
+  temp := RECIP(SQRT(ualpha*ualpha+ubeta*ubeta))
+  ualfaN := ualpha*temp
+  ubetaN := ubeta*temp
+  -- From alfa-beta to d-q (with constant frequency)
+  u_d := SQRT(2/3)*(ualpha*cos(theta) + ubeta*sin(theta))
+  u_q := SQRT(2/3)*(-ualpha*sin(theta) + ubeta*cos(theta))
+  uampl := SQRT(u_d*u_d+u_q*u_q)
+  u_dN := ualfaN*cos(theta) + ubetaN*sin(theta)
+  COMBINE ITERATE AS theta_comp
+    u_qN := -ualfaN*sin(theta) + ubetaN*cos(theta)
+    -- Phase-locked loop follows phase angle of the source
+    CLAPLACE(wcon/u_qN) := (Gain|s0 + 0.001242|s1)/(1.0|s0 + 0.02315|s1)
+    --CLAPLACE(wcon/u_qN) := (Gain|s0 + 4.0|s1)/(0.0|s0 + 1.0|s1)
+    omega := omega0 + wcon
+    theta := INTEGRAL(omega)
+  ENDCOMBINE
+  FREQ := omega/2/PI -- twopi
+  ucomp := uampl*cos(theta)
+ENDEXEC
+ENDMODEL
+MODEL ABC2PHRF
+COMMENT-------------------------------------------------------------------------
+Calculates the real and imaginary part of a 3-phase phasor. Variable frequency.
+Magnitude not rms. Downsampling approach ala COMTRADE component.
+Algorithm: 8-point RADIX-2 FFT algorithm.
+----------------------------------------------------------------------ENDCOMMENT
+DATA
+  FREQ {dflt:50} -- Frequency of the first harmonic
+  SampleFreq {dflt:400}
+  Scale {dflt:1}
+INPUT
+  x[1..3] -- The input signal which is to be analyzed
+  FREQPLL {DFLT:FREQ}  --estimated frequency from a PLL block
+  --Leave disconnected and unnamed to use data FREQ
+OUTPUT
+  re[1..3]  -- real part of the fundamental frequency component. Phase ABC. Peak not rms.
+  im[1..3]  -- imaginary part of the fundamental frequency component. Phase ABC
+VAR
+  re[1..3], im[1..3],OMEGA,alpha,i,delta_T[0..7],x1,x3,x5,x7,xre,xim,Ti,dt,DTi
+TIMESTEP min: recip(8*SampleFreq) 
+DELAY CELLS (X[1..3]): 2*recip(FREQ*timestep)+2 -- Allow estimated freqpll be half of predefined freq
+HISTORY X[1..3] {DFLT:0} -- Fills the signal with zeroes when time <= 0
+INIT
+  alpha:=1/sqrt(2)
+  dt:=recip(SampleFreq)
+  Ti:=0
+ENDINIT
+EXEC
+  DTi:=T-Ti
+  if DTi>=0
+  then
+    for i:= 0 to 7 do --since the frequency might change, new time delays must be calculated.
+      delta_T[i] := i/(FREQPLL*8)
+    endfor
+    OMEGA:=2*PI*FREQPLL 
+    for i:=1 to 3 do
+      x1 := delay(x[i],delta_T[0]+DTi,2) - delay(x[i],delta_T[4]+DTi,2)
+      x3 := delay(x[i],delta_T[2]+DTi,2) - delay(x[i],delta_T[6]+DTi,2)
+      x5 := delay(x[i],delta_T[1]+DTi,2) - delay(x[i],delta_T[5]+DTi,2)
+      x7 := delay(x[i],delta_T[3]+DTi,2) - delay(x[i],delta_T[7]+DTi,2)
+      xre := x1 + (x5 - x7)*alpha
+      xim := x3 + (x5 + x7)*alpha  
+      re[i] := (xre*cos(OMEGA*Ti)+xim*sin(OMEGA*Ti))/4*Scale  
+      im[i] := (xim*cos(OMEGA*Ti)-xre*sin(OMEGA*Ti))/4*Scale
+    endfor
+    Ti:=Ti+dt
+  endif  
+ENDEXEC
+ENDMODEL
+MODEL CAR2POL
+comment--------------------------------------------------------------
+  Converts 3-phase phasor quantities from cartesian to polar form  
+  04-May-2020, Prof. H. K. Hoidalen
+-----------------------------------------------------------endcomment
+INPUT 
+  Re[1..3], Im[1..3]      --input signal in cartesian coordinates
+OUTPUT 
+  Magn[1..3], Angl[1..3]  --output signal in polar coordinates
+VAR    
+  Magn[1..3], Angl[1..3],i
+EXEC
+  for i:=1 to 3 do
+    Magn[i]:=sqrt(Re[i]**2+Im[i]**2)
+    if (Im[i]=0) and (Re[i]=0)
+    then
+      Angl[i]:=0
+    else  
+      Angl[i]:=atan2(Im[i],Re[i])
+    endif  
+  endfor
+ENDEXEC
+ENDMODEL
+C Vdc + Q control, grid following
+USE VSICTRLUQ AS VSI2
+INPUT
+  volt[1]:= MM0001
+  volt[2]:= MM0002
+  volt[3]:= MM0003
+  curr[1]:= MM0004
+  curr[2]:= MM0005
+  curr[3]:= MM0006
+  VDCP:= MM0007
+  VDCN:= 0.0
+DATA
+  S:=      0.1
+  Vrms:=     0.48
+  Freq0:=      60.
+  theta0:=        0.0
+  TVQP:=     0.01
+  mP:=     3.77
+  mQ:=     0.05
+  Kvp:=      0.0
+  Tvi:=   0.1706
+  Kpp:=       5.
+  Tpi:=       5.
+OUTPUT
+  MDSIA:=fire[1]
+  MDSIB:=fire[2]
+  MDSIC:=fire[3]
+ENDUSE
+USE UI2PQ3 AS UI2PQ3
+INPUT
+  V[1]:= MM0001
+  V[2]:= MM0002
+  V[3]:= MM0003
+  I[1]:= MM0004
+  I[2]:= MM0005
+  I[3]:= MM0006
+DATA
+  FREQ:=      60.
+  SampleFreq:=     600.
+  ScaleV:=       1.
+  ScaleI:=       1.
+  Algorithm:=      0.0
+OUTPUT
+  PMEA:=P
+  QMEA:=Q
+ENDUSE
+USE MPPT1 AS MPPT1
+INPUT
+  DCP:= MM0009
+  DCN:= MM0010
+  IDC:= MM0011
+DATA
+  Ton:=      0.1
+  Frq0:=      60.
+  Tmpp:=    0.001
+  Dtc:=     0.01
+  Pthr:=    0.001
+  Sinv:=      0.1
+OUTPUT
+  DBAR:=Dbar
+ENDUSE
+USE PV4P AS PVA11
+INPUT
+  IRAD:= MM0012
+  TEMP:= MM0013
+  VPVP:= MM0009
+  VPVN:= 0.0
+DATA
+  NSER:=      13.
+  NPAR:=      80.
+  ISCN:=      8.2
+  VOCN:=     36.8
+  IMPN:=     7.68
+  VMPN:=     29.3
+OUTPUT
+  IPVA:=IPV[1]
+  IPVB:=IPV[2]
+ENDUSE
+USE SIGGEN AS DEFAULT
+INPUT
+  ptrbtp:= MM0014
+DATA
+  fprtb:=      60.
+  mprtb:=      20.
+  tprtbst:=      0.5
+  tprtbend:=       1.
+  cini:=      0.0
+  cfin:=    GSOL2_
+  trmp1:=      0.1
+  prmp1:=      0.1
+  crmp1:=   GSOL1_
+  trmp2:=   TSTEP_
+  prmp2:=      0.1
+  crmp2:=   GSOL2_
+  trmp3:=    100.0
+  prmp3:=      0.1
+  tstep:=     300.
+  psteps:=       1.
+  msteps:=     100.
+OUTPUT
+  IRROUT:=out
+ENDUSE
+USE SIGGEN AS DEFAULT
+INPUT
+  ptrbtp:= MM0015
+DATA
+  fprtb:=      60.
+  mprtb:=       2.
+  tprtbst:=      0.5
+  tprtbend:=       1.
+  cini:=    TEMP1_
+  cfin:=    TEMP2_
+  trmp1:=   TSTEP_
+  prmp1:=      0.1
+  crmp1:=   TEMP2_
+  trmp2:=     100.
+  prmp2:=      0.1
+  crmp2:=   TEMP2_
+  trmp3:=     100.
+  prmp3:=      0.1
+  tstep:=     300.
+  psteps:=       1.
+  msteps:=       5.
+OUTPUT
+  TMPOUT:=out
+ENDUSE
+USE PLLDQ AS PLLDQ
+INPUT
+  u[1]:= MM0001
+  u[2]:= MM0002
+  u[3]:= MM0003
+DATA
+  theta0:=        0.0
+  f0:=        60.
+  Gain:=        10.
+OUTPUT
+  FPLL:=FREQ
+ENDUSE
+USE ABC2PHRF AS ABC2PHRF
+INPUT
+  x[1]:= MM0001
+  x[2]:= MM0002
+  x[3]:= MM0003
+  FREQPLL:= FPLL
+DATA
+  FREQ:=      60.
+  SampleFreq:=     480.
+  Scale:=       1.
+OUTPUT
+  X0001A:=re[1]
+  X0001B:=re[2]
+  X0001C:=re[3]
+  X0002A:=im[1]
+  X0002B:=im[2]
+  X0002C:=im[3]
+ENDUSE
+USE CAR2POL AS CAR2POL
+INPUT
+  Re[1]:= X0001A
+  Re[2]:= X0001B
+  Re[3]:= X0001C
+  Im[1]:= X0002A
+  Im[2]:= X0002B
+  Im[3]:= X0002C
+OUTPUT
+  VMAGA:=Magn[1]
+  VMAGB:=Magn[2]
+  VMAGC:=Magn[3]
+  VANGA:=Angl[1]
+  VANGB:=Angl[2]
+  VANGC:=Angl[3]
+ENDUSE
+USE ABC2PHRF AS ABC2PHRF
+INPUT
+  x[1]:= MM0004
+  x[2]:= MM0005
+  x[3]:= MM0006
+  FREQPLL:= FPLL
+DATA
+  FREQ:=      60.
+  SampleFreq:=     480.
+  Scale:=       1.
+OUTPUT
+  X0003A:=re[1]
+  X0003B:=re[2]
+  X0003C:=re[3]
+  X0004A:=im[1]
+  X0004B:=im[2]
+  X0004C:=im[3]
+ENDUSE
+USE CAR2POL AS CAR2POL
+INPUT
+  Re[1]:= X0003A
+  Re[2]:= X0003B
+  Re[3]:= X0003C
+  Im[1]:= X0004A
+  Im[2]:= X0004B
+  Im[3]:= X0004C
+OUTPUT
+  IMAGA:=Magn[1]
+  IMAGB:=Magn[2]
+  IMAGC:=Magn[3]
+  IANGA:=Angl[1]
+  IANGB:=Angl[2]
+  IANGC:=Angl[3]
+ENDUSE
+RECORD
+  VSI2.f AS f
+  VSI2.freq AS freq
+  PMEA   AS PMEA  
+  IRROUT AS IRROUT
+  TMPOUT AS TMPOUT
+  QMEA   AS QMEA  
+  FPLL   AS FPLL  
+  VMAGA  AS VMAGA 
+  VMAGB  AS VMAGB 
+  VMAGC  AS VMAGC 
+  VANGA  AS VANGA 
+  VANGB  AS VANGB 
+  VANGC  AS VANGC 
+  IMAGA  AS IMAGA 
+  IMAGB  AS IMAGB 
+  IMAGC  AS IMAGC 
+  IANGA  AS IANGA 
+  IANGB  AS IANGB 
+  IANGC  AS IANGC 
+ENDMODELS
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C < n1 >< n2 ><ref1><ref2>< R  >< A  >< B  ><Leng><><>0
+  ACT1A ACTEEA                    .061                                         0
+  ACT1A ACTEEA             45.75
+  ACT1B ACTEEB                    .061                                         0
+  ACT1B ACTEEB             45.75
+  ACT1C ACTEEC                    .061                                         0
+  ACT1C ACTEEC             45.75
+  ACTEEA                     .01        19.1                                   0
+  ACTEEB                     .01        19.1                                   0
+  ACTEEC                     .01        19.1                                   0
+  VCAP  DCND                      .001                                         0
+  VCAP  DCND                0.75
+  ACNDA ACT1A             .00033                                               0
+  ACNDB ACT1B             .00033                                               0
+  ACNDC ACT1C             .00033                                               0
+  ACT2A PCCA                     .0367                                         0
+  ACT2A PCCA              27.525
+  ACT2B PCCB                     .0367                                         0
+  ACT2B PCCB              27.525
+  ACT2C PCCC                     .0367                                         0
+  ACT2C PCCC              27.525
+  ACTEEAACT2A             .00033                                               0
+  ACTEEBACT2B             .00033                                               0
+  ACTEECACT2C             .00033                                               0
+  ACFLTALDNDA                     .061                                         0
+  ACFLTALDNDA              45.75
+  ACFLTBLDNDB                     .061                                         0
+  ACFLTBLDNDB              45.75
+  ACFLTCLDNDC                     .061                                         0
+  ACFLTCLDNDC              45.75
+  MTRA  ACFLTA              .046                                               0
+  MTRB  ACFLTB              .046                                               0
+  MTRC  ACFLTC              .046                                               0
+  DCIN  DCFLT                      20.                                         0
+  DBARI VCAP               .0001                                               0
+  DCIN  DCFLT               5.E3                                               0
+  DCFLT DBARV              .0001                                               0
+  VCAP                     .0015        1.E3                                   0
+  MPPTN                   0.0001                                               0
+  PVPOSA                     15.          .1                                   0
+  IPVA  PVPOSA             5.E-6                                               0
+  IPVB                     5.E-6                                               0
+  IPVA  IPVB              .00421        356.                                   0
+97LDNDA                            -1.                                         0
+             0.0          RLDA1_
+          TSTEP_          RLDA2_
+            9999
+97LDNDB                            -1.                                         0
+             0.0          RLDB1_
+          TSTEP_          RLDB2_
+            9999
+97LDNDC                            -1.                                         0
+             0.0          RLDC1_
+          TSTEP_          RLDC2_
+            9999
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+  PCCA  MTRA                                          MEASURING                1
+  PCCB  MTRB                                          MEASURING                1
+  PCCC  MTRC                                          MEASURING                1
+  PVPOSAIL                                            MEASURING                
+  IL    DCIN                                          MEASURING                0
+  VSRCA IAS                                           MEASURING                
+  IAS   ACNDA                                         MEASURING                0
+  VSRCB IBS                                           MEASURING                
+  IBS   ACNDB                                         MEASURING                0
+  VSRCC ICS                                           MEASURING                
+  ICS   ACNDC                                         MEASURING                0
+  VDC   INJA                                          MEASURING                0
+  VDC   INJB                                          MEASURING                0
+  VDC   INJC                                          MEASURING                0
+  DCND  VDC                                           MEASURING                1
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+60DBARV  0                                                         -1.      1.E3
+60DBARI -1                                                         -1.      1.E3
+60VSRCA  0                                                                  1.E3
+60VSRCB  0                                                                  1.E3
+60VSRCC  0                                                                  1.E3
+60INJA  -1                                                         -1.      1.E3
+60INJB  -1                                                         -1.      1.E3
+60INJC  -1                                                         -1.      1.E3
+60IPVA  -1                                                         -1.      1.E3
+60IPVB  -1                                                         -1.      1.E3
+/INITIAL
+ 3DCIN  DCFLT             0.0
+/OUTPUT
+  PCCA  PCCB  PCCC  VDC   
+BLANK TACS
+BLANK MODELS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK INITIAL
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

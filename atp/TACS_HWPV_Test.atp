@@ -1,0 +1,68 @@
+BEGIN NEW DATA CASE
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+ 50.0E-5    10.0                        
+   65535       1       1       1       1       0       0       1       0
+TACS HYBRID
+/TACS
+90____FC                                                           -1.      1.E3
+90____MD                                                           -1.      1.E3
+90____MQ                                                           -1.      1.E3
+90_____T                                                           -1.      1.E3
+90_____G                                                           -1.      1.E3
+90___CTL                                                           -1.      1.E3
+$INCLUDE, hwpv3.atp
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C LOAD A                   2.304                                               0
+C LOAD B                   2.304                                               0
+C LOAD C                   2.304                                               0
+97LOAD A                            -1.                                        0
+             0.0           2.304
+             2.0           3.304
+             9.0           1.804
+            9999
+97LOAD B                            -1.                                        0
+             0.0           2.304
+             2.0           3.304
+            9999
+97LOAD C                            -1.                                        0
+             0.0           2.304
+             2.0           3.304
+            9999
+  _____G                    1.E3                                               2
+  _____T                    1.E3                                               2
+  ____FC                    1.E3                                               2
+  ____MD                    1.E3                                               2
+  ____MQ                    1.E3                                               2
+  ___CTL                    1.E3                                               2
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+  __PCCALOAD A                                        MEASURING                1
+  __PCCBLOAD B                                        MEASURING                1
+  __PCCCLOAD C                                        MEASURING                1
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+12___CTL 0       1.0                 0.1                           1.0      1.E3
+12_____G 0    1000.0                  1.                            .1      1.E3
+12_____G 0    -100.0                  1.                           8.0      1.E3
+11_____T 0       5.0                                               -1.      1.E3
+12_____T 0      30.0                  .1                           7.0      1.E3
+11____FC 0      60.0                                               -1.      1.E3
+12____FC 0       5.0                  .1                           6.0      1.E3
+11____MD 0       1.0                                               -1.      1.E3
+12____MD 0      -0.2                  .1                           4.0      1.E3
+11____MQ 0     0.001                                               -1.      1.E3
+12____MQ 0     0.500                  .1                           5.0      1.E3
+/OUTPUT
+  __PCCA__PCCB__PCCC
+BLANK TACS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK INITIAL
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

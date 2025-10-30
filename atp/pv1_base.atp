@@ -1,0 +1,263 @@
+BEGIN NEW DATA CASE
+$INCLUDE, pv1_base.prm
+C  dT  >< Tmax >< Xopt >< Copt ><Epsiln>
+   5.E-7     3.5                  1.E-12
+   65535       5       0       0       1       0       0       1       0
+/TACS
+TACS HYBRID
+98UQ      =      0.0
+98ISCN    =      8.2
+98VOCN    =     36.8
+98NS      =      60.
+98KI      =   6.2E-4
+98KV      = -0.00356
+98A       =      1.3
+98RP      =  1088.27
+98RS      =    0.244
+98MSER    =      15.
+98MPAR    =       4.
+98IPVN    =(RP+RS)*ISCN/RP
+90G                                                                -1.      1.E3
+90TEMP                                                             -1.      1.E3
+98VPV     =ABS(DCP-DCN)/MSER
+98ISWT    =RSEQ
+98ITRM    =ISWT/MPAR
+98DTEMP   =TEMP-25.0
+98GPU     =G/1000.0
+98AVT     =A*NS*(DTEMP+298.0)/11604.506
+98I0      =(ISCN + KI*DTEMP) / (EXP((VOCN + KV*DTEMP)/AVT) - 1.0)
+98IPV     =(IPVN + KI*DTEMP)*GPU
+98ID      =I0*(EXP((VPV+RS*ITRM)/AVT) - 1.0)
+98IM      =IPV - ID
+98IPOS    =IM*MPAR
+98INEG    =-IM*MPAR
+90DCP                                                              -1.      1.E3
+90DCN                                                              -1.      1.E3
+91RSEQ                                                                      1.E3
+23TX1             2..000833333.000416667                                    1.E3
+88TRIANG65+TX2                                                                  
+98TX2     =DELTAT*4800*(1-TX1)
+98FIRE1   =M.GT.(TRIANG+1)
+98FIRE2   =-M.GT.(TRIANG+1)
+98FIRE3   =.NOT.FIRE1
+98FIRE4   =.NOT.FIRE2
+98MBASE   =      0.8
+98MAG     =MBASE*SQRT(UD*UD+UQ*UQ)
+98THETA   =0.0
+98M       =MAG*COS(2*PI*FCTRL*TIMEX+THETA)
+91ACP                                                                       1.E3
+90ACN                                                                       1.E3
+90LOAD                                                                      1.E3
+ 1IFILT   +ACP                                        1.                  
+        1.          
+        1.     .0002
+98ISQR    =IFILT*IFILT
+98IINT  58                +ISQR                       1.          1.IIRUN 
+98IRMSI   =SQRT (2.0*IINT*FFREQ)
+ 1VFILT           +LOAD           -ACN                1.                  
+        1.                                                                      
+        1.     .0002                                                            
+98PHSDET  =VILPF.GT.0
+98IDEL  53                                +IFILT         1.E-5      
+98IRUN    =(IFILT*IDEL).GT.0
+98ISAMPL  =.NOT.IRUN
+98IRMS  62                +IRMSI                                          IHOLD 
+98IIRUN 53                +IRUN                          1.E-5      
+98IHOLD 64                +ISAMPL                           1.      IRESET      
+98IRESET53                                +ISAMPL         .001      
+98VIFILT  =IFILT*VFILT
+98PHSINT58                +PHSDET                     1.          1.IIRUN 
+98PHSRAW  =PHSINT*2.0*FFREQ
+98PHSCOS62                +PHSRAW                                         IHOLD 
+ 0LIMCOS  +PHSCOS                                     1.   -1.    1.      
+98PHSDEG  =(180.0/PI)*ACOS(LIMCOS)
+98VSQR    =VFILT*VFILT
+98VINT  58                +VSQR                       1.          1.IVRUN 
+98VDEL  53+VFILT                                         1.E-5      
+98VRUN    =(VFILT*VDEL).GT.0
+98IVRUN 53                +VRUN                          1.E-5      
+98VRMSI   =SQRT (2.0*VINT*FFREQ)
+98VSAMPL  =.NOT.VRUN
+98VRMS  62                +VRMSI                                          VHOLD 
+98VHOLD 64                +VSAMPL                           1.      VRESET      
+98VRESET53                                +VSAMPL         .001      
+ 1VLPF    +VFILT                                      1.                  
+        1.          
+        1.      .002
+98FFREQ 50+XX0019         +VLPF                      60.
+ 1VILPF   +VIFILT                                     1.                  
+        1.          
+        1.     .0004
+98VMP     =    29.51
+98IMP     =     7.63
+98DIDT  59                +IPVPU                      1.
+98IPVPU   = 0.0328 * RSEQ  
+ 0VPVPU           +DCP            -DCN            .00226                  
+98IDEN  63+XX0022                         +DIDT             1.
+98XX0022  =      0.1
+98DELTV   =-DIDT*DELTAT*(TIMEX.GT.0.4)*VPVPU/IDEN
+98PPVPU   =IPVPU*VPVPU
+ 1DBAR                    +DELTV                    1.E4   .75   1.4      
+       -1.                                                                      
+                  1.                                                            
+14XX0019          .2       60.                                                .1
+90FCTRL                                                            -1.      1.E3
+90UD                                                               -1.      1.E3
+33UQ    
+33IRMS  
+33PHSDEG
+33VRMS  
+33FFREQ 
+33DBAR  
+33DELTV 
+33PPVPU 
+77DBAR        1.0433
+/MODELS
+MODELS
+MODEL DCDC           -- NB! 6 character name limit 
+
+-- Start header. Do not modify the type-94 header. 
+ comment---------------------------------------------------------------
+ | First, declarations required for any type 94 Thevenin model         |
+ | - these data and input values are provided to the model by ATP      |
+ | - these output values are used by ATP                               |
+ | - these names can be changed, except 'n', but not their order       |
+ -------------------------------------------------------------endcomment
+
+DATA  n                -- number of node pairs
+      n2 {dflt: n*n}   -- number of matrix elements
+
+INPUT vth[1..n]  -- Thev. voltage(t) across each branch
+      rth[1..n2] -- Thev. resistance(t) matrix, symmetrical
+      gth[1..n2] -- inverse of rth
+      v0[1..n]   -- voltage(t=0) across each branch
+      i0[1..n]   -- current(t=0) into each branch
+
+VAR   v[1..n]    -- calculated voltage(t) across each branch
+      i[1..n]    -- calculated current(t) into each branch
+
+OUTPUT i[1..n]
+
+ comment---------------------------------------------------------------
+ | Next, declarations of user-defined data for this particular model   |
+ | - their value is defined at the time of using the type-94 component |
+ -------------------------------------------------------------endcomment
+-- End header
+
+VAR
+  G1D -- D gain / Rthev1
+  R11 -- Thevenin resistance from the PV side
+  R22 -- Thevenin resistance from the inverter side
+
+INIT
+  v[1..3] := v0[1..3]
+  i[1..3] := i0[1..3]
+ENDINIT
+
+EXEC
+  R11 := rth[1]
+  R22 := rth[5]
+  v[3] := vth[3] -- D gain
+  i[3] := 0.0
+  G1D := v[3]*gth[1]
+  COMBINE as GROUP1
+    v[1] := sum(vth[1]| -rth[1]|i[1])
+    v[2] := sum(vth[2]| -rth[5]|i[2])
+    i[1] := sum(gth[1]|vth[1] -G1D|v[2])
+    i[2] := sum(-v[3]|i[1])
+  ENDCOMBINE
+ENDEXEC
+ENDMODEL
+ENDMODELS
+C        1         2         3         4         5         6         7         8
+C 345678901234567890123456789012345678901234567890123456789012345678901234567890
+/BRANCH
+C < n1 >< n2 ><ref1><ref2>< R  >< L  >< C  >
+C < n1 >< n2 ><ref1><ref2>< R  >< A  >< B  ><Leng><><>0
+  DCP                                    .01                                   0
+  DCN                                    .01                                   0
+  DCP   DCN                             1.E4                                   2
+  IPOS  RSEQ               .4575                                               0
+  TB    TP                   0.0        0.05
+  TP    IX0026                5.
+  CFN   CFP                              20.                                   0
+  TA    CFP                         1.                                         0
+  TB    CFN                         1.                                         0
+  TN    TB                   0.0        0.05
+  TB    IX0027                5.
+  TA    TP                   0.0        0.05
+  TP    IX0028                5.
+  TN    TA                   0.0        0.05
+  TA    IX0029                5.
+  CFP   ACP                         .2                                         0
+  CFN   ACN                         .2                                         0
+99IPOS  INEG                                                                   0
+          0.1353            552.
+            32.8            553.
+            9999
+        G                   1.E3                                               0
+        TEMP                1.E3                                               0
+  INEG  DCN                .4575                                               0
+        TP                                .1                                   0
+        TN                                .1                                   0
+94DCDCLADCDCRADCDC  THEV                                                       0
+94DCDCLBDCDCRB                                                                 0
+94DCDCLCDCDCRC                                                                 0
+ >SSV   DCDCLA
+ >SSV   DCDCLB
+ >SSV   DCDCLC
+ >SSV   DCDCRA
+ >SSV   DCDCRB
+ >SSV   DCDCRC
+ >SSI   
+ >SSI   
+ >SSI   
+ >END
+  DCDCRC                   .0001                                               0
+  DCDCLCDBAR               .0001                                               0
+  DCDCRADCN                  .01                                               0
+  DCDCLADCP                  .01                                               0
+  TN    DCDCRB               .01                                               0
+  DCDCLBTP                   .01                                               0
+97LOAD  ACN                                                                    2
+             0.0          RLOD1_
+            2.05          RLOD2_
+            9999
+        FCTRL               1.E3                                               0
+        UD                  1.E3                                               0
+/SWITCH
+C < n 1>< n 2>< Tclose ><Top/Tde ><   Ie   ><Vf/CLOP ><  type  >
+  RSEQ  DCP                                           MEASURING                1
+11TB    IX0026                                                                 0
+  ACP   LOAD                                          MEASURING                1
+13TA    TP                                                  GIFU      FIRE1    0
+13TB    TP                                                  GIFU      FIRE2    0
+13TN    TB                                                  GIFU      FIRE4    0
+13TN    TA                                                  GIFU      FIRE3    0
+11TN    IX0027                                                                 0
+11TA    IX0028                                                                 0
+11TN    IX0029                                                                 0
+/SOURCE
+C < n 1><>< Ampl.  >< Freq.  ><Phase/T0><   A1   ><   T1   >< TSTART >< TSTOP  >
+60IPOS  -1                                                         -1.      1.E3
+60INEG  -1                                                         -1.      1.E3
+12G      0G1________                  .1                          0.05      1.E3
+12G      0DG________                  .1                          2.05      1.E3
+12TEMP   0DTEMP_____                  .1                          2.05      1.E3
+11TEMP   0TEMP0_____                                               -1.      1.E3
+60DBAR   0                                                                  1.E3
+12FCTRL  0DFC_______                .001                          2.05      1.E3
+11FCTRL  0FC0_______                                               -1.      1.E3
+12UD     0DUD_______                .001                          2.05      1.E3
+11UD     0UD0_______                                               -1.      1.E3
+/OUTPUT
+  G     TEMP  FCTRL UD    
+BLANK TACS
+BLANK MODELS
+BLANK BRANCH
+BLANK SWITCH
+BLANK SOURCE
+BLANK OUTPUT
+BLANK PLOT
+BEGIN NEW DATA CASE
+BLANK

@@ -56,6 +56,7 @@ If this doesn't work, some preparatory steps may be required:
 
 ## Directories
 
+- _atp_ contains Alternative Transients Program (ATP) models used to produce some of the EMT training data
 - _data_ contains the training data used in project publications and examples
 - _docs_ contains the source files for user documentation
 - _examples_ contains the end-user scripts and configuration files to run various examples
@@ -93,4 +94,4 @@ Reference herein to any specific commercial product, process, or service by trad
      UNITED STATES DEPARTMENT OF ENERGY
       under Contract DE-AC05-76RL01830
 
-Copyright 2021-2024, Battelle Memorial Institute
+Copyright 2021-2025, Battelle Memorial Institute

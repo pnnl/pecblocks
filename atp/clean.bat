@@ -1,0 +1,12 @@
+del *.pl4
+del *.lis
+del *.log
+del *.dbg
+del *.dat
+del *.cfg
+del *.hdf5
+del *.script
+del *.prm
+del *.bin
+del *.49
+del *.tmp
